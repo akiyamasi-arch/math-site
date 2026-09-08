@@ -88,6 +88,20 @@ git push
 
 数分待つと公開サイトに反映されます。
 
+### 更新時のルール：CSS/JSの版番号を上げる
+ブラウザは `assets/*.css` `assets/*.js` `data/*.js` を最大10分ほど手元に保存（キャッシュ）します。古いCSS/JSと新しいHTMLが混ざると表示が崩れるので、各HTMLの読み込みURLに付いている `?v=20260908b` のような版番号を、**サイトを更新するたびに新しい値に揃えて書き換えます**（4つのHTMLすべて）。この作業は更新作業とセットでこちらで行います。
+
+一括で書き換えるコマンド（Git Bash）：
+
+```bash
+VER=20260910a
+for f in index.html subject.html unit.html iroiro.html; do
+  sed -i -E "s#(src|href)=\"(assets|data)/([A-Za-z0-9_.-]+\.(js|css))(\?v=[0-9a-z]+)?\"#\1=\"\2/\3?v=$VER\"#g" "$f"
+done
+```
+
+それでも古い表示が出るときは、ブラウザで `Ctrl + F5`（スーパーリロード）を押してください。
+
 ## 公開URL
 
 GitHub Pagesを有効化すると、以下のような形のURLになります（リポジトリ名は実際のものに置き換え）：
