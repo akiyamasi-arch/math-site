@@ -17,11 +17,15 @@
   let w = 0, h = 0, dpr = 1;
   const blobs = [], motes = [];
 
+  // 非表示（幅0）のときは何もせず false を返す。表示されたときに改めて初期化する
   function resize(){
+    const cw = canvas.clientWidth, ch = canvas.clientHeight;
+    if(!cw || !ch) return false;
     dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-    w = canvas.clientWidth; h = canvas.clientHeight;
+    w = cw; h = ch;
     canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return true;
   }
   function init(){
     blobs.length = 0; motes.length = 0;
@@ -48,6 +52,7 @@
 
   let t = 0, last = 0;
   function draw(){
+    if(!w || !h) return;
     t++;
     const g = ctx.createLinearGradient(0, 0, 0, h);
     g.addColorStop(0, '#0B1220'); g.addColorStop(1, '#111827');
@@ -80,17 +85,24 @@
       }
     }
   }
+  // 表示サイズが変わっていたら描画面を合わせる（非表示から表示に戻った場合は初期化し直す）
+  function syncSize(){
+    if(canvas.clientWidth === w && canvas.clientHeight === h) return;
+    const wasEmpty = (!w || !h) || blobs.length === 0;
+    if(resize() && wasEmpty) init();
+  }
   function frame(now){
-    if(now - last >= 33){ last = now; draw(); }   // 約30fps
+    if(now - last >= 33){ last = now; syncSize(); draw(); }   // 約30fps
     requestAnimationFrame(frame);
   }
 
-  resize(); init(); draw();
+  if(resize()) init();
+  draw();
   if(!reduce) requestAnimationFrame(frame);
 
   let rt;
-  window.addEventListener('resize', () => {
-    clearTimeout(rt);
-    rt = setTimeout(() => { resize(); init(); draw(); }, 150);
-  });
+  const refresh = () => { clearTimeout(rt); rt = setTimeout(() => { syncSize(); draw(); }, 150); };
+  window.addEventListener('resize', refresh);
+  document.addEventListener('visibilitychange', refresh);
+  window.addEventListener('pageshow', refresh);
 })();
