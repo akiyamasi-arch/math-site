@@ -1,7 +1,7 @@
 // 数学学習サイト 共通スクリプト
 // data/*.js を読み込んだあとに読み込むこと。
 // 科目・単元の一覧（CURRICULUM）と、教材データ（APP_DATA / PRINT_DATA / VIDEO_DATA）、
-// お知らせ（NEWS_DATA）、勉強のヒント（TIPS_DATA）から各ページを組み立てる。
+// お知らせ（NEWS_DATA）、勉強のヒント（TIPS_DATA）、数学いろいろ（TOPIC_DATA）から各ページを組み立てる。
 (function(){
   'use strict';
 
@@ -17,7 +17,8 @@
     prints:     typeof PRINT_DATA !== 'undefined' ? PRINT_DATA : [],
     videos:     typeof VIDEO_DATA !== 'undefined' ? VIDEO_DATA : [],
     news:       typeof NEWS_DATA  !== 'undefined' ? NEWS_DATA  : [],
-    tips:       typeof TIPS_DATA  !== 'undefined' ? TIPS_DATA  : []
+    tips:       typeof TIPS_DATA  !== 'undefined' ? TIPS_DATA  : [],
+    topics:     typeof TOPIC_DATA !== 'undefined' ? TOPIC_DATA : []
   };
 
   // ---- 検索・集計 ----
@@ -43,9 +44,10 @@
   const total = c => c.apps + c.prints + c.videos;
   const subjectUrl = s => 'subject.html?s=' + encodeURIComponent(s.id);
   const unitUrl = (s, u) => 'unit.html?s=' + encodeURIComponent(s.id) + '&u=' + encodeURIComponent(u.id);
+  const topicId = i => 't' + (i + 1);
 
   function fmtDate(iso){
-    const m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(iso || '');
+    const m = /^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/.exec(iso || '');
     if(!m) return esc(iso || '');
     return `${m[1]}年${+m[2]}月${+m[3]}日`;
   }
@@ -56,6 +58,7 @@
     if(c.videos) parts.push(`動画 ${c.videos}`);
     return parts.join('・');
   }
+  const snippet = (s, n) => { const t = String(s || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n) + '…' : t; };
 
   // ---- カードの描画 ----
   function appCard(a){
@@ -129,6 +132,10 @@
         url: (g.s && g.u) ? unitUrl(g.s, g.u) : (g.s ? subjectUrl(g.s) : '')
       });
     });
+    D.topics.forEach((t, i) => {
+      if(!t.added) return;
+      list.push({ date: t.added, kind: '数学いろいろ', notice: false, text: `「${t.title}」を追加しました`, url: 'iroiro.html#' + topicId(i) });
+    });
     D.news.forEach(n => list.push({ date: n.date, kind: 'お知らせ', notice: true, text: n.text, url: n.url || '' }));
     list.sort((a, b) => String(b.date).localeCompare(String(a.date)));
     return limit ? list.slice(0, limit) : list;
@@ -144,17 +151,31 @@
     </li>`).join('');
   }
 
-  // ---- ページごとの描画 ----
+  // ---- トップページ ----
+  function renderHeroButtons(id){
+    const el = document.getElementById(id);
+    const subjects = D.curriculum.map(s => {
+      const t = total(counts(s, null));
+      return `<a class="hero-btn${t ? '' : ' soon'}" href="${subjectUrl(s)}">
+        <span class="name">${esc(s.name)}</span>
+        <span class="meta">${t ? `教材 ${t}件` : '準備中'}</span>
+      </a>`;
+    });
+    subjects.push(`<a class="hero-btn iroiro" href="iroiro.html">
+      <span class="name">数学いろいろ</span>
+      <span class="meta">読みもの・面白い話題</span>
+    </a>`);
+    el.innerHTML = subjects.join('');
+  }
   function renderSubjectGrid(id){
     const el = document.getElementById(id);
     el.innerHTML = D.curriculum.map(s => {
       const t = total(counts(s, null));
-      const meta = t ? `教材 ${t}件` : '準備中';
       return `<a class="card subject-card${t ? '' : ' muted'}" href="${subjectUrl(s)}">
         <span class="tag">${s.units.length}単元</span>
         <h3>${esc(s.name)}</h3>
         <p>${esc(s.description || '')}</p>
-        <span class="meta">${esc(meta)}</span>
+        <span class="meta">${t ? `教材 ${t}件` : '準備中'}</span>
       </a>`;
     }).join('');
   }
@@ -163,6 +184,32 @@
     if(!D.tips.length){ el.innerHTML = '<div class="placeholder">準備中</div>'; return; }
     el.innerHTML = D.tips.map(t => `<div class="tip-card"><h3>${esc(t.title)}</h3><p>${esc(t.body)}</p></div>`).join('');
   }
+
+  // ---- 数学いろいろ ----
+  const topicsNewestFirst = () => D.topics.map((t, i) => ({ t, i })).sort((a, b) => String(b.t.added || '').localeCompare(String(a.t.added || '')));
+  function renderTopicsTeaser(id, limit){
+    const el = document.getElementById(id);
+    const items = topicsNewestFirst().slice(0, limit || 3);
+    if(!items.length){ el.innerHTML = '<div class="placeholder">面白い数学の話題や、参考になる情報をここに集めていきます。</div>'; return; }
+    el.innerHTML = `<div class="grid">${items.map(({ t, i }) => `<a class="card" href="iroiro.html#${topicId(i)}">
+      <span class="tag">読みもの</span>
+      <h3>${esc(t.title)}</h3>
+      <p>${esc(snippet(t.body, 60))}</p>
+    </a>`).join('')}</div>`;
+  }
+  function renderTopicsPage(id){
+    const el = document.getElementById(id);
+    const items = topicsNewestFirst();
+    if(!items.length){ el.innerHTML = '<div class="placeholder">まだ記事はありません。面白い数学の話題や、参考になる情報をここに集めていきます。</div>'; return; }
+    el.innerHTML = items.map(({ t, i }) => `<article class="topic" id="${topicId(i)}">
+      <h2>${esc(t.title)}</h2>
+      ${t.added ? `<time datetime="${esc(t.added)}">${fmtDate(t.added)}</time>` : ''}
+      <p>${esc(t.body)}</p>
+      ${t.url ? `<p class="topic-link"><a href="${esc(t.url)}" target="_blank" rel="noopener">${esc(t.urlLabel || t.url)}（新しいタブで開きます）</a></p>` : ''}
+    </article>`).join('');
+  }
+
+  // ---- 科目ページ・単元ページ ----
   function renderSubjectPage(){
     const s = findSubject(param('s'));
     const crumb = document.getElementById('crumb');
@@ -232,5 +279,8 @@
     });
   });
 
-  window.Site = { renderSubjectGrid, renderNews, renderTips, renderSubjectPage, renderUnitPage, updates };
+  window.Site = {
+    renderHeroButtons, renderSubjectGrid, renderNews, renderTips,
+    renderTopicsTeaser, renderTopicsPage, renderSubjectPage, renderUnitPage, updates
+  };
 })();

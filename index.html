@@ -12,27 +12,24 @@
 <body>
 
 <div class="brand-bar"></div>
-<header class="site-header">
-  <div class="inner">
-    <p class="site-title"><a href="index.html">数学学習サイト</a></p>
-    <p class="site-tagline">授業で使うアプリ・プリント・参考動画をまとめています</p>
+
+<section class="hero-sky" aria-label="トップ">
+  <canvas id="heroCanvas" aria-hidden="true"></canvas>
+  <div class="hero-inner">
+    <div class="hero-top">
+      <p class="site-title"><a href="index.html">数学学習サイト</a></p>
+      <nav class="site-nav" aria-label="サイト内">
+        <a href="#subjects">科目から探す</a>
+        <a href="iroiro.html">数学いろいろ</a>
+      </nav>
+    </div>
+    <h1 class="hero-title">数学の教材を、ここから。</h1>
+    <p class="hero-lead">科目を選ぶと、単元ごとのページに進めます。授業で配ったプリント、自分で動かして確かめられるアプリ、参考になる動画を集めています。</p>
+    <div class="hero-buttons" id="subjects"></div>
   </div>
-</header>
+</section>
 
 <div class="wrap">
-
-  <section class="hero">
-    <h1 class="page-title">数学の教材をここから探せます</h1>
-    <p class="page-lead">科目を選ぶと、単元ごとのページに進めます。授業で配ったプリント、自分で動かして確かめられるアプリ、参考になる動画を集めています。</p>
-  </section>
-
-  <div class="section" id="subjects">
-    <div class="section-head">
-      <h2>科目から探す</h2>
-      <span>科目 → 単元 の順に選びます</span>
-    </div>
-    <div class="grid wide" id="subjectGrid"></div>
-  </div>
 
   <div class="section" id="news">
     <div class="section-head">
@@ -40,6 +37,15 @@
       <span>新しく追加した教材はここに載ります</span>
     </div>
     <ul class="news-list" id="newsList"></ul>
+  </div>
+
+  <div class="section" id="iroiro">
+    <div class="section-head">
+      <h2>数学いろいろ</h2>
+      <span>授業から少し離れた、面白い話題や役立つ情報</span>
+    </div>
+    <div id="topicsTeaser"></div>
+    <p class="more-link"><a href="iroiro.html">数学いろいろ をすべて見る →</a></p>
   </div>
 
   <div class="section" id="tips">
@@ -62,10 +68,13 @@
 <script src="data/videos.js"></script>
 <script src="data/news.js"></script>
 <script src="data/tips.js"></script>
+<script src="data/topics.js"></script>
 <script src="assets/site.js"></script>
+<script src="assets/hero.js"></script>
 <script>
-  Site.renderSubjectGrid('subjectGrid');
+  Site.renderHeroButtons('subjects');
   Site.renderNews('newsList', 6);
+  Site.renderTopicsTeaser('topicsTeaser', 3);
   Site.renderTips('tipsGrid');
 </script>
 

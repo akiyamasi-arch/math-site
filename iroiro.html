@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>科目｜数学学習サイト</title>
+<title>数学いろいろ｜数学学習サイト</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
@@ -17,25 +17,21 @@
     <p class="site-title"><a href="index.html">数学学習サイト</a></p>
     <nav class="site-nav" aria-label="サイト内">
       <a href="index.html#subjects">科目から探す</a>
-      <a href="iroiro.html">数学いろいろ</a>
+      <a href="iroiro.html" aria-current="page">数学いろいろ</a>
     </nav>
   </div>
 </header>
 
 <div class="wrap">
 
-  <nav class="breadcrumb" id="crumb" aria-label="パンくずナビゲーション"></nav>
+  <nav class="breadcrumb" id="crumb" aria-label="パンくずナビゲーション"><a href="index.html">トップ</a><span class="sep" aria-hidden="true">›</span><span aria-current="page">数学いろいろ</span></nav>
 
-  <p class="eyebrow">科目</p>
-  <h1 class="page-title" id="title"></h1>
-  <p class="page-lead" id="lead"></p>
+  <p class="eyebrow">読みもの</p>
+  <h1 class="page-title">数学いろいろ</h1>
+  <p class="page-lead">授業の内容にこだわらず、参考になる情報や、ちょっと面白い数学の話題を集めていきます。</p>
 
   <div class="section">
-    <div class="section-head">
-      <h2>単元一覧</h2>
-      <span>単元を選ぶと教材が表示されます</span>
-    </div>
-    <div class="grid" id="unitGrid"></div>
+    <div id="topicList"></div>
   </div>
 
 </div>
@@ -45,12 +41,10 @@
 </footer>
 
 <script src="data/curriculum.js"></script>
-<script src="data/apps.js"></script>
-<script src="data/prints.js"></script>
-<script src="data/videos.js"></script>
+<script src="data/topics.js"></script>
 <script src="assets/site.js"></script>
 <script>
-  Site.renderSubjectPage();
+  Site.renderTopicsPage('topicList');
 </script>
 
 </body>
