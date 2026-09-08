@@ -4,94 +4,192 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>数学学習サイト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap">
 <style>
+  /*
+    デジタル庁デザインシステム（DADS）を参考にしたトークン。
+    https://design.digital.go.jp/dads/
+    - カラー：キーカラー（オレンジ）はプライマリー/アクセントで役割を分け、
+      本文・境界線はコントラスト比を意識したニュートラルカラーを使用
+    - タイポグラフィ：Noto Sans JP、本文16px以上、太さは400(N)/700(B)の2値
+    - 余白：8pxを基準単位としたスケール
+    - 角の形状／エレベーション：控えめな角丸、シャドウに頼らずボーダーで境界を示す
+  */
   :root{
-    --bg:#f7f8fb;
-    --card:#ffffff;
-    --ink:#1e293b;
-    --sub:#64748b;
-    --line:#e2e8f0;
-    --accent:#3b82f6;
-    --accent-soft:#eaf1ff;
+    /* --- color: key color (orange) --- */
+    --orange-50:#FFEEE2;
+    --orange-100:#FFDFCA;
+    --orange-300:#FFA66D;
+    --orange-400:#FF8D44;  /* アクセント：装飾・バッジ・強調背景（白背景に対する非テキスト用途） */
+    --orange-700:#E25100;
+    --orange-800:#C74700;  /* プライマリー：白背景で4.5:1以上を確保できるためテキスト/リンクに使用 */
+    --orange-900:#AC3E00;  /* プライマリーのHover/Active */
+
+    /* --- color: common (neutral) --- */
+    --ink:#1E293B;         /* 本文・見出し（白背景コントラスト比 約13:1） */
+    --sub:#475569;         /* 補足テキスト（白背景コントラスト比 約7.5:1） */
+    --line:#D9DEE6;        /* カード等の境界線 */
+    --line-strong:#B9C2CF;
+    --bg:#FBFBFA;
+    --card:#FFFFFF;
+
+    /* --- spacing scale（基準単位 8px） --- */
+    --sp-1:8px;
+    --sp-2:16px;
+    --sp-3:24px;
+    --sp-4:32px;
+    --sp-6:48px;
+    --sp-8:64px;
+
+    /* --- corner shapes --- */
+    --radius-sm:4px;
+    --radius-md:8px;
+    --radius-pill:999px;
   }
+
   *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
   body{
     margin:0;
-    font-family:"Hiragino Sans","Yu Gothic",system-ui,-apple-system,sans-serif;
+    font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,-apple-system,sans-serif;
     background:var(--bg);
     color:var(--ink);
+    /* Std-16N-170 相当：本文の可読性を優先した行間 */
+    font-size:16px;
+    line-height:1.7;
   }
+  a{color:inherit;}
+
+  /* ブランドの識別を示す上部の帯（キーカラー） */
+  .brand-bar{
+    height:6px;
+    background:var(--orange-700);
+  }
+
   header{
-    background:linear-gradient(135deg,#1e293b,#334155);
-    color:#fff;
-    padding:44px 24px 36px;
-    text-align:center;
+    background:var(--card);
+    border-bottom:1px solid var(--line);
+    padding:var(--sp-6) var(--sp-2) var(--sp-4);
   }
-  header h1{margin:0 0 8px;font-size:26px;}
-  header p{margin:0;color:#cbd5e1;font-size:14px;}
+  .header-inner{max-width:1000px;margin:0 auto;}
+  header h1{
+    margin:0 0 var(--sp-1);
+    /* Std-36B-140 相当 */
+    font-size:34px;
+    font-weight:700;
+    line-height:1.4;
+    letter-spacing:0.01em;
+    color:var(--ink);
+  }
+  header p{
+    margin:0;
+    color:var(--sub);
+    font-size:16px;
+    line-height:1.7;
+  }
 
-  .wrap{max-width:1000px;margin:0 auto;padding:32px 20px 60px;}
+  .wrap{max-width:1000px;margin:0 auto;padding:var(--sp-4) var(--sp-2) var(--sp-8);}
 
-  .section{margin-bottom:40px;}
-  .section-head{display:flex;align-items:baseline;gap:10px;margin-bottom:14px;}
-  .section-head h2{font-size:18px;margin:0;}
-  .section-head span{font-size:12.5px;color:var(--sub);}
+  .section{margin-bottom:var(--sp-6);}
+  .section-head{
+    display:flex;
+    align-items:baseline;
+    gap:var(--sp-2);
+    margin-bottom:var(--sp-2);
+    padding-left:var(--sp-1);
+    border-left:4px solid var(--orange-700);
+  }
+  .section-head h2{
+    /* Std-22B-150 相当 */
+    font-size:21px;
+    font-weight:700;
+    line-height:1.5;
+    letter-spacing:0.02em;
+    margin:0;
+    color:var(--ink);
+  }
+  .section-head span{font-size:13px;color:var(--sub);}
 
   .grid{
     display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
-    gap:16px;
+    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    gap:var(--sp-2);
   }
   .card{
     background:var(--card);
     border:1px solid var(--line);
-    border-radius:14px;
-    padding:18px 20px;
+    border-radius:var(--radius-md);
+    padding:var(--sp-2) var(--sp-3);
     text-decoration:none;
-    color:inherit;
     display:flex;
     flex-direction:column;
-    gap:6px;
-    box-shadow:0 1px 3px rgba(0,0,0,0.03);
-    transition:0.15s;
+    gap:var(--sp-1);
+    transition:border-color .15s, box-shadow .15s, transform .15s;
   }
-  a.card:hover{border-color:var(--accent);box-shadow:0 4px 14px rgba(59,130,246,0.12);transform:translateY(-1px);}
+  a.card:hover, a.card:focus-visible{
+    border-color:var(--orange-800);
+    box-shadow:0 4px 14px rgba(199,71,0,0.14);
+    transform:translateY(-1px);
+  }
+  a.card:focus-visible{
+    outline:3px solid #FFD866;
+    outline-offset:2px;
+  }
   .card .tag{
-    font-size:11px;
+    /* Oln-14B-100 相当：UI内のワンライン用テキスト */
+    font-size:14px;
     font-weight:700;
-    color:var(--accent);
-    background:var(--accent-soft);
+    line-height:1;
+    letter-spacing:0.02em;
+    color:var(--orange-800);
+    background:var(--orange-50);
     display:inline-block;
-    padding:3px 9px;
-    border-radius:20px;
+    padding:5px 12px;
+    border-radius:var(--radius-pill);
     width:fit-content;
   }
-  .card h3{margin:2px 0 0;font-size:15.5px;}
-  .card p{margin:0;font-size:12.5px;color:var(--sub);line-height:1.5;}
+  .card h3{
+    /* Std-18B-160 相当 */
+    margin:2px 0 0;
+    font-size:18px;
+    font-weight:700;
+    line-height:1.6;
+    letter-spacing:0.02em;
+    color:var(--orange-800);
+  }
+  a.card:hover h3, a.card:focus-visible h3{ text-decoration:underline; }
+  .card h3::after{ content:" →"; }
+  .card p{margin:0;font-size:15px;color:var(--sub);line-height:1.7;}
 
   .placeholder{
-    border:1.5px dashed var(--line);
-    border-radius:14px;
-    padding:22px 20px;
+    border:1.5px dashed var(--line-strong);
+    border-radius:var(--radius-md);
+    padding:var(--sp-3) var(--sp-3);
     color:var(--sub);
-    font-size:13px;
+    font-size:15px;
     line-height:1.7;
-    background:#fbfcfe;
+    background:#F4F4F2;
   }
 
   footer{
+    border-top:1px solid var(--line);
     text-align:center;
-    padding:24px;
-    font-size:12px;
+    padding:var(--sp-3);
+    font-size:13px;
     color:var(--sub);
   }
 </style>
 </head>
 <body>
 
+<div class="brand-bar"></div>
 <header>
-  <h1>数学学習サイト</h1>
-  <p>授業で使うシミュレーションアプリ・プリント・参考動画をまとめています</p>
+  <div class="header-inner">
+    <h1>数学学習サイト</h1>
+    <p>授業で使うシミュレーションアプリ・プリント・参考動画をまとめています</p>
+  </div>
 </header>
 
 <div class="wrap">
