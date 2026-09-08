@@ -219,6 +219,45 @@ a:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
 
 .more-link{margin:var(--sp-2) 0 0;font-size:15px;}
 
+/* トップページのオープニング（MATHEMATICS のタイトルカード） */
+.intro{
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  background:#1C1C1C;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:opacity .45s ease;
+}
+.intro::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:radial-gradient(ellipse at 50% 45%, rgba(255,255,255,0.05), rgba(0,0,0,0.4));
+}
+.intro-word{
+  position:relative;
+  font-family:"Anton", Impact, "Arial Black", sans-serif;
+  font-weight:400;
+  text-transform:uppercase;
+  color:#E3141C;
+  font-size:clamp(44px, 13vw, 190px);
+  line-height:1;
+  letter-spacing:0.01em;
+  text-shadow:0 3px 0 #8A0C11, 0 6px 0 #5E080C, 0 14px 26px rgba(0,0,0,0.7);
+  opacity:0;
+  transform:scale(0.96);
+}
+.intro.in .intro-word{animation:introIn .45s cubic-bezier(.2,.7,.2,1) forwards;}
+.intro.out{opacity:0;pointer-events:none;}
+.intro.out .intro-word{animation:introOut .45s ease forwards;}
+@keyframes introIn{from{opacity:0;transform:scale(0.96);}to{opacity:1;transform:scale(1);}}
+@keyframes introOut{from{opacity:1;transform:scale(1);}to{opacity:0.6;transform:scale(1.06);}}
+.no-intro .intro{display:none;}
+@media (prefers-reduced-motion: reduce){ .intro{display:none;} }
+
 /* 数学いろいろ */
 .topic{
   background:var(--card);
