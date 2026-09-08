@@ -173,6 +173,74 @@
     background:#F4F4F2;
   }
 
+  /* 科目／単元のグループ見出し（プリント・動画セクション内） */
+  .group-label{
+    font-size:14px;
+    font-weight:700;
+    color:var(--sub);
+    margin:0 0 var(--sp-1);
+  }
+  .group-label:not(:first-child){ margin-top:var(--sp-3); }
+  .file-type{
+    font-size:12px;
+    font-weight:700;
+    color:var(--sub);
+    background:#EEF0F3;
+    padding:2px 7px;
+    border-radius:var(--radius-sm);
+    margin-left:6px;
+    vertical-align:middle;
+  }
+
+  /* 動画カード（サムネイル → クリックで埋め込み再生） */
+  .video-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius-md);
+    padding:var(--sp-2);
+    display:flex;
+    flex-direction:column;
+    gap:var(--sp-1);
+  }
+  .video-thumb{
+    position:relative;
+    aspect-ratio:16/9;
+    border-radius:var(--radius-sm);
+    overflow:hidden;
+    background:#000;
+    cursor:pointer;
+  }
+  .video-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .video-thumb iframe{width:100%;height:100%;border:0;display:block;}
+  .video-thumb .play-badge{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    color:#fff;
+    background:rgba(30,41,59,0.28);
+  }
+  .video-thumb .play-badge::before{
+    content:"";
+    position:absolute;
+    width:56px;height:56px;
+    border-radius:50%;
+    background:rgba(30,41,59,0.55);
+  }
+  .video-thumb .play-badge span{position:relative;}
+  .video-thumb:hover .play-badge, .video-thumb:focus-visible .play-badge{ background:rgba(199,71,0,0.35); }
+  .video-thumb:focus-visible{ outline:3px solid #FFD866; outline-offset:2px; }
+  .video-card h3{
+    margin:2px 0 0;
+    font-size:17px;
+    font-weight:700;
+    line-height:1.6;
+    color:var(--ink);
+  }
+  .video-card p{margin:0;font-size:14px;color:var(--sub);line-height:1.6;}
+
   footer{
     border-top:1px solid var(--line);
     text-align:center;
@@ -211,21 +279,17 @@
   <div class="section">
     <div class="section-head">
       <h2>プリント・教材</h2>
-      <span>準備中</span>
+      <span>PDFはクリックで新しいタブに開きます</span>
     </div>
-    <div class="placeholder">
-      ここに授業プリントや解答のPDFなどを追加していきます。
-    </div>
+    <div id="printSection"></div>
   </div>
 
   <div class="section">
     <div class="section-head">
       <h2>参考動画</h2>
-      <span>準備中</span>
+      <span>サムネイルをクリックすると再生できます</span>
     </div>
-    <div class="placeholder">
-      授業内容の補足動画や、参考になる外部動画へのリンクをここにまとめます。
-    </div>
+    <div id="videoSection"></div>
   </div>
 
 </div>
@@ -233,6 +297,92 @@
 <footer>
   このサイトは授業用の学習教材をまとめたものです。
 </footer>
+
+<script src="data/prints.js"></script>
+<script src="data/videos.js"></script>
+<script>
+  // 「科目 → 単元」の2段階でグループ化するユーティリティ
+  function groupBy2(list, keyA, keyB){
+    const map = new Map();
+    list.forEach(item=>{
+      const a = item[keyA], b = item[keyB];
+      if(!map.has(a)) map.set(a, new Map());
+      const inner = map.get(a);
+      if(!inner.has(b)) inner.set(b, []);
+      inner.get(b).push(item);
+    });
+    return map;
+  }
+  function escapeAttr(s){
+    return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  }
+
+  function renderPrintSection(){
+    const container = document.getElementById('printSection');
+    const data = (typeof PRINT_DATA !== 'undefined') ? PRINT_DATA : [];
+    if(data.length === 0){
+      container.innerHTML = '<div class="placeholder">ここに授業プリントや解答のPDFなどを追加していきます。</div>';
+      return;
+    }
+    const grouped = groupBy2(data, 'subject', 'unit');
+    let html = '';
+    grouped.forEach((units, subject)=>{
+      units.forEach((items, unit)=>{
+        html += `<p class="group-label">${subject} ／ ${unit}</p><div class="grid">`;
+        items.forEach(p=>{
+          const label = `${p.title}（PDFファイル、新しいタブで開きます）`;
+          html += `<a class="card" href="${encodeURI(p.file)}" target="_blank" rel="noopener" aria-label="${escapeAttr(label)}">
+            <span class="tag">PDF</span>
+            <h3>${p.title}</h3>
+          </a>`;
+        });
+        html += `</div>`;
+      });
+    });
+    container.innerHTML = html;
+  }
+
+  function renderVideoSection(){
+    const container = document.getElementById('videoSection');
+    const data = (typeof VIDEO_DATA !== 'undefined') ? VIDEO_DATA : [];
+    if(data.length === 0){
+      container.innerHTML = '<div class="placeholder">授業内容の補足動画や、参考になる外部動画へのリンクをここにまとめます。</div>';
+      return;
+    }
+    const grouped = groupBy2(data, 'subject', 'unit');
+    let html = '';
+    grouped.forEach((units, subject)=>{
+      units.forEach((items, unit)=>{
+        html += `<p class="group-label">${subject} ／ ${unit}</p><div class="grid">`;
+        items.forEach(v=>{
+          html += `<div class="video-card">
+            <div class="video-thumb" data-yid="${escapeAttr(v.youtubeId)}" data-title="${escapeAttr(v.title)}" role="button" tabindex="0" aria-label="動画を再生：${escapeAttr(v.title)}">
+              <img src="https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg" alt="" loading="lazy">
+              <span class="play-badge" aria-hidden="true"><span>▶</span></span>
+            </div>
+            <h3>${v.title}</h3>
+            ${v.note ? `<p>${v.note}</p>` : ''}
+          </div>`;
+        });
+        html += `</div>`;
+      });
+    });
+    container.innerHTML = html;
+
+    container.querySelectorAll('.video-thumb').forEach(el=>{
+      const play = ()=>{
+        const id = el.dataset.yid;
+        const title = el.dataset.title;
+        el.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1" title="${escapeAttr(title)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+      };
+      el.addEventListener('click', play);
+      el.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); play(); } });
+    });
+  }
+
+  renderPrintSection();
+  renderVideoSection();
+</script>
 
 </body>
 </html>
