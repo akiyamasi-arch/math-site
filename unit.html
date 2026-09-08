@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>数学学習サイト</title>
+<title>単元｜数学学習サイト</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
@@ -21,34 +21,37 @@
 
 <div class="wrap">
 
-  <section class="hero">
-    <h1 class="page-title">数学の教材をここから探せます</h1>
-    <p class="page-lead">科目を選ぶと、単元ごとのページに進めます。授業で配ったプリント、自分で動かして確かめられるアプリ、参考になる動画を集めています。</p>
-  </section>
+  <nav class="breadcrumb" id="crumb" aria-label="パンくずナビゲーション"></nav>
 
-  <div class="section" id="subjects">
+  <p class="eyebrow" id="subjectLabel"></p>
+  <h1 class="page-title" id="title"></h1>
+  <p class="page-lead">この単元のアプリ・プリント・参考動画です。</p>
+
+  <div class="section">
     <div class="section-head">
-      <h2>科目から探す</h2>
-      <span>科目 → 単元 の順に選びます</span>
+      <h2>シミュレーションアプリ</h2>
+      <span>係数を変えて自分で動かして確かめよう</span>
     </div>
-    <div class="grid wide" id="subjectGrid"></div>
+    <div id="appSection"></div>
   </div>
 
-  <div class="section" id="news">
+  <div class="section">
     <div class="section-head">
-      <h2>お知らせ・更新情報</h2>
-      <span>新しく追加した教材はここに載ります</span>
+      <h2>プリント・教材</h2>
+      <span>PDFはクリックで新しいタブに開きます</span>
     </div>
-    <ul class="news-list" id="newsList"></ul>
+    <div id="printSection"></div>
   </div>
 
-  <div class="section" id="tips">
+  <div class="section">
     <div class="section-head">
-      <h2>数学の勉強のヒント</h2>
-      <span>迷ったときに読んでみてください</span>
+      <h2>参考動画</h2>
+      <span>サムネイルをクリックすると再生できます</span>
     </div>
-    <div class="grid" id="tipsGrid"></div>
+    <div id="videoSection"></div>
   </div>
+
+  <nav class="unit-nav" id="unitNav" aria-label="前後の単元"></nav>
 
 </div>
 
@@ -60,13 +63,9 @@
 <script src="data/apps.js"></script>
 <script src="data/prints.js"></script>
 <script src="data/videos.js"></script>
-<script src="data/news.js"></script>
-<script src="data/tips.js"></script>
 <script src="assets/site.js"></script>
 <script>
-  Site.renderSubjectGrid('subjectGrid');
-  Site.renderNews('newsList', 6);
-  Site.renderTips('tipsGrid');
+  Site.renderUnitPage();
 </script>
 
 </body>
