@@ -152,18 +152,41 @@
   }
 
   // ---- トップページ ----
+  // 科目ボタンのアイコン（科目の内容に合わせたもの）
+  const SVG_OPEN = '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
+  const ICONS = {
+    // 数学Ⅰ：2次関数（座標軸と放物線）
+    math1: SVG_OPEN + '<path d="M6 36h36M14 42V6"/><path d="M38 33l4 3-4 3M11 10l3-4 3 4"/><path d="M9 11q15 42 30 0"/></svg>',
+    // 数学A：場合の数と確率（サイコロ）
+    mathA: SVG_OPEN + '<rect x="9" y="9" width="30" height="30" rx="6"/><g fill="currentColor" stroke="none"><circle cx="17" cy="17" r="2.4"/><circle cx="31" cy="17" r="2.4"/><circle cx="24" cy="24" r="2.4"/><circle cx="17" cy="31" r="2.4"/><circle cx="31" cy="31" r="2.4"/></g></svg>',
+    // 数学Ⅱ：三角関数（正弦波）
+    math2: SVG_OPEN + '<path d="M6 24h36"/><path d="M6 24c4-18 8-18 12 0s8 18 12 0 8-18 12 0"/></svg>',
+    // 数学B：数列（Σ）
+    mathB: SVG_OPEN + '<path d="M13 9h22l-14 15 14 15H13"/></svg>',
+    // 数学Ⅲ：微分・積分（∫）
+    math3: SVG_OPEN + '<path d="M32 10c-2-4-9-4-9 2v24c0 6-7 6-9 2"/><path d="M34 34h4M10 14h4" stroke-width="1.6"/></svg>',
+    // 数学C：ベクトル（矢印）
+    mathC: SVG_OPEN + '<path d="M10 38L38 12"/><path d="M30 12h8v8"/><path d="M10 38h28"/><path d="M33 33l5 5-5 5"/><circle cx="10" cy="38" r="2" fill="currentColor" stroke="none"/></svg>'
+  };
   function renderHeroButtons(id){
     const el = document.getElementById(id);
     const subjects = D.curriculum.map(s => {
       const t = total(counts(s, null));
       return `<a class="hero-btn${t ? '' : ' soon'}" href="${subjectUrl(s)}">
-        <span class="name">${esc(s.name)}</span>
-        <span class="meta">${t ? `教材 ${t}件` : '準備中'}</span>
+        <span class="icon">${ICONS[s.id] || ''}</span>
+        <span class="label">
+          <span class="name">${esc(s.name)}</span>
+          <span class="meta">${t ? `教材 ${t}件` : '準備中'}</span>
+        </span>
+        <span class="chev" aria-hidden="true">›</span>
       </a>`;
     });
     subjects.push(`<a class="hero-btn iroiro" href="iroiro.html">
-      <span class="name">数学いろいろ</span>
-      <span class="meta">読みもの・面白い話題</span>
+      <span class="label">
+        <span class="name">数学いろいろ</span>
+        <span class="meta">読みもの・面白い話題</span>
+      </span>
+      <span class="chev" aria-hidden="true">›</span>
     </a>`);
     el.innerHTML = subjects.join('');
   }

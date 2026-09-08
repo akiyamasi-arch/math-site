@@ -7,11 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
-<link rel="stylesheet" href="assets/style.css?v=20260908b">
+<link rel="stylesheet" href="assets/style.css?v=20260908c">
 </head>
 <body>
-
-<div class="brand-bar"></div>
 
 <section class="hero-sky" aria-label="トップ">
   <canvas id="heroCanvas" aria-hidden="true"></canvas>
@@ -23,8 +21,8 @@
         <a href="iroiro.html">数学いろいろ</a>
       </nav>
     </div>
-    <h1 class="hero-title">数学の教材を、ここから。</h1>
-    <p class="hero-lead">科目を選ぶと、単元ごとのページに進めます。授業で配ったプリント、自分で動かして確かめられるアプリ、参考になる動画を集めています。</p>
+    <h1 class="visually-hidden">数学学習サイト</h1>
+    <p class="hero-lead">学びたい科目を選んでください</p>
     <div class="hero-buttons" id="subjects"></div>
   </div>
 </section>
@@ -62,15 +60,15 @@
   このサイトは授業用の学習教材をまとめたものです。
 </footer>
 
-<script src="data/curriculum.js?v=20260908b"></script>
-<script src="data/apps.js?v=20260908b"></script>
-<script src="data/prints.js?v=20260908b"></script>
-<script src="data/videos.js?v=20260908b"></script>
-<script src="data/news.js?v=20260908b"></script>
-<script src="data/tips.js?v=20260908b"></script>
-<script src="data/topics.js?v=20260908b"></script>
-<script src="assets/site.js?v=20260908b"></script>
-<script src="assets/hero.js?v=20260908b"></script>
+<script src="data/curriculum.js?v=20260908c"></script>
+<script src="data/apps.js?v=20260908c"></script>
+<script src="data/prints.js?v=20260908c"></script>
+<script src="data/videos.js?v=20260908c"></script>
+<script src="data/news.js?v=20260908c"></script>
+<script src="data/tips.js?v=20260908c"></script>
+<script src="data/topics.js?v=20260908c"></script>
+<script src="assets/site.js?v=20260908c"></script>
+<script src="assets/hero.js?v=20260908c"></script>
 <script>
   Site.renderHeroButtons('subjects');
   Site.renderNews('newsList', 6);
