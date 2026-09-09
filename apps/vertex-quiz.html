@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/d3@3/d3.min.js"></script>
+    <script src="https://unpkg.com/function-plot@1/dist/function-plot.js"></script>
+    
+    <style>
+      body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6; }
+      .function-plot path { stroke-width: 3px !important; }
+      #graph { width: 100%; height: 300px; background: white; border-radius: 8px; overflow: hidden; margin: 0 auto; }
+    </style>
+  </head>
+  <body class="p-4 flex flex-col items-center min-h-screen">
+
+    <!-- 問題データ
+         Google Apps Script 上で動かす場合はサーバー(getProblemData)から取得し、
+         このサイト（GitHub Pages）ではサーバーが無いので下の5問をそのまま使う。 -->
+    <script>
+      const isGasHosted = (typeof google !== 'undefined' && google.script);
+      if (typeof google === 'undefined') {
+        const mockProblems = [
+          { id: 1, graphFn: "x^2 - 3", displayFn: "y = x^2 - 3", ansX: 0, ansY: -3 },
+          { id: 2, graphFn: "-2 * x^2 - 1", displayFn: "y = -2x^2 - 1", ansX: 0, ansY: -1 },
+          { id: 3, graphFn: "(x - 2)^2 + 1", displayFn: "y = (x - 2)^2 + 1", ansX: 2, ansY: 1 },
+          { id: 4, graphFn: "-(x + 1)^2 - 2", displayFn: "y = -(x + 1)^2 - 2", ansX: -1, ansY: -2 },
+          { id: 5, graphFn: "2 * (x - 1)^2 - 4", displayFn: "y = 2(x - 1)^2 - 4", ansX: 1, ansY: -4 }
+        ];
+
+        window.google = {
+          script: {
+            run: {
+              withSuccessHandler: function(func) { this.successHandler = func; return this; },
+              withFailureHandler: function(func) { this.failureHandler = func; return this; },
+              getProblemData: function() {
+                setTimeout(() => { if (this.successHandler) this.successHandler(mockProblems); }, 500);
+              },
+              saveResult: function(name, score, time, detail) {
+                console.log("【送信データ】", name, score, time, detail);
+                setTimeout(() => { if (this.successHandler) this.successHandler("保存しました (Preview)"); }, 1000);
+              }
+            }
+          }
+        };
+      }
+    </script>
+
+    <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-6">
+      <h1 class="text-xl font-bold text-center text-gray-800 mb-4">2次関数のグラフ演習 (5問)</h1>
+
+      <!-- 1. スタート画面 -->
+      <div id="start-screen">
+        <label class="block mb-2 text-sm font-medium text-gray-700">氏名を入力してください</label>
+        <input type="text" id="student-name" class="w-full p-3 border border-gray-300 rounded-lg mb-6" placeholder="例：山田 太郎">
+        
+        <p class="text-sm font-bold text-gray-600 mb-2 text-center">モードを選択して開始（タイムを計測します）</p>
+        <div class="space-y-3">
+          <button onclick="startGame('graph')" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2">
+            <span>📈</span> グラフを見て答える
+          </button>
+          <button onclick="startGame('text')" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2">
+            <span>📝</span> 式を見て答える (グラフなし)
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. 問題画面 -->
+      <div id="quiz-screen" class="hidden">
+        <div class="flex justify-between items-center mb-4">
+          <span class="text-sm font-bold text-gray-500">第 <span id="q-num">1</span>/5 問</span>
+          <span id="mode-badge" class="text-xs font-bold bg-gray-100 px-2 py-1 rounded text-gray-600"></span>
+        </div>
+        
+        <div id="graph-container" class="mb-6 hidden">
+          <div id="graph" class="border border-gray-200"></div>
+        </div>
+        
+        <div id="equation-container" class="mb-6 hidden py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+          <p class="text-center text-sm text-gray-500 mb-2">次の2次関数の頂点は？</p>
+          <div id="equation-display" class="text-center text-2xl font-mono text-blue-800 font-bold"></div>
+        </div>
+
+        <div class="bg-blue-50 p-4 rounded-lg mb-4">
+          <p class="text-center text-sm mb-2 font-bold text-gray-700">頂点の座標 (x, y)</p>
+          <div class="flex items-center justify-center gap-2">
+            <span class="text-xl">(</span>
+            <input type="number" id="ans-x" class="w-20 p-2 text-center border border-gray-300 rounded shadow-inner" placeholder="x">
+            <span class="text-xl">,</span>
+            <input type="number" id="ans-y" class="w-20 p-2 text-center border border-gray-300 rounded shadow-inner" placeholder="y">
+            <span class="text-xl">)</span>
+          </div>
+        </div>
+
+        <button onclick="checkAnswer()" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 shadow-md">回答する</button>
+        <div id="feedback" class="mt-3 text-center font-bold h-6"></div>
+      </div>
+
+      <!-- 3. 結果画面 -->
+      <div id="result-screen" class="hidden text-center">
+        <h2 class="text-2xl font-bold mb-4">演習終了！</h2>
+        
+        <div class="bg-gray-50 p-4 rounded-lg mb-6 text-left inline-block w-full">
+          <p class="text-sm text-gray-500 mb-1">スコア</p>
+          <p class="text-3xl font-bold text-red-600 mb-4 border-b pb-2"><span id="final-score"></span> / 5 点</p>
+          
+          <p class="text-sm text-gray-500 mb-1">かかった時間</p>
+          <p class="text-2xl font-bold text-gray-800" id="final-time"></p>
+        </div>
+
+        <!-- 提出用コピーエリア (新規追加) -->
+        <div class="w-full bg-gray-100 p-4 rounded-lg border border-gray-300 mb-6 text-left">
+          <p class="text-xs font-bold text-gray-500 mb-2 flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+            提出用テキスト（コピーして提出）
+          </p>
+          <textarea id="copy-text" class="w-full h-24 p-2 text-xs border rounded mb-2 bg-white font-mono" readonly onclick="this.select()"></textarea>
+          <button onclick="copyToClipboard()" class="w-full bg-gray-700 text-white font-bold py-2 rounded hover:bg-gray-800 text-sm flex items-center justify-center gap-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+            クリップボードにコピー
+          </button>
+          <p id="copy-msg" class="text-center text-xs text-green-600 font-bold mt-2 h-4"></p>
+        </div>
+
+        <!-- 提出方法の案内（このサイト版では結果は自動送信されません） -->
+        <div id="saving-status" class="py-2 px-4 rounded bg-yellow-50 text-yellow-800 text-xs mb-4">
+          <p id="saving-msg" class="font-bold">
+            結果は自動では送信されません。上の「提出用テキスト」をコピーして提出してください。
+          </p>
+        </div>
+
+        <button onclick="location.reload()" class="mt-2 text-blue-500 underline hover:text-blue-700 text-sm">もう一度挑戦する</button>
+      </div>
+    </div>
+
+    <script>
+      let problems = [];
+      let currentIdx = 0;
+      let score = 0;
+      let studentName = "";
+      let answersLog = []; 
+      let isGraphMode = true;
+      let startTime;
+
+      // 初期化
+      google.script.run.withSuccessHandler(data => {
+        problems = data;
+      }).getProblemData();
+
+      function startGame(mode) {
+        const nameInput = document.getElementById('student-name').value;
+        if (!nameInput) {
+          alert("氏名を入力してください");
+          return;
+        }
+        studentName = nameInput;
+        isGraphMode = (mode === 'graph');
+        startTime = new Date();
+
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        
+        const badge = document.getElementById('mode-badge');
+        badge.innerText = isGraphMode ? "グラフモード" : "計算モード";
+        badge.className = isGraphMode 
+          ? "text-xs font-bold bg-blue-100 text-blue-800 px-2 py-1 rounded" 
+          : "text-xs font-bold bg-indigo-100 text-indigo-800 px-2 py-1 rounded";
+
+        showProblem();
+      }
+
+      function showProblem() {
+        const p = problems[currentIdx];
+        document.getElementById('q-num').innerText = currentIdx + 1;
+        document.getElementById('ans-x').value = '';
+        document.getElementById('ans-y').value = '';
+        document.getElementById('feedback').innerText = '';
+
+        const graphContainer = document.getElementById('graph-container');
+        const eqContainer = document.getElementById('equation-container');
+        const eqDisplay = document.getElementById('equation-display');
+
+        if (isGraphMode) {
+          graphContainer.classList.remove('hidden');
+          eqContainer.classList.add('hidden');
+          try {
+            functionPlot({
+              target: '#graph',
+              width: 350, 
+              height: 300,
+              yAxis: { domain: [-6, 6] },
+              xAxis: { domain: [-6, 6] },
+              grid: true,
+              data: [{ fn: p.graphFn, color: 'red' }]
+            });
+          } catch(e) { console.error(e); }
+        } else {
+          graphContainer.classList.add('hidden');
+          eqContainer.classList.remove('hidden');
+          eqDisplay.innerText = p.displayFn || "式データなし";
+        }
+      }
+
+      function checkAnswer() {
+        const p = problems[currentIdx];
+        const userX = parseInt(document.getElementById('ans-x').value);
+        const userY = parseInt(document.getElementById('ans-y').value);
+
+        if (isNaN(userX) || isNaN(userY)) {
+          alert("数字を入力してください");
+          return;
+        }
+
+        const isCorrect = (userX === p.ansX && userY === p.ansY);
+        const feedback = document.getElementById('feedback');
+
+        if (isCorrect) {
+          score++;
+          feedback.innerHTML = '<span class="text-green-600 text-xl">◎ 正解！</span>';
+        } else {
+          feedback.innerHTML = `<span class="text-red-600">× 不正解 (正解: ${p.ansX}, ${p.ansY})</span>`;
+        }
+        
+        const modeStr = isGraphMode ? "(Graph)" : "(Text)";
+        answersLog.push(`問${currentIdx+1}: ${isCorrect ? "O" : "X"}`);
+
+        setTimeout(() => {
+          currentIdx++;
+          if (currentIdx < problems.length) {
+            showProblem();
+          } else {
+            finishGame();
+          }
+        }, 1500);
+      }
+
+      function finishGame() {
+        const endTime = new Date();
+        const diff = Math.floor((endTime - startTime) / 1000);
+        const min = Math.floor(diff / 60);
+        const sec = diff % 60;
+        const timeStr = `${min}分${sec}秒`;
+
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+        
+        document.getElementById('final-score').innerText = score;
+        document.getElementById('final-time').innerText = timeStr;
+
+        // 提出用テキスト生成
+        const now = new Date();
+        const dateStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes()}`;
+        const summary = `【2次関数グラフ演習 結果】\n氏名: ${studentName}\n日時: ${dateStr}\n得点: ${score} / ${problems.length} 点\n時間: ${timeStr}\n詳細: ${answersLog.join(", ")}`;
+        
+        document.getElementById('copy-text').value = summary;
+
+        // Google Apps Script 上で動かす場合のみ、結果をサーバーへ自動保存する。
+        // このサイト（GitHub Pages）ではサーバーが無いため、提出用テキストのコピーで提出してもらう。
+        if (typeof isGasHosted !== 'undefined' && isGasHosted) {
+          google.script.run.withSuccessHandler(res => {
+            const statusDiv = document.getElementById('saving-status');
+            const msgP = document.getElementById('saving-msg');
+            statusDiv.classList.remove('bg-yellow-50', 'text-yellow-800');
+            statusDiv.classList.add('bg-green-100', 'text-green-800');
+            msgP.innerHTML = '✅ 自動保存完了';
+          }).withFailureHandler(err => {
+            document.getElementById('saving-msg').innerText = "自動保存エラー";
+          }).saveResult(studentName, score, timeStr, JSON.stringify(answersLog));
+        }
+      }
+
+      function copyToClipboard() {
+        const copyText = document.getElementById("copy-text");
+        copyText.select();
+        // モバイル対応のため範囲指定
+        copyText.setSelectionRange(0, 99999); 
+        
+        try {
+          document.execCommand("copy");
+          const msg = document.getElementById('copy-msg');
+          msg.innerText = "コピーしました！ ドキュメント等に貼り付けてください";
+          setTimeout(() => msg.innerText = "", 3000);
+        } catch (e) {
+          alert("コピーに失敗しました。テキストを選択して手動でコピーしてください。");
+        }
+      }
+    </script>
+  </body>
+</html>

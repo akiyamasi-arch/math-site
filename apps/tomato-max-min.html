@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>トマト収穫量最大化シミュレーター</title>
+    
+    <!-- Tailwind CSS (デザイン用) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM (アプリの動作基盤)
+         生徒の端末での読み込みを軽くするため、開発版ではなく本番版(production.min)をバージョン固定で使用 -->
+    <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel (ブラウザでReactを動かすための翻訳機) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- アイコン素材 (Inline SVGs) ---
+        const Sprout = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/></svg>
+        );
+        const ArrowRight = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        );
+        const AlertTriangle = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        );
+        const CheckCircle = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        );
+        const HelpCircle = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        );
+
+        // --- メインアプリ ---
+        const TomatoApp = () => {
+            const [stage, setStage] = useState('intro'); // intro, free, restricted, quiz, summary
+            const [fertilizer, setFertilizer] = useState(0); // x value
+            const [showHint, setShowHint] = useState(false);
+            const [feedback, setFeedback] = useState('');
+
+            // 数学関数: y = -2(x - 4)^2 + 32
+            const calculateYield = (x) => {
+                return -2 * Math.pow(x - 4, 2) + 32;
+            };
+
+            const currentYield = calculateYield(fertilizer);
+            
+            // ステージ変更時にスライダーをリセット
+            useEffect(() => {
+                if (stage === 'free') setFertilizer(1);
+                if (stage === 'restricted') setFertilizer(1);
+                setFeedback('');
+                setShowHint(false);
+            }, [stage]);
+
+            // 制限なしモードの判定
+            const checkFreeMode = () => {
+                if (Math.abs(fertilizer - 4) < 0.2) {
+                    setFeedback('正解！ここがグラフの「頂点」です。最高の収穫量ですね！');
+                } else {
+                    setFeedback('まだ収穫量を増やせそうです。グラフの「一番高いところ」を探そう。');
+                }
+            };
+
+            // 制限ありモード（3kg以下）の判定
+            const checkRestrictedMode = () => {
+                if (Math.abs(fertilizer - 3) < 0.2) {
+                    setFeedback('大正解！使っていい範囲（定義域）の中で、ここが一番高い場所（最大値）です。');
+                } else if (fertilizer > 3) {
+                    setFeedback('警告：3kgを超えています！ルール違反（定義域の外）です。');
+                } else {
+                    setFeedback('ルール内ですが、まだ肥料を増やせば収穫量は上がりそうです。');
+                }
+            };
+
+            // グラフ描画コンポーネント
+            const GraphCanvas = ({ restricted }) => {
+                const canvasRef = useRef(null);
+
+                useEffect(() => {
+                    const canvas = canvasRef.current;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Canvasのサイズ設定（高解像度対応）
+                    const dpr = window.devicePixelRatio || 1;
+                    const rect = canvas.getBoundingClientRect();
+                    canvas.width = rect.width * dpr;
+                    canvas.height = rect.height * dpr;
+                    ctx.scale(dpr, dpr);
+                    
+                    const width = rect.width;
+                    const height = rect.height;
+
+                    // クリア
+                    ctx.clearRect(0, 0, width, height);
+
+                    // 座標変換 (x: 0-8 を幅に, y: 0-40 を高さにマッピング)
+                    const mapX = (x) => (x / 8) * width;
+                    const mapY = (y) => height - (y / 40) * height;
+
+                    // グリッド描画
+                    ctx.strokeStyle = '#e5e7eb';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    for(let i=0; i<=8; i++) {
+                        ctx.moveTo(mapX(i), 0);
+                        ctx.lineTo(mapX(i), height);
+                    }
+                    for(let i=0; i<=40; i+=10) {
+                        ctx.moveTo(0, mapY(i));
+                        ctx.lineTo(width, mapY(i));
+                    }
+                    ctx.stroke();
+
+                    // 使用禁止エリアの描画
+                    if (restricted) {
+                        ctx.fillStyle = 'rgba(239, 68, 68, 0.1)';
+                        ctx.fillRect(mapX(3), 0, width - mapX(3), height);
+                        ctx.strokeStyle = '#ef4444';
+                        ctx.beginPath();
+                        ctx.moveTo(mapX(3), 0);
+                        ctx.lineTo(mapX(3), height);
+                        ctx.stroke();
+                        
+                        ctx.fillStyle = '#ef4444';
+                        ctx.font = '12px sans-serif';
+                        ctx.fillText('使用禁止エリア (x > 3)', mapX(3.2), mapY(35));
+                    }
+
+                    // 放物線の描画
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#10b981';
+                    ctx.lineWidth = 3;
+                    for (let x = 0; x <= 8; x += 0.1) {
+                        const y = -2 * Math.pow(x - 4, 2) + 32;
+                        if (x === 0) ctx.moveTo(mapX(x), mapY(y));
+                        else ctx.lineTo(mapX(x), mapY(y));
+                    }
+                    ctx.stroke();
+
+                    // 現在地点の描画
+                    ctx.beginPath();
+                    ctx.fillStyle = restricted && fertilizer > 3 ? '#ef4444' : '#f59e0b';
+                    ctx.arc(mapX(fertilizer), mapY(currentYield), 6, 0, 2 * Math.PI);
+                    ctx.fill();
+                    
+                    // 頂点のヒント（ゴースト）描画
+                    ctx.beginPath();
+                    ctx.fillStyle = '#9ca3af';
+                    ctx.arc(mapX(4), mapY(32), 4, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.fillStyle = '#6b7280';
+                    ctx.font = '10px sans-serif';
+                    ctx.fillText('本来の頂点', mapX(4.1), mapY(33));
+
+                }, [fertilizer, restricted]);
+
+                return <canvas ref={canvasRef} style={{width: '100%', height: '200px'}} className="w-full border border-gray-200 rounded bg-white shadow-sm" />;
+            };
+
+            return (
+                <div className="max-w-md mx-auto bg-slate-50 min-h-screen font-sans text-slate-800 pb-10">
+                    {/* ヘッダー */}
+                    <header className="bg-green-600 text-white p-4 shadow-md">
+                        <h1 className="text-xl font-bold flex items-center gap-2">
+                            <Sprout /> トマト収穫シミュレーター
+                        </h1>
+                        <p className="text-xs opacity-90">数学I：2次関数の最大・最小</p>
+                    </header>
+
+                    {/* メインコンテンツ */}
+                    <main className="p-4">
+                        
+                        {/* STAGE: INTRO */}
+                        {stage === 'intro' && (
+                            <div className="space-y-6">
+                                <div className="bg-white p-6 rounded-lg shadow border-l-4 border-green-500">
+                                    <h2 className="text-lg font-bold mb-2">新人農家のみなさんへ</h2>
+                                    <p className="mb-4">
+                                        トマト栽培において、肥料の量と収穫量の関係は以下の式で表されます。
+                                    </p>
+                                    <div className="bg-slate-100 p-3 rounded text-center font-mono text-lg font-bold text-slate-700">
+                                        y = -2(x - 4)² + 32
+                                    </div>
+                                    <ul className="mt-4 text-sm list-disc list-inside text-slate-600">
+                                        <li>x : 肥料の量 (kg)</li>
+                                        <li>y : 予想収穫量 (トン)</li>
+                                    </ul>
+                                </div>
+                                <button 
+                                    onClick={() => setStage('free')}
+                                    className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow"
+                                >
+                                    シミュレーション開始 <ArrowRight />
+                                </button>
+                            </div>
+                        )}
+
+                        {/* STAGE: FREE MODE & RESTRICTED MODE */}
+                        {(stage === 'free' || stage === 'restricted') && (
+                            <div className="space-y-4">
+                                
+                                {/* 数式表示エリア (追加部分) */}
+                                <div className="bg-slate-100 p-3 rounded-lg text-center border border-slate-200">
+                                    <span className="text-xs text-slate-500 font-bold block mb-1 uppercase tracking-wider">現在のモデル式</span>
+                                    <span className="font-mono text-xl font-bold text-slate-700 tracking-wide">
+                                        y = -2(x - 4)² + 32
+                                    </span>
+                                </div>
+
+                                {/* ステータスバー */}
+                                <div className="flex justify-between items-end bg-white p-4 rounded-lg shadow-sm">
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-400 block uppercase">肥料投入量 (x)</label>
+                                        <span className="text-2xl font-bold text-slate-700">{fertilizer.toFixed(1)}</span>
+                                        <span className="text-sm ml-1">kg</span>
+                                    </div>
+                                    <div className="text-right">
+                                        <label className="text-xs font-bold text-slate-400 block uppercase">予想収穫量 (y)</label>
+                                        <span className={`text-3xl font-bold ${currentYield < 0 ? 'text-red-500' : 'text-green-600'}`}>
+                                            {currentYield.toFixed(1)}
+                                        </span>
+                                        <span className="text-sm ml-1">t</span>
+                                    </div>
+                                </div>
+
+                                {/* シナリオメッセージ */}
+                                <div className={`p-3 rounded-lg text-sm border ${stage === 'free' ? 'bg-blue-50 border-blue-200 text-blue-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
+                                    {stage === 'free' ? (
+                                        <p><strong>【ミッション1】</strong> 肥料は何kgでも使えます。収穫量が「最大」になる肥料の量を探してください。</p>
+                                    ) : (
+                                        <p className="flex items-start gap-2">
+                                            <span className="shrink-0 pt-0.5"><AlertTriangle /></span>
+                                            <span>
+                                                <strong>【緊急ミッション】</strong> 環境条例により、肥料は「3.0kg以下」しか使えなくなりました！(定義域: 0 ≦ x ≦ 3)。このルールの中で最大の収穫を目指してください。
+                                            </span>
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* グラフ描画 */}
+                                <GraphCanvas restricted={stage === 'restricted'} />
+
+                                {/* 操作パネル */}
+                                <div className="bg-white p-4 rounded-lg shadow-sm">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        肥料の量を調整:
+                                    </label>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="8"
+                                        step="0.1"
+                                        value={fertilizer}
+                                        onChange={(e) => setFertilizer(parseFloat(e.target.value))}
+                                        className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${stage === 'restricted' && fertilizer > 3 ? 'bg-red-200 accent-red-500' : 'bg-green-200 accent-green-600'}`}
+                                    />
+                                    <div className="flex justify-between text-xs text-gray-400 mt-1">
+                                        <span>0kg</span>
+                                        <span>4kg</span>
+                                        <span>8kg</span>
+                                    </div>
+                                </div>
+
+                                {/* フィードバックとアクション */}
+                                <div className="space-y-3">
+                                    <button
+                                        onClick={stage === 'free' ? checkFreeMode : checkRestrictedMode}
+                                        className="w-full bg-slate-800 text-white py-2 rounded-lg font-bold hover:bg-slate-700 transition"
+                                    >
+                                        これで決定する
+                                    </button>
+
+                                    {feedback && (
+                                        <div className={`p-3 rounded text-sm font-bold ${feedback.includes('正解') ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}>
+                                            {feedback}
+                                        </div>
+                                    )}
+
+                                    {/* AIヒントボタン */}
+                                    <button 
+                                        onClick={() => setShowHint(!showHint)}
+                                        className="flex items-center justify-center gap-2 text-sm text-blue-600 hover:text-blue-800 mx-auto w-full py-2"
+                                    >
+                                        <HelpCircle /> AIパートナーにヒントを聞く
+                                    </button>
+
+                                    {showHint && (
+                                        <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-800 border border-blue-200">
+                                            <p className="font-bold mb-1">🤖 AIパートナーからのアドバイス:</p>
+                                            {stage === 'free' ? (
+                                                <p>グラフの形を見て！山の一番高いところ（頂点）はどこかな？グラフは x=4 で左右対称になっているよ。</p>
+                                            ) : (
+                                                <p>
+                                                    本来の頂点は x=4 だよね。でも今は「3kgまで」という壁がある。<br/>
+                                                    グラフの山に登りたいけど、3kgの地点で「立ち入り禁止」の柵があると思って。<br/>
+                                                    柵の手前ギリギリが一番高い場所にならないかな？
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* 次のステージへ */}
+                                {feedback.includes('正解') && (
+                                    <button 
+                                        onClick={() => setStage(stage === 'free' ? 'restricted' : 'quiz')}
+                                        className="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow-lg mt-4 animate-bounce"
+                                    >
+                                        次のステージへ進む <span className="inline-block ml-1 align-middle"><ArrowRight /></span>
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
+                        {/* STAGE: QUIZ */}
+                        {stage === 'quiz' && (
+                            <div className="space-y-6">
+                                <h2 className="text-xl font-bold text-center">最終確認テスト</h2>
+                                
+                                <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                                    <p className="font-bold mb-4">Q. 定義域（変域）の中に、グラフの頂点が含まれていないとき、最大値・最小値はどこになりますか？</p>
+                                    
+                                    <div className="space-y-3">
+                                        <button onClick={() => setFeedback('wrong')} className="w-full text-left p-3 border rounded hover:bg-slate-50 transition">
+                                            A. 必ず頂点になる
+                                        </button>
+                                        <button onClick={() => setFeedback('correct')} className="w-full text-left p-3 border rounded hover:bg-slate-50 transition">
+                                            B. 定義域の端っこ（端点）のどちらかになる
+                                        </button>
+                                        <button onClick={() => setFeedback('wrong')} className="w-full text-left p-3 border rounded hover:bg-slate-50 transition">
+                                            C. 常に0になる
+                                        </button>
+                                    </div>
+
+                                    {feedback === 'correct' && (
+                                        <div className="mt-4 p-3 bg-green-100 text-green-800 rounded">
+                                            <p className="font-bold flex items-center gap-2"><CheckCircle /> 正解！</p>
+                                            <p className="text-sm mt-1">頂点が使えないときは、範囲の「端っこ」を調べることが重要です。これを農業経営に置き換えると、「予算やルールの限界ギリギリ」を狙う戦略になります。</p>
+                                        </div>
+                                    )}
+                                    {feedback === 'wrong' && (
+                                        <div className="mt-4 p-3 bg-red-100 text-red-800 rounded">
+                                            <p className="font-bold">惜しい！</p>
+                                            <p className="text-sm">さっきのシミュレーションを思い出して。頂点(4kg)が使えないとき、どこが一番高かった？</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {feedback === 'correct' && (
+                                    <button 
+                                        onClick={() => setStage('summary')}
+                                        className="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow"
+                                    >
+                                        結果を見る
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
+                        {/* STAGE: SUMMARY */}
+                        {stage === 'summary' && (
+                            <div className="text-center space-y-6">
+                                <div className="bg-white p-8 rounded-lg shadow-lg border-t-4 border-green-500">
+                                    <div className="inline-block p-4 bg-green-100 rounded-full mb-4">
+                                        <Sprout />
+                                    </div>
+                                    <h2 className="text-2xl font-bold mb-2 text-slate-800">学習完了！</h2>
+                                    <p className="text-slate-600 mb-6">
+                                        あなたは「2次関数の定義域付き最大値」<br/>
+                                        の概念をマスターしました。
+                                    </p>
+                                    
+                                    <div className="bg-slate-50 p-4 rounded text-left text-sm space-y-2 text-slate-700">
+                                        <p>✅ <strong>頂点</strong>：理想の最大値ポイント</p>
+                                        <p>✅ <strong>定義域</strong>：現実の制限（予算、法律など）</p>
+                                        <p>✅ <strong>端点</strong>：制限がある場合の現実的な最適解</p>
+                                    </div>
+                                </div>
+
+                                <button 
+                                    onClick={() => setStage('intro')}
+                                    className="text-slate-500 underline text-sm hover:text-slate-800"
+                                >
+                                    最初からやり直す
+                                </button>
+                            </div>
+                        )}
+
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<TomatoApp />);
+    </script>
+</body>
+</html>
