@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>2次関数の最大値・最小値</title>
+  
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: {
+        fontCache: 'global'
+      },
+      startup: {
+        typeset: false // 初期化時の自動変換を停止し、手動で制御
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    /* ベーススタイル */
+    :root {
+      --primary-color: #2c3e50;
+      --accent-color: #3498db;
+      --text-color: #333;
+      --bg-color: #f4f6f9;
+    }
+    body {
+      margin: 0;
+      font-family: "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* スライド表示エリア */
+    #slide-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+    }
+
+    .slide {
+      background: white;
+      width: 100%;
+      max-width: 960px;
+      height: 100%;
+      max-height: 600px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      padding: 40px;
+      box-sizing: border-box;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      animation: fadeIn 0.5s ease;
+      overflow-y: auto;
+    }
+
+    .slide.active {
+      display: flex;
+    }
+
+    /* コンテンツスタイル */
+    h1 {
+      font-size: 2.5rem;
+      color: var(--primary-color);
+      border-bottom: 3px solid var(--accent-color);
+      padding-bottom: 10px;
+      margin-bottom: 30px;
+    }
+    h2 { font-size: 1.8rem; color: var(--accent-color); margin-bottom: 20px; }
+    p, li { font-size: 1.4rem; line-height: 1.8; margin-bottom: 15px; }
+    ul { padding-left: 40px; }
+    
+    .example-box {
+      background-color: #e8f4fd;
+      border-left: 5px solid var(--accent-color);
+      padding: 15px;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    
+    /* コントロールバー */
+    #controls {
+      background: white;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    }
+    
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1.2rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover { background-color: var(--accent-color); }
+    button:disabled { background-color: #ccc; cursor: not-allowed; }
+
+    #progress-container {
+      flex-grow: 1;
+      margin: 0 20px;
+      background-color: #ddd;
+      height: 10px;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    #progress-bar {
+      height: 100%;
+      background-color: var(--accent-color);
+      width: 0%;
+      transition: width 0.3s;
+    }
+    
+    #page-number { font-weight: bold; min-width: 60px; text-align: center;}
+
+    /* クイズ用 */
+    .quiz-options button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      background-color: white;
+      color: var(--text-color);
+      border: 2px solid var(--primary-color);
+      text-align: left;
+    }
+    .quiz-options button:hover {
+      background-color: #f0f0f0;
+    }
+    .correct { background-color: #d4edda !important; border-color: #28a745 !important; }
+    .incorrect { background-color: #f8d7da !important; border-color: #dc3545 !important; }
+
+    /* 提出フォーム */
+    .submit-area {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      display: inline-block;
+      text-align: left;
+    }
+    .submit-area input {
+      padding: 10px;
+      font-size: 1.2rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      width: 200px;
+      margin-right: 10px;
+    }
+    .submit-area label { display: block; margin-bottom: 5px; font-weight: bold; }
+    .status-msg { margin-top: 10px; font-weight: bold; height: 1.5rem; }
+
+    /* ヒント（グラフ） */
+    .hint-area { margin-top: 15px; text-align: center; }
+    .hint-btn { background-color: #f39c12; padding: 8px 16px; }
+    #hint-canvas {
+      background-color: #fff;
+      border: 1px solid #ccc;
+      margin-top: 10px;
+      display: none;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="slide-container"></div>
+
+  <div id="controls">
+    <button id="prev-btn" onclick="prevSlide()">◀ 前へ</button>
+    <div id="page-number">1 / 7</div>
+    <div id="progress-container">
+      <div id="progress-bar"></div>
+    </div>
+    <button id="next-btn" onclick="nextSlide()">次へ ▶</button>
+  </div>
+
+  <script>
+    // --- 授業データ (バックスラッシュを2つ重ねて記述) ---
+    const slidesData = [
+      // 1. 表紙
+      `<h1>2次関数の最大値・最小値</h1>
+       <p style="font-size: 1.5rem; text-align: center;">数学I No.32〜34</p>
+       <div style="text-align: center; margin-top: 50px;">
+         <p>キーボードの矢印キー（← →）でも操作できます。</p>
+       </div>`,
+
+      // 2. 目標
+      `<h1>今日の学習目標</h1>
+       <ul>
+         <li>2次関数のグラフを描き、最大値・最小値を視覚的に理解する。</li>
+         <li>平方完成を用いて、計算で頂点を求める。</li>
+         <li>定義域（範囲）がある場合の最大・最小を判断できるようになる。</li>
+       </ul>`,
+
+      // 3. 基本
+      `<h1>1. 基本的な考え方</h1>
+       <p>一番高いところが「最大値」、一番低いところが「最小値」です。</p>
+       <div class="example-box">
+         例：$y = -(x-1)^2 + 2$<br>
+         <ul>
+            <li>グラフは「上に凸」</li>
+            <li>頂点は $(1, 2)$</li>
+         </ul>
+       </div>
+       <p>グラフの一番上は頂点なので、<br>
+       <strong>$x=1$ で 最大値 $2$</strong> をとる。<br>
+       （下はずっと続くので、最小値は「なし」）</p>`,
+
+      // 4. 平方完成 (矢印記号などを \\rightarrow と修正)
+      `<h1>2. 式の変形（平方完成）</h1>
+       <p>一般形 $y=ax^2+bx+c$ は、頂点がわかる形に変形します。</p>
+       <div class="example-box">
+         例：$y = x^2 - 4x + 1$
+       </div>
+       <p>① $x$の係数の半分を考える $\\rightarrow (x-2)^2$<br>
+       ② 余分な2乗を引く $\\rightarrow (x-2)^2 - 2^2 + 1$<br>
+       ③ 整理する $\\rightarrow y=(x-2)^2 - 3$</p>
+       <p>よって頂点は $(2, -3)$。<br>
+       下に凸なので、<strong>$x=2$ で 最小値 $-3$</strong>。</p>`,
+
+      // 5. 定義域あり (不等号などを \\leqq, 空白を \\quad と修正)
+      `<h1>3. 定義域がある場合</h1>
+       <p>変域（定義域）が決まっている時は、<strong>「頂点」と「両端」</strong>をチェックします。</p>
+       <div class="example-box">
+         例：$y = (x-1)^2 + 2 \\quad (-1 \\leqq x \\leqq 2)$
+       </div>
+       <ul>
+         <li>$x=-1$ のとき：$y=(-2)^2+2 = 6$</li>
+         <li>$x=1$ (頂点) のとき：$y=2$</li>
+         <li>$x=2$ のとき：$y=1^2+2 = 3$</li>
+       </ul>
+       <p>よって、<strong>最大値 6 ($x=-1$)、最小値 2 ($x=1$)</strong></p>`,
+
+      // 6. まとめ
+      `<h1>本日のまとめ</h1>
+       <ol>
+         <li>グラフの形（上に凸か下に凸か）を確認する。</li>
+         <li>平方完成をして、頂点の座標を求める。</li>
+         <li>定義域がある場合は、必ずグラフを描いて「範囲内の最も上と下」を探す。</li>
+       </ol>
+       <p style="text-align: center; margin-top: 40px; font-weight: bold; color: var(--accent-color);">
+         次は確認テストです（ランダム5問）
+       </p>`,
+
+      // 7. クイズ開始画面
+      `<div style="text-align: center;">
+         <h1>復習クイズ</h1>
+         <p>今日の内容からランダムに5問出題します。</p>
+         <button onclick="startQuiz()" style="font-size: 2rem; padding: 20px 40px; margin-top: 30px;">
+           クイズを始める
+         </button>
+       </div>`
+    ];
+
+    // --- クイズデータ (数式対応) ---
+    const quizPool = [
+      { 
+        q: "$y = (x-2)^2 + 3$ の頂点の座標は？", 
+        a: ["$(2, 3)$", "$(-2, 3)$", "$(2, -3)$", "$(-2, -3)$"], 
+        correct: 0,
+        graph: { a: 1, p: 2, q: 3 } 
+      },
+      { 
+        q: "$y = -x^2$ のグラフの形は？", 
+        a: ["上に凸（山型）", "下に凸（谷型）", "直線", "円"], 
+        correct: 0,
+        graph: { a: -1, p: 0, q: 0 }
+      },
+      { 
+        q: "$y = (x-1)^2 + 2$ の最小値は？", 
+        a: ["$2$", "$1$", "なし", "$-1$"], 
+        correct: 0,
+        graph: { a: 1, p: 1, q: 2 }
+      },
+      { 
+        q: "$y = -(x+1)^2 + 5$ の最大値は？", 
+        a: ["$5$", "$-1$", "なし", "$1$"], 
+        correct: 0,
+        graph: { a: -1, p: -1, q: 5 }
+      },
+      { 
+        q: "$y = x^2 - 6x + 5$ を平方完成すると？", 
+        a: ["$(x-3)^2 - 4$", "$(x-3)^2 + 5$", "$(x+3)^2 - 4$", "$(x-6)^2 + 5$"], 
+        correct: 0,
+        graph: { a: 1, p: 3, q: -4 } 
+      },
+      { 
+        q: "定義域がある場合、最大・最小を調べるために確認すべき点は？", 
+        a: ["頂点と定義域の両端", "頂点のみ", "定義域の両端のみ", "x=0の地点"], 
+        correct: 0
+      },
+      { 
+        q: "$y = 2(x+1)^2 - 4$ の軸の方程式は？", 
+        a: ["$x = -1$", "$x = 1$", "$x = -4$", "$x = 2$"], 
+        correct: 0,
+        graph: { a: 2, p: -1, q: -4 }
+      },
+      { 
+        q: "$y = x^2 \\quad (-2 \\leqq x \\leqq 1)$ の最大値は？", 
+        a: ["$4$ ($x=-2$の時)", "$1$ ($x=1$の時)", "$0$ ($x=0$の時)", "なし"], 
+        correct: 0,
+        graph: { a: 1, p: 0, q: 0, range: [-2, 1] }
+      }
+    ];
+
+    let currentSlide = 0;
+    let quizMode = false;
+    let currentQuizIndex = 0;
+    let selectedQuestions = [];
+    let score = 0;
+
+    const container = document.getElementById('slide-container');
+    const progressBar = document.getElementById('progress-bar');
+    const pageNumDisplay = document.getElementById('page-number');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+
+    // 初期化（ページ読み込み完了後に実行）
+    window.onload = function() {
+      init();
+    };
+
+    function init() {
+      renderSlide();
+      updateControls();
+      
+      document.addEventListener('keydown', (e) => {
+        if (!quizMode) {
+          if (e.key === 'ArrowRight' || e.key === 'Space') nextSlide();
+          if (e.key === 'ArrowLeft') prevSlide();
+        }
+      });
+    }
+
+    // 数式描画処理 (MathJax)
+    function renderMath() {
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        MathJax.typesetPromise([container]).catch((err) => console.log('MathJax Error:', err));
+      }
+    }
+
+    // スライド描画
+    function renderSlide() {
+      if (quizMode) return;
+      container.innerHTML = `<div class="slide active">${slidesData[currentSlide]}</div>`;
+      renderMath();
+    }
+
+    function nextSlide() {
+      if (currentSlide < slidesData.length - 1) {
+        currentSlide++;
+        renderSlide();
+        updateControls();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        renderSlide();
+        updateControls();
+      }
+    }
+
+    function updateControls() {
+      pageNumDisplay.textContent = `${currentSlide + 1} / ${slidesData.length}`;
+      const percentage = ((currentSlide + 1) / slidesData.length) * 100;
+      progressBar.style.width = `${percentage}%`;
+
+      prevBtn.disabled = (currentSlide === 0);
+      nextBtn.disabled = (currentSlide === slidesData.length - 1);
+      
+      if(quizMode) {
+         prevBtn.style.display = 'none';
+         nextBtn.style.display = 'none';
+         pageNumDisplay.textContent = 'Quiz';
+      }
+    }
+
+    // クイズ処理
+    function startQuiz() {
+      quizMode = true;
+      score = 0;
+      currentQuizIndex = 0;
+      selectedQuestions = [...quizPool].sort(() => 0.5 - Math.random()).slice(0, 5);
+      updateControls();
+      renderQuiz();
+    }
+
+    function renderQuiz() {
+      if (currentQuizIndex >= selectedQuestions.length) {
+        showResult();
+        return;
+      }
+      const q = selectedQuestions[currentQuizIndex];
+      const indices = [0, 1, 2, 3].sort(() => 0.5 - Math.random());
+      
+      let optionsHtml = '';
+      indices.forEach(idx => {
+        const isCorrect = (idx === 0); 
+        optionsHtml += `<button onclick="checkAnswer(this, ${isCorrect})">${q.a[idx]}</button>`;
+      });
+
+      let hintHtml = '';
+      if (q.graph) {
+        hintHtml = `
+          <div class="hint-area">
+            <button class="hint-btn" onclick="toggleHint()">💡 ヒント：グラフを見る</button>
+            <canvas id="hint-canvas" width="300" height="200"></canvas>
+          </div>
+        `;
+      }
+
+      const html = `
+        <div class="slide active">
+          <h2>第 ${currentQuizIndex + 1} 問</h2>
+          <p style="font-weight:bold; font-size:1.6rem;">${q.q}</p>
+          <div class="quiz-options">
+            ${optionsHtml}
+          </div>
+          ${hintHtml}
+          <div id="feedback" style="margin-top:20px; font-weight:bold; height: 30px;"></div>
+        </div>
+      `;
+      container.innerHTML = html;
+      renderMath();
+    }
+
+    function checkAnswer(btn, isCorrect) {
+      const buttons = document.querySelectorAll('.quiz-options button');
+      buttons.forEach(b => b.disabled = true);
+      const feedback = document.getElementById('feedback');
+      
+      if (isCorrect) {
+        btn.classList.add('correct');
+        feedback.textContent = "正解！ 素晴らしい！";
+        feedback.style.color = "green";
+        score++;
+      } else {
+        btn.classList.add('incorrect');
+        feedback.textContent = "残念... 次へ進みましょう。";
+        feedback.style.color = "red";
+      }
+      setTimeout(() => {
+        currentQuizIndex++;
+        renderQuiz();
+      }, 2000);
+    }
+
+    function toggleHint() {
+      const canvas = document.getElementById('hint-canvas');
+      if (canvas.style.display === 'block') {
+        canvas.style.display = 'none';
+        return;
+      }
+      canvas.style.display = 'block';
+      const q = selectedQuestions[currentQuizIndex];
+      if (q.graph) drawGraph(canvas, q.graph);
+    }
+
+    function drawGraph(canvas, data) {
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      
+      ctx.clearRect(0, 0, width, height);
+      
+      const scale = 20; 
+      const cx = width / 2;
+      const cy = height / 2;
+      
+      ctx.beginPath();
+      ctx.strokeStyle = '#ccc';
+      ctx.lineWidth = 1;
+      ctx.moveTo(0, cy); ctx.lineTo(width, cy);
+      ctx.moveTo(cx, 0); ctx.lineTo(cx, height);
+      ctx.stroke();
+      
+      ctx.beginPath();
+      ctx.strokeStyle = '#3498db';
+      ctx.lineWidth = 2;
+      
+      let firstPoint = true;
+      for (let pixelX = 0; pixelX <= width; pixelX += 2) {
+        const mathX = (pixelX - cx) / scale;
+        const mathY = data.a * Math.pow(mathX - data.p, 2) + data.q;
+        const pixelY = cy - (mathY * scale);
+        
+        if (data.range) {
+           if (mathX < data.range[0] || mathX > data.range[1]) {
+             firstPoint = true; 
+             continue;
+           }
+        }
+        if (firstPoint) { ctx.moveTo(pixelX, pixelY); firstPoint = false; }
+        else { ctx.lineTo(pixelX, pixelY); }
+      }
+      ctx.stroke();
+
+      const vertexPixelX = cx + (data.p * scale);
+      const vertexPixelY = cy - (data.q * scale);
+      if(vertexPixelX >=0 && vertexPixelX <= width && vertexPixelY >=0 && vertexPixelY <= height) {
+        ctx.beginPath();
+        ctx.fillStyle = 'red';
+        ctx.arc(vertexPixelX, vertexPixelY, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Google Apps Script 上で開かれているかどうか
+    // （GAS上ならサーバーへ直接提出、このサイトでは提出用テキストをコピーして提出する）
+    const isGasHosted = (typeof google !== 'undefined' && google.script);
+
+    function showResult() {
+      const submitArea = isGasHosted ? `
+          <div class="submit-area">
+            <label for="student-name">氏名を入力して提出：</label>
+            <input type="text" id="student-name" placeholder="例：山田 太郎">
+            <button id="submit-btn" onclick="submitData()">先生に提出する</button>
+            <div id="status-msg" class="status-msg"></div>
+          </div>
+      ` : `
+          <div class="submit-area">
+            <label for="student-name">氏名を入力してください：</label>
+            <input type="text" id="student-name" placeholder="例：山田 太郎" oninput="updateCopyText()">
+            <p style="font-size:0.9rem; color:#555; margin-top:15px;">下のテキストをコピーして提出してください。</p>
+            <textarea id="copy-text" readonly onclick="this.select()"
+              style="width:100%; max-width:420px; height:90px; padding:8px; font-family:monospace; font-size:0.85rem; border:1px solid #ccc; border-radius:6px;"></textarea>
+            <button id="submit-btn" onclick="copyResult()">結果をコピーする</button>
+            <div id="status-msg" class="status-msg"></div>
+          </div>
+      `;
+      const html = `
+        <div class="slide active" style="text-align:center;">
+          <h1>結果発表</h1>
+          <p style="font-size: 2rem;">5問中 <span style="color:var(--accent-color); font-size:3rem;">${score}</span> 問正解！</p>
+          ${submitArea}
+          <div style="margin-top: 30px;">
+            <button onclick="location.reload()" style="background-color:#7f8c8d;">最初に戻る</button>
+          </div>
+        </div>
+      `;
+      container.innerHTML = html;
+      if (!isGasHosted) updateCopyText();
+    }
+
+    // 提出用テキストを作る（このサイト版）
+    function updateCopyText() {
+      const area = document.getElementById('copy-text');
+      if (!area) return;
+      const name = (document.getElementById('student-name').value || '').trim();
+      const now = new Date();
+      const dateStr = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+      area.value = `【2次関数 最大・最小の基本 確認テスト】\n氏名: ${name || '（未入力）'}\n日時: ${dateStr}\n得点: ${score} / 5 点`;
+    }
+
+    function copyResult() {
+      const name = (document.getElementById('student-name').value || '').trim();
+      const statusMsg = document.getElementById('status-msg');
+      if (!name) {
+        statusMsg.textContent = "※名前を入力してください";
+        statusMsg.style.color = "red";
+        return;
+      }
+      updateCopyText();
+      const area = document.getElementById('copy-text');
+      area.select();
+      area.setSelectionRange(0, 99999);
+      try {
+        document.execCommand('copy');
+        statusMsg.textContent = "コピーしました！ 提出先に貼り付けてください";
+        statusMsg.style.color = "green";
+      } catch (e) {
+        statusMsg.textContent = "コピーできませんでした。テキストを選んで手動でコピーしてください";
+        statusMsg.style.color = "red";
+      }
+    }
+
+    function submitData() {
+      const nameInput = document.getElementById('student-name');
+      const submitBtn = document.getElementById('submit-btn');
+      const statusMsg = document.getElementById('status-msg');
+      const name = nameInput.value.trim();
+
+      if (!name) {
+        statusMsg.textContent = "※名前を入力してください";
+        statusMsg.style.color = "red";
+        return;
+      }
+      submitBtn.disabled = true;
+      submitBtn.textContent = "送信中...";
+      statusMsg.textContent = "";
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          if (response === 'success') {
+            statusMsg.textContent = "提出しました！";
+            statusMsg.style.color = "green";
+            submitBtn.textContent = "送信完了";
+          } else {
+            statusMsg.textContent = "エラーが発生しました";
+            statusMsg.style.color = "red";
+            submitBtn.disabled = false;
+          }
+        })
+        .withFailureHandler(function(error) {
+           statusMsg.textContent = "通信エラー: " + error;
+           statusMsg.style.color = "red";
+           submitBtn.disabled = false;
+        })
+        .saveScore(name, score);
+    }
+  </script>
+</body>
+</html>

@@ -33,7 +33,17 @@
   function belongs(item, subject, unit){
     return norm(item.subject) === norm(subject.name) && (!unit || norm(item.unit) === norm(unit.name));
   }
-  const itemsFor = (list, subject, unit) => list.filter(x => belongs(x, subject, unit));
+  // 単元内の並び順：order（授業で扱う順番）が小さいものから。
+  // order が無いものは、その後ろにデータの記載順で並ぶ。
+  const itemsFor = (list, subject, unit) => list
+    .filter(x => belongs(x, subject, unit))
+    .map((x, i) => ({ x, i }))
+    .sort((a, b) => {
+      const oa = (a.x.order === undefined || a.x.order === null) ? Infinity : a.x.order;
+      const ob = (b.x.order === undefined || b.x.order === null) ? Infinity : b.x.order;
+      return oa === ob ? a.i - b.i : oa - ob;
+    })
+    .map(e => e.x);
   function counts(subject, unit){
     return {
       apps:   itemsFor(D.apps,   subject, unit).length,
