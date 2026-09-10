@@ -147,7 +147,7 @@
 
   <div class="main-grid">
     <div class="card figure">
-      <p class="section-title">図（θ に印がついています）</p>
+      <p class="section-title">図（直角と θ には最初から印がついています）</p>
       <div id="figure"></div>
       <div class="legend">
         <span class="lg-hyp">斜辺（直角の向かい）</span>
@@ -212,8 +212,8 @@
     {a:7,b:24,c:25,name:'7・24・25'}
   ];
 
-  var MAX_LEVEL = 5;
-  var LEVEL_LABELS = ['① θ はここ（まだ何も決めていない）','② 直角を確認','③ 斜辺が決まった','④ 対辺が決まった','⑤ 隣辺が決まった','⑥ 答え'];
+  var MAX_LEVEL = 4;
+  var LEVEL_LABELS = ['① θ と直角はここ（まだ何も決めていない）','② 斜辺が決まった','③ 対辺が決まった','④ 隣辺が決まった','⑤ 答え'];
 
   var idx = 0, phi = 0, flip = false, thetaAtA = true, ratio = 'sin', level = 0, rotated = false;
 
@@ -288,7 +288,7 @@
   function drawFigure(){
     var g = geom(), s = [];
     var NEU = '#94a3b8';
-    var showHyp = level>=2, showOpp = level>=3, showAdj = level>=4;
+    var showHyp = level>=1, showOpp = level>=2, showAdj = level>=3;
     var used = { sin:['opp','hyp'], cos:['adj','hyp'], tan:['opp','adj'] }[ratio];
     var faded = function(key){ return level>=MAX_LEVEL && used.indexOf(key)<0; };
     var colorOf = { hyp:'#0F172A', opp:'#1D6FB8', adj:'#C74700' };
@@ -302,14 +302,12 @@
       s.push(seg(g[k], c, on ? 7 : 3.5));
     });
 
-    // θ は「どの角について求めるのか」を示すので、最初の段階から必ず表示する
+    // 直角三角形であることと θ の位置は前提なので、どちらも最初の段階から必ず表示する
+    s.push('<path d="'+rightMark(g.C,g.A,g.B,18)+'" fill="none" stroke="#334155" stroke-width="2.5"/>');
+    s.push('<circle cx="'+g.C.x.toFixed(1)+'" cy="'+g.C.y.toFixed(1)+'" r="3.5" fill="#334155"/>');
     s.push('<path d="'+arcPath(g.theta,g.C,g.other,38)+'" fill="none" stroke="#C74700" stroke-width="3"/>');
     var tp = thetaLabelPos(g);
     s.push('<text x="'+tp.x.toFixed(1)+'" y="'+(tp.y+7).toFixed(1)+'" text-anchor="middle" font-size="22" font-weight="700" fill="#C74700" stroke="#ffffff" stroke-width="5" paint-order="stroke" style="font-family:inherit">θ</text>');
-    if(level>=1){
-      s.push('<path d="'+rightMark(g.C,g.A,g.B,18)+'" fill="none" stroke="#334155" stroke-width="2.5"/>');
-      s.push('<circle cx="'+g.C.x.toFixed(1)+'" cy="'+g.C.y.toFixed(1)+'" r="3.5" fill="#334155"/>');
-    }
     ['hyp','opp','adj'].forEach(function(k){
       var jp = { hyp:'斜辺', opp:'対辺', adj:'隣辺' }[k];
       var on = shown[k] && !faded(k);
@@ -354,11 +352,10 @@
   function buildSteps(){
     var g = geom(), a = answerParts();
     return [
-      { level:1, body:'求めたい角 <b>θ</b> には、はじめから印がついている。まず<b>直角</b>がどこかを見つけて印をつける。' },
-      { level:2, body:'<span class="c-hyp">斜辺</span>＝<b>直角の向かい側</b>の辺（いちばん長い辺）。ここでは <span class="mono">'+g.hyp.len+'</span>。' },
-      { level:3, body:'<span class="c-opp">対辺</span>＝<b>θ の向かい側</b>の辺（θ にふれていない辺）。ここでは <span class="mono">'+g.opp.len+'</span>。' },
-      { level:4, body:'<span class="c-adj">隣辺</span>＝<b>θ にふれている</b>辺のうち、斜辺でないほう。ここでは <span class="mono">'+g.adj.len+'</span>。' },
-      { level:5, body:'<b>'+ratio+' θ ＝ '+a.say+'</b> にあてはめる：<span class="mono">'+a.n+' ÷ '+a.d+'</span>' }
+      { level:1, body:'<span class="c-hyp">斜辺</span>＝<b>直角の向かい側</b>の辺（いちばん長い辺）。ここでは <span class="mono">'+g.hyp.len+'</span>。' },
+      { level:2, body:'<span class="c-opp">対辺</span>＝<b>θ の向かい側</b>の辺（θ にふれていない辺）。ここでは <span class="mono">'+g.opp.len+'</span>。' },
+      { level:3, body:'<span class="c-adj">隣辺</span>＝<b>θ にふれている</b>辺のうち、斜辺でないほう。ここでは <span class="mono">'+g.adj.len+'</span>。' },
+      { level:4, body:'<b>'+ratio+' θ ＝ '+a.say+'</b> にあてはめる：<span class="mono">'+a.n+' ÷ '+a.d+'</span>' }
     ];
   }
   function renderSteps(){
