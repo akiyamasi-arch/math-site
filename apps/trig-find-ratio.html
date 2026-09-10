@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>三角比みつけ（向きが変わっても迷わない）｜数学学習サイト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
+<style>
+  :root{
+    --orange-50:#FFEEE2; --orange-100:#FFDFCA; --orange-400:#FF8D44;
+    --orange-700:#E25100; --orange-800:#C74700; --orange-900:#AC3E00;
+    --ink:#1E293B; --sub:#475569; --line:#D9DEE6; --line-strong:#B9C2CF;
+    --bg:#FBFBFA; --card:#FFFFFF; --focus:#FFD866;
+    --neutral:#94a3b8;
+    --hyp:#0F172A;      /* 斜辺 */
+    --opp:#1D6FB8;      /* 対辺（sin の分子） */
+    --adj:#C74700;      /* 隣辺（cos の分子） */
+    --sp-1:8px; --sp-2:16px; --sp-3:24px; --sp-4:32px; --sp-6:48px;
+    --radius-sm:4px; --radius-md:8px; --radius-pill:999px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.7;}
+  a{color:var(--orange-800);}
+  a:focus-visible, button:focus-visible, input:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+  .brand-bar{height:6px;background:var(--orange-700);}
+  .site-header{background:var(--card);border-bottom:1px solid var(--line);padding:var(--sp-2);}
+  .site-header .inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;}
+  .site-title{margin:0;font-size:18px;font-weight:700;}
+  .site-title a{color:var(--ink);text-decoration:none;}
+  .back-link{font-size:14px;font-weight:700;}
+  .wrap{max-width:1100px;margin:0 auto;padding:var(--sp-3) var(--sp-2) var(--sp-6);}
+  h1{margin:0 0 4px;font-size:26px;line-height:1.4;}
+  .lead{margin:0 0 var(--sp-3);color:var(--sub);font-size:15px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--sp-2) var(--sp-3);}
+  .card + .card{margin-top:var(--sp-2);}
+  .section-title{font-size:13px;font-weight:700;color:var(--sub);margin:0 0 var(--sp-1);}
+  .ctrl-row{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center;}
+  .ctrl-row + .ctrl-row{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);}
+  .ctrl-label{font-size:12px;font-weight:700;color:var(--sub);flex:none;}
+  .btns{display:flex;flex-wrap:wrap;gap:8px;}
+  .btns button, .btn{border:1px solid var(--line);background:#f8fafc;color:var(--ink);padding:8px 14px;border-radius:var(--radius-pill);font-size:14px;cursor:pointer;font-family:inherit;}
+  .btns button:hover, .btn:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .btn:disabled{opacity:.35;cursor:default;}
+  .btn.primary{background:var(--orange-800);color:#fff;border-color:var(--orange-800);font-weight:700;}
+  .btn.primary:hover{background:var(--orange-900);color:#fff;}
+  .btns button.on{background:var(--orange-800);border-color:var(--orange-800);color:#fff;font-weight:700;}
+
+  .main-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:var(--sp-2);align-items:start;margin-top:var(--sp-2);}
+  @media (max-width:900px){ .main-grid{grid-template-columns:1fr;} }
+  @media (max-width:600px){ .ctrl-row{align-items:flex-start;} .ctrl-label{width:100%;} }
+  .figure svg{width:100%;height:auto;display:block;touch-action:manipulation;}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--sub);margin-top:var(--sp-1);}
+  .legend span::before{content:"";display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:5px;vertical-align:middle;}
+  .lg-hyp::before{background:var(--hyp);}
+  .lg-opp::before{background:var(--opp);}
+  .lg-adj::before{background:var(--adj);}
+
+  /* ことばの式 */
+  .wf{display:flex;align-items:center;gap:10px;padding:8px 10px;margin:0 -10px;border-radius:var(--radius-md);font-size:15px;flex-wrap:wrap;cursor:pointer;}
+  .wf.off{opacity:.42;}
+  .wf.on{background:var(--orange-50);}
+  .wf b{font-size:17px;flex:none;width:52px;}
+  .wf .say{font-size:12px;color:var(--sub);}
+  .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25;}
+  .frac .num, .frac .den{padding:0 6px;white-space:nowrap;}
+  .frac .bar{display:block;width:100%;height:2px;background:currentColor;margin:2px 0;}
+  .c-opp{color:var(--opp);font-weight:700;}
+  .c-adj{color:var(--adj);font-weight:700;}
+  .c-hyp{color:var(--hyp);font-weight:700;}
+
+  /* 思考のステップ */
+  .stepper{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:var(--sp-2);padding-bottom:12px;border-bottom:1px dashed var(--line);}
+  .stepper .progress{font-size:12px;font-weight:700;color:var(--sub);text-align:center;flex:1;}
+  .steps{display:flex;flex-direction:column;gap:10px;}
+  .step{display:flex;gap:10px;padding:6px 8px;margin:0 -8px;border-radius:var(--radius-md);cursor:pointer;}
+  .step:hover{background:#f8fafc;}
+  .step.dim{opacity:.4;}
+  .step-num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .step.dim .step-num{background:#cbd5e1;}
+  .step-body{font-size:14px;line-height:1.7;}
+  .mono{font-family:Consolas,"Courier New",monospace;background:#f1f5f9;padding:1px 6px;border-radius:5px;}
+
+  .answer{margin-top:var(--sp-2);padding:14px 16px;border:1.5px solid var(--orange-800);border-radius:var(--radius-md);background:linear-gradient(135deg,#fff3ea,#fff);}
+  .answer.pending{opacity:.55;border-color:var(--line);border-style:dashed;background:#fff;}
+  .answer .label{font-size:12px;font-weight:700;color:var(--orange-800);}
+  .answer.pending .label{color:var(--sub);}
+  .answer .value{font-size:21px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .note{font-size:13px;color:var(--sub);margin-top:6px;}
+  .hint{background:#eef6fd;border:1px solid #b6d8f2;color:#134f77;padding:10px 14px;border-radius:var(--radius-md);font-size:14px;margin-top:var(--sp-2);}
+
+  /* 練習 */
+  .qtext{font-size:17px;font-weight:700;margin:0 0 var(--sp-1);}
+  .opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--sp-1);}
+  .opts button{border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 18px;border-radius:var(--radius-md);font-size:17px;cursor:pointer;font-family:inherit;min-width:78px;}
+  .opts button:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .opts button.ok{background:#e8f5e9;border-color:#2e7d32;color:#1b5e20;font-weight:700;}
+  .opts button.ng{background:#fdecea;border-color:#c62828;color:#b71c1c;}
+  .fb{font-size:15px;margin-top:10px;min-height:1.7em;}
+  .fb.ok{color:#1b5e20;font-weight:700;}
+  .fb.ng{color:#b71c1c;font-weight:700;}
+  .score{font-size:14px;color:var(--sub);font-weight:700;}
+</style>
+</head>
+<body>
+
+<div class="brand-bar"></div>
+<header class="site-header">
+  <div class="inner">
+    <p class="site-title"><a href="../index.html">数学学習サイト</a></p>
+    <a class="back-link" href="../unit.html?s=math1&u=zukei-keiryo">← 単元ページに戻る</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <h1>三角比みつけ（向きが変わっても迷わない）</h1>
+  <p class="lead">直角三角形をぐるぐる回しながら、θ から見て「向かい（対辺）」「となり（隣辺）」「直角の向かい（斜辺）」を1つずつ確かめます。sin は <b>斜辺分の対辺</b>。文字が a なのか c なのかを探すのではなく、θ から見た場所で決めます。</p>
+
+  <div class="card">
+    <div class="ctrl-row">
+      <span class="ctrl-label">三角形</span>
+      <div class="btns" id="presetBtns"></div>
+    </div>
+    <div class="ctrl-row">
+      <span class="ctrl-label">置き方</span>
+      <div class="btns">
+        <button id="rotBtn">↻ 少し回す</button>
+        <button id="rot90Btn">↻ 90°回す</button>
+        <button id="flipBtn">⇄ 裏返す</button>
+        <button id="randBtn">ランダムに置く</button>
+      </div>
+    </div>
+    <div class="ctrl-row">
+      <span class="ctrl-label">θ の位置</span>
+      <div class="btns"><button id="swapBtn">θ をもう一方の角へ</button></div>
+      <span class="ctrl-label">求める比</span>
+      <div class="btns" id="ratioBtns">
+        <button data-r="sin" class="on">sin θ</button>
+        <button data-r="cos">cos θ</button>
+        <button data-r="tan">tan θ</button>
+      </div>
+    </div>
+    <div id="rotNote"></div>
+  </div>
+
+  <div class="main-grid">
+    <div class="card figure">
+      <p class="section-title">図（θ に印がついています）</p>
+      <div id="figure"></div>
+      <div class="legend">
+        <span class="lg-hyp">斜辺（直角の向かい）</span>
+        <span class="lg-opp">対辺（θ の向かい）</span>
+        <span class="lg-adj">隣辺（θ のとなり）</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <p class="section-title">ことばの式（これだけ覚える）</p>
+        <div id="wordForms"></div>
+        <p class="note">分子（上）が「何を見るか」、分母（下）が「何で割るか」。<b>sin＝斜辺分の対辺</b>、<b>cos＝斜辺分の隣辺</b>、<b>tan＝隣辺分の対辺</b>。</p>
+      </div>
+
+      <div class="card">
+        <p class="section-title">思考のステップ</p>
+        <div class="stepper">
+          <button class="btn" id="prevBtn">◀ 前へ</button>
+          <span class="progress" id="progress"></span>
+          <button class="btn primary" id="nextBtn">次へ ▶</button>
+        </div>
+        <div class="steps" id="steps"></div>
+      </div>
+
+      <div class="answer pending" id="answer">
+        <div class="label">答え</div>
+        <div class="value" id="answerValue">ステップを最後まで進めると表示されます</div>
+        <div class="note" id="answerNote"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:var(--sp-3);">
+    <p class="section-title">練習（8問）　図の辺を直接タップして答えます</p>
+    <p class="qtext" id="pq">　</p>
+    <div class="main-grid" style="margin-top:0;">
+      <div class="figure" id="pfigure"></div>
+      <div>
+        <div class="opts" id="popts"></div>
+        <p class="fb" id="pfb">　</p>
+        <p class="score" id="pscore"></p>
+        <div class="btns" style="margin-top:8px;">
+          <button class="btn primary" id="pnext">次の問題へ ▶</button>
+          <button class="btn" id="pretry">最初からやり直す</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var $ = function(id){ return document.getElementById(id); };
+
+  var PRESETS = [
+    {a:3,b:4,c:5,name:'3・4・5'},
+    {a:5,b:12,c:13,name:'5・12・13'},
+    {a:8,b:15,c:17,name:'8・15・17'},
+    {a:6,b:8,c:10,name:'6・8・10'},
+    {a:7,b:24,c:25,name:'7・24・25'}
+  ];
+
+  var MAX_LEVEL = 5;
+  var LEVEL_LABELS = ['① まだ何も決めていない','② 直角と θ を確認','③ 斜辺が決まった','④ 対辺が決まった','⑤ 隣辺が決まった','⑥ 答え'];
+
+  var idx = 0, phi = 0, flip = false, thetaAtA = true, ratio = 'sin', level = 0, rotated = false;
+
+  /* ---------- 図形の計算 ---------- */
+  function sub(p,q){ return {x:p.x-q.x, y:p.y-q.y}; }
+  function norm(v){ var d = Math.sqrt(v.x*v.x+v.y*v.y) || 1; return {x:v.x/d, y:v.y/d}; }
+
+  var W = 560, H = 420, MG = 66;
+
+  // 数学座標（y上向き）で A(0,0) C(b,0) B(b,a)、直角は C。それを回転・反転して画面座標へ。
+  function geom(){
+    var p = PRESETS[idx];
+    var raw = { A:{x:0,y:0}, C:{x:p.b,y:0}, B:{x:p.b,y:p.a} };
+    var rad = phi*Math.PI/180, cs = Math.cos(rad), sn = Math.sin(rad);
+    var t = function(pt){
+      var x = pt.x, y = flip ? -pt.y : pt.y;
+      return { x: x*cs - y*sn, y: x*sn + y*cs };
+    };
+    var m = { A:t(raw.A), B:t(raw.B), C:t(raw.C) };
+    var xs = [m.A.x,m.B.x,m.C.x], ys = [m.A.y,m.B.y,m.C.y];
+    var cx = (Math.min.apply(null,xs)+Math.max.apply(null,xs))/2;
+    var cy = (Math.min.apply(null,ys)+Math.max.apply(null,ys))/2;
+    // 斜辺の長さ c を基準に拡大率を決めると、回しても三角形の大きさが変わらない
+    var s = (Math.min(W,H) - 2*MG) / p.c;
+    var toS = function(pt){ return { x: W/2 + (pt.x-cx)*s, y: H/2 - (pt.y-cy)*s }; };
+    var A = toS(m.A), B = toS(m.B), C = toS(m.C);
+
+    var theta = thetaAtA ? A : B;
+    var other = thetaAtA ? B : A;
+    return {
+      p:p, A:A, B:B, C:C, theta:theta, other:other,
+      hyp:{ p1:A, p2:B, len: p.c },                      // 直角の向かい
+      opp:{ p1:C, p2:other, len: thetaAtA ? p.a : p.b }, // θ の向かい
+      adj:{ p1:theta, p2:C, len: thetaAtA ? p.b : p.a }, // θ のとなり
+      cen:{ x:(A.x+B.x+C.x)/3, y:(A.y+B.y+C.y)/3 }
+    };
+  }
+
+  function seg(o, color, wd){
+    return '<line x1="'+o.p1.x.toFixed(1)+'" y1="'+o.p1.y.toFixed(1)+'" x2="'+o.p2.x.toFixed(1)+'" y2="'+o.p2.y.toFixed(1)+
+      '" stroke="'+color+'" stroke-width="'+wd+'" stroke-linecap="round"/>';
+  }
+  function label(o, cen, text, color, off){
+    var mx = (o.p1.x+o.p2.x)/2, my = (o.p1.y+o.p2.y)/2;
+    var n = norm({x:mx-cen.x, y:my-cen.y});
+    var x = mx + n.x*(off||30), y = my + n.y*(off||30);
+    return '<text x="'+x.toFixed(1)+'" y="'+(y+5).toFixed(1)+'" text-anchor="middle" font-size="16" font-weight="700" fill="'+color+
+      '" stroke="#ffffff" stroke-width="4" paint-order="stroke" style="font-family:inherit">'+text+'</text>';
+  }
+  function arcPath(V,P1,P2,r){
+    var a1 = Math.atan2(P1.y-V.y, P1.x-V.x), a2 = Math.atan2(P2.y-V.y, P2.x-V.x);
+    var d = a2-a1;
+    while(d>Math.PI) d -= 2*Math.PI;
+    while(d<-Math.PI) d += 2*Math.PI;
+    var out = [];
+    for(var i=0;i<=18;i++){ var a = a1 + d*i/18; out.push((V.x+r*Math.cos(a)).toFixed(1)+','+(V.y+r*Math.sin(a)).toFixed(1)); }
+    return 'M'+out.join('L');
+  }
+  function rightMark(C,P1,P2,s){
+    var u1 = norm(sub(P1,C)), u2 = norm(sub(P2,C));
+    return 'M'+(C.x+u1.x*s).toFixed(1)+','+(C.y+u1.y*s).toFixed(1)+
+           'L'+(C.x+(u1.x+u2.x)*s).toFixed(1)+','+(C.y+(u1.y+u2.y)*s).toFixed(1)+
+           'L'+(C.x+u2.x*s).toFixed(1)+','+(C.y+u2.y*s).toFixed(1);
+  }
+  function thetaLabelPos(g){
+    var u1 = norm(sub(g.C, g.theta)), u2 = norm(sub(g.other, g.theta));
+    var b = norm({x:u1.x+u2.x, y:u1.y+u2.y});
+    return { x: g.theta.x + b.x*54, y: g.theta.y + b.y*54 };
+  }
+
+  /* ---------- メインの図 ---------- */
+  function drawFigure(){
+    var g = geom(), s = [];
+    var NEU = '#94a3b8';
+    var showHyp = level>=2, showOpp = level>=3, showAdj = level>=4;
+    var used = { sin:['opp','hyp'], cos:['adj','hyp'], tan:['opp','adj'] }[ratio];
+    var faded = function(key){ return level>=MAX_LEVEL && used.indexOf(key)<0; };
+    var colorOf = { hyp:'#0F172A', opp:'#1D6FB8', adj:'#C74700' };
+    var shown = { hyp:showHyp, opp:showOpp, adj:showAdj };
+
+    s.push('<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="#fbfcfe"/>');
+    s.push('<path d="M'+g.A.x.toFixed(1)+','+g.A.y.toFixed(1)+'L'+g.B.x.toFixed(1)+','+g.B.y.toFixed(1)+'L'+g.C.x.toFixed(1)+','+g.C.y.toFixed(1)+'Z" fill="#eef2f7" stroke="none"/>');
+    ['hyp','opp','adj'].forEach(function(k){
+      var on = shown[k] && !faded(k);
+      var c = shown[k] ? (faded(k) ? '#cbd5e1' : colorOf[k]) : NEU;
+      s.push(seg(g[k], c, on ? 7 : 3.5));
+    });
+
+    if(level>=1){
+      s.push('<path d="'+rightMark(g.C,g.A,g.B,18)+'" fill="none" stroke="#334155" stroke-width="2.5"/>');
+      s.push('<circle cx="'+g.C.x.toFixed(1)+'" cy="'+g.C.y.toFixed(1)+'" r="3.5" fill="#334155"/>');
+      s.push('<path d="'+arcPath(g.theta,g.C,g.other,38)+'" fill="none" stroke="#C74700" stroke-width="3"/>');
+      var tp = thetaLabelPos(g);
+      s.push('<text x="'+tp.x.toFixed(1)+'" y="'+(tp.y+7).toFixed(1)+'" text-anchor="middle" font-size="22" font-weight="700" fill="#C74700" stroke="#ffffff" stroke-width="5" paint-order="stroke" style="font-family:inherit">θ</text>');
+    }
+    ['hyp','opp','adj'].forEach(function(k){
+      var jp = { hyp:'斜辺', opp:'対辺', adj:'隣辺' }[k];
+      var on = shown[k] && !faded(k);
+      s.push(label(g[k], g.cen, shown[k] ? (jp+' '+g[k].len) : String(g[k].len), on ? colorOf[k] : '#64748b'));
+    });
+
+    $('figure').innerHTML = '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="直角三角形">'+s.join('')+'</svg>';
+  }
+
+  /* ---------- 答え ---------- */
+  function gcd(x,y){ return y ? gcd(y, x%y) : x; }
+  function fracText(n,d){
+    var g = gcd(n,d);
+    return (g>1) ? (n+'/'+d+' ＝ '+(n/g)+'/'+(d/g)) : (n+'/'+d);
+  }
+  function answerParts(){
+    var g = geom();
+    if(ratio==='sin') return { top:'対辺', bot:'斜辺', tc:'c-opp', bc:'c-hyp', n:g.opp.len, d:g.hyp.len, say:'斜辺分の対辺' };
+    if(ratio==='cos') return { top:'隣辺', bot:'斜辺', tc:'c-adj', bc:'c-hyp', n:g.adj.len, d:g.hyp.len, say:'斜辺分の隣辺' };
+    return { top:'対辺', bot:'隣辺', tc:'c-opp', bc:'c-adj', n:g.opp.len, d:g.adj.len, say:'隣辺分の対辺' };
+  }
+  function fracHTML(top,bot,tc,bc){
+    return '<span class="frac"><span class="num '+tc+'">'+top+'</span><span class="bar"></span><span class="den '+bc+'">'+bot+'</span></span>';
+  }
+
+  /* ---------- ことばの式 ---------- */
+  function renderWordForms(){
+    var rows = [
+      {r:'sin', top:'対辺', bot:'斜辺', tc:'c-opp', bc:'c-hyp', say:'「しゃへん ぶんの たいへん」'},
+      {r:'cos', top:'隣辺', bot:'斜辺', tc:'c-adj', bc:'c-hyp', say:'「しゃへん ぶんの りんぺん」'},
+      {r:'tan', top:'対辺', bot:'隣辺', tc:'c-opp', bc:'c-adj', say:'「りんぺん ぶんの たいへん」'}
+    ];
+    $('wordForms').innerHTML = rows.map(function(o){
+      return '<div class="wf '+(ratio===o.r?'on':'off')+'" data-r="'+o.r+'"><b>'+o.r+' θ</b>＝ '+fracHTML(o.top,o.bot,o.tc,o.bc)+' <span class="say">'+o.say+'</span></div>';
+    }).join('');
+    Array.prototype.forEach.call($('wordForms').querySelectorAll('.wf'), function(el){
+      el.addEventListener('click', function(){ setRatio(el.getAttribute('data-r')); });
+    });
+  }
+
+  /* ---------- ステップ ---------- */
+  function buildSteps(){
+    var g = geom(), a = answerParts();
+    return [
+      { level:1, body:'まず<b>直角</b>を見つけて印をつける。次に、いま考えている角 <b>θ</b> に印をつける。' },
+      { level:2, body:'<span class="c-hyp">斜辺</span>＝<b>直角の向かい側</b>の辺（いちばん長い辺）。ここでは <span class="mono">'+g.hyp.len+'</span>。' },
+      { level:3, body:'<span class="c-opp">対辺</span>＝<b>θ の向かい側</b>の辺（θ にふれていない辺）。ここでは <span class="mono">'+g.opp.len+'</span>。' },
+      { level:4, body:'<span class="c-adj">隣辺</span>＝<b>θ にふれている</b>辺のうち、斜辺でないほう。ここでは <span class="mono">'+g.adj.len+'</span>。' },
+      { level:5, body:'<b>'+ratio+' θ ＝ '+a.say+'</b> にあてはめる：<span class="mono">'+a.n+' ÷ '+a.d+'</span>' }
+    ];
+  }
+  function renderSteps(){
+    var steps = buildSteps();
+    $('steps').innerHTML = steps.map(function(s,i){
+      return '<div class="step'+(s.level>level?' dim':'')+'" data-level="'+s.level+'"><div class="step-num">'+(i+1)+'</div><div class="step-body">'+s.body+'</div></div>';
+    }).join('');
+    Array.prototype.forEach.call($('steps').querySelectorAll('.step'), function(el){
+      el.addEventListener('click', function(){ goTo(+el.getAttribute('data-level')); });
+    });
+    $('progress').textContent = LEVEL_LABELS[level];
+    $('prevBtn').disabled = level<=0;
+    $('nextBtn').disabled = level>=MAX_LEVEL;
+
+    var a = answerParts(), ans = $('answer');
+    if(level>=MAX_LEVEL){
+      ans.classList.remove('pending');
+      $('answerValue').innerHTML = ratio+' θ ＝ '+fracHTML(a.top,a.bot,a.tc,a.bc)+' ＝ <span class="mono" style="font-size:21px">'+fracText(a.n,a.d)+'</span>';
+      $('answerNote').innerHTML = '（'+a.say+'）約分できるときは約分して答えます。向きを変えても、この値は変わりません。';
+    } else {
+      ans.classList.add('pending');
+      $('answerValue').textContent = 'ステップを最後まで進めると表示されます';
+      $('answerNote').textContent = '';
+    }
+  }
+  function goTo(n){
+    level = Math.max(0, Math.min(MAX_LEVEL, n));
+    drawFigure(); renderSteps();
+  }
+
+  /* ---------- 操作 ---------- */
+  function setRatio(r){
+    ratio = r;
+    Array.prototype.forEach.call($('ratioBtns').querySelectorAll('button'), function(b){
+      b.classList.toggle('on', b.getAttribute('data-r')===r);
+    });
+    renderWordForms(); drawFigure(); renderSteps();
+  }
+  function reset(){ level = 0; drawFigure(); renderSteps(); }
+  function noteRotate(){
+    if(!rotated){
+      rotated = true;
+      $('rotNote').innerHTML = '<div class="hint">向きを変えても、対辺・隣辺・斜辺は <b>θ から見た場所</b>で決まります。だから三角比の値も変わりません。文字（a や c）を探すのではなく、θ から見て「向かい」か「となり」かを見ましょう。</div>';
+    }
+  }
+
+  $('presetBtns').innerHTML = PRESETS.map(function(p,i){
+    return '<button data-i="'+i+'"'+(i===0?' class="on"':'')+'>'+p.name+'</button>';
+  }).join('');
+  Array.prototype.forEach.call($('presetBtns').querySelectorAll('button'), function(b){
+    b.addEventListener('click', function(){
+      idx = +b.getAttribute('data-i');
+      Array.prototype.forEach.call($('presetBtns').querySelectorAll('button'), function(x){ x.classList.remove('on'); });
+      b.classList.add('on');
+      reset();
+    });
+  });
+  Array.prototype.forEach.call($('ratioBtns').querySelectorAll('button'), function(b){
+    b.addEventListener('click', function(){ setRatio(b.getAttribute('data-r')); });
+  });
+  $('rotBtn').addEventListener('click', function(){ phi = (phi+37)%360; noteRotate(); drawFigure(); renderSteps(); });
+  $('rot90Btn').addEventListener('click', function(){ phi = (phi+90)%360; noteRotate(); drawFigure(); renderSteps(); });
+  $('flipBtn').addEventListener('click', function(){ flip = !flip; noteRotate(); drawFigure(); renderSteps(); });
+  $('randBtn').addEventListener('click', function(){
+    phi = Math.floor(Math.random()*360); flip = Math.random()<0.5; noteRotate(); drawFigure(); renderSteps();
+  });
+  $('swapBtn').addEventListener('click', function(){ thetaAtA = !thetaAtA; reset(); });
+  $('prevBtn').addEventListener('click', function(){ goTo(level-1); });
+  $('nextBtn').addEventListener('click', function(){ goTo(level+1); });
+
+  /* ---------- 練習 ---------- */
+  var TOTAL = 8, pIdx = 0, pScore = 0, pQ = null, pDone = false;
+  var JP = { hyp:'斜辺', opp:'対辺', adj:'隣辺' };
+
+  function makeQ(){
+    var types = ['hyp','opp','adj','hyp','opp','adj','val-sin','val-cos','val-tan'];
+    return {
+      i: Math.floor(Math.random()*PRESETS.length),
+      phi: Math.floor(Math.random()*360),
+      flip: Math.random()<0.5,
+      atA: Math.random()<0.5,
+      type: types[Math.floor(Math.random()*types.length)]
+    };
+  }
+  function pGeom(q){
+    var s0=idx, s1=phi, s2=flip, s3=thetaAtA;
+    idx = q.i; phi = q.phi; flip = q.flip; thetaAtA = q.atA;
+    var g = geom();
+    idx=s0; phi=s1; flip=s2; thetaAtA=s3;
+    return g;
+  }
+  function drawP(q, marked){
+    var g = pGeom(q), s = [];
+    s.push('<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="#fbfcfe"/>');
+    s.push('<path d="M'+g.A.x.toFixed(1)+','+g.A.y.toFixed(1)+'L'+g.B.x.toFixed(1)+','+g.B.y.toFixed(1)+'L'+g.C.x.toFixed(1)+','+g.C.y.toFixed(1)+'Z" fill="#eef2f7"/>');
+    ['hyp','opp','adj'].forEach(function(k){
+      var st = (marked && marked[k]) || null;
+      var c = st==='ok' ? '#2e7d32' : (st==='ng' ? '#c62828' : '#94a3b8');
+      s.push(seg(g[k], c, st ? 7 : 4));
+    });
+    s.push('<path d="'+rightMark(g.C,g.A,g.B,18)+'" fill="none" stroke="#334155" stroke-width="2.5"/>');
+    s.push('<path d="'+arcPath(g.theta,g.C,g.other,38)+'" fill="none" stroke="#C74700" stroke-width="3"/>');
+    var tp = thetaLabelPos(g);
+    s.push('<text x="'+tp.x.toFixed(1)+'" y="'+(tp.y+7).toFixed(1)+'" text-anchor="middle" font-size="22" font-weight="700" fill="#C74700" stroke="#ffffff" stroke-width="5" paint-order="stroke" style="font-family:inherit">θ</text>');
+    ['hyp','opp','adj'].forEach(function(k){ s.push(label(g[k], g.cen, String(g[k].len), '#334155')); });
+    var tappable = !marked && q.type.indexOf('val')<0;
+    if(tappable){
+      ['hyp','opp','adj'].forEach(function(k){
+        s.push('<line x1="'+g[k].p1.x.toFixed(1)+'" y1="'+g[k].p1.y.toFixed(1)+'" x2="'+g[k].p2.x.toFixed(1)+'" y2="'+g[k].p2.y.toFixed(1)+
+          '" stroke="rgba(255,255,255,0)" stroke-width="34" style="cursor:pointer" data-side="'+k+'"/>');
+      });
+    }
+    $('pfigure').innerHTML = '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'+s.join('')+'</svg>';
+    if(tappable){
+      Array.prototype.forEach.call($('pfigure').querySelectorAll('[data-side]'), function(el){
+        el.addEventListener('click', function(){ answerSide(el.getAttribute('data-side')); });
+      });
+    }
+  }
+  function showQ(){
+    pQ = makeQ(); pDone = false;
+    $('pfb').textContent = '　'; $('pfb').className = 'fb';
+    $('popts').innerHTML = '';
+    $('pscore').textContent = '第 '+(pIdx+1)+' 問 / '+TOTAL+'　　正解 '+pScore+' 問';
+    var g = pGeom(pQ);
+    if(pQ.type.indexOf('val')===0){
+      var r = pQ.type.split('-')[1];
+      $('pq').innerHTML = 'この直角三角形で <b>'+r+' θ</b> の値は？';
+      var cand = [
+        {t:g.opp.len+'/'+g.hyp.len, k:'sin'},
+        {t:g.adj.len+'/'+g.hyp.len, k:'cos'},
+        {t:g.opp.len+'/'+g.adj.len, k:'tan'}
+      ].sort(function(){ return Math.random()-0.5; });
+      $('popts').innerHTML = cand.map(function(o){ return '<button data-k="'+o.k+'">'+o.t+'</button>'; }).join('');
+      Array.prototype.forEach.call($('popts').querySelectorAll('button'), function(b){
+        b.addEventListener('click', function(){ answerVal(b, r); });
+      });
+    } else {
+      var word = pQ.type==='hyp' ? '斜辺（直角の向かい側）' : (pQ.type==='opp' ? 'θ の対辺（θ の向かい側）' : 'θ の隣辺（θ のとなりで、斜辺でないほう）');
+      $('pq').innerHTML = '<b>'+word+'</b> はどれ？　図の辺をタップしてください。';
+    }
+    drawP(pQ, null);
+  }
+  function finish(){
+    $('pq').innerHTML = '練習おわり。';
+    $('pfb').className = 'fb ok';
+    $('pfb').textContent = TOTAL+'問中 '+pScore+'問 正解（'+Math.round(pScore/TOTAL*100)+'％）';
+    $('popts').innerHTML = '';
+    $('pscore').textContent = '「最初からやり直す」を押すと、別の向き・別の三角形でもう一度できます。';
+  }
+  function answerSide(k){
+    if(pDone) return;
+    pDone = true;
+    var ok = (k===pQ.type);
+    var marked = {};
+    marked[pQ.type] = 'ok';
+    if(!ok) marked[k] = 'ng';
+    drawP(pQ, marked);
+    if(ok){ pScore++; $('pfb').className='fb ok'; $('pfb').textContent = '正解！　これが '+JP[k]+' です。'; }
+    else { $('pfb').className='fb ng'; $('pfb').textContent = 'おしい。緑の辺が '+JP[pQ.type]+' です（選んだのは '+JP[k]+'）。'; }
+    $('pscore').textContent = '第 '+(pIdx+1)+' 問 / '+TOTAL+'　　正解 '+pScore+' 問';
+  }
+  function answerVal(btn, r){
+    if(pDone) return;
+    pDone = true;
+    var ok = btn.getAttribute('data-k')===r;
+    Array.prototype.forEach.call($('popts').querySelectorAll('button'), function(b){
+      if(b.getAttribute('data-k')===r) b.classList.add('ok');
+      else if(b===btn) b.classList.add('ng');
+    });
+    var say = { sin:'斜辺分の対辺', cos:'斜辺分の隣辺', tan:'隣辺分の対辺' }[r];
+    if(ok){ pScore++; $('pfb').className='fb ok'; $('pfb').textContent='正解！　'+r+' θ ＝ '+say+' です。'; }
+    else { $('pfb').className='fb ng'; $('pfb').textContent=r+' θ ＝ '+say+'。緑の枠が正しい答えです。'; }
+    var marked = {};
+    ({ sin:['opp','hyp'], cos:['adj','hyp'], tan:['opp','adj'] })[r].forEach(function(k){ marked[k]='ok'; });
+    drawP(pQ, marked);
+    $('pscore').textContent = '第 '+(pIdx+1)+' 問 / '+TOTAL+'　　正解 '+pScore+' 問';
+  }
+  $('pnext').addEventListener('click', function(){
+    if(pIdx>=TOTAL) return;
+    if(!pDone){ $('pfb').className='fb'; $('pfb').textContent='まず答えを選んでください。'; return; }
+    pIdx++;
+    if(pIdx>=TOTAL){ finish(); } else { showQ(); }
+  });
+  $('pretry').addEventListener('click', function(){ pIdx=0; pScore=0; showQ(); });
+
+  /* ---------- 起動 ---------- */
+  renderWordForms();
+  goTo(0);
+  showQ();
+})();
+</script>
+</body>
+</html>

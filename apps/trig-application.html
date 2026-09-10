@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>三角比で高さ・距離を求める（立式トレーニング）｜数学学習サイト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
+<style>
+  :root{
+    --orange-50:#FFEEE2; --orange-100:#FFDFCA; --orange-400:#FF8D44;
+    --orange-700:#E25100; --orange-800:#C74700; --orange-900:#AC3E00;
+    --ink:#1E293B; --sub:#475569; --line:#D9DEE6; --line-strong:#B9C2CF;
+    --bg:#FBFBFA; --card:#FFFFFF; --focus:#FFD866;
+    --neutral:#94a3b8;
+    --hyp:#0F172A; --opp:#1D6FB8; --adj:#C74700;
+    --sp-1:8px; --sp-2:16px; --sp-3:24px; --sp-4:32px; --sp-6:48px;
+    --radius-sm:4px; --radius-md:8px; --radius-pill:999px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.7;}
+  a{color:var(--orange-800);}
+  a:focus-visible, button:focus-visible, input:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+  .brand-bar{height:6px;background:var(--orange-700);}
+  .site-header{background:var(--card);border-bottom:1px solid var(--line);padding:var(--sp-2);}
+  .site-header .inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;}
+  .site-title{margin:0;font-size:18px;font-weight:700;}
+  .site-title a{color:var(--ink);text-decoration:none;}
+  .back-link{font-size:14px;font-weight:700;}
+  .wrap{max-width:1100px;margin:0 auto;padding:var(--sp-3) var(--sp-2) var(--sp-6);}
+  h1{margin:0 0 4px;font-size:26px;line-height:1.4;}
+  .lead{margin:0 0 var(--sp-3);color:var(--sub);font-size:15px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--sp-2) var(--sp-3);}
+  .card + .card{margin-top:var(--sp-2);}
+  .section-title{font-size:13px;font-weight:700;color:var(--sub);margin:0 0 var(--sp-1);}
+  .btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .btns button, .btn{border:1px solid var(--line);background:#f8fafc;color:var(--ink);padding:8px 14px;border-radius:var(--radius-pill);font-size:14px;cursor:pointer;font-family:inherit;}
+  .btns button:hover, .btn:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .btn:disabled{opacity:.35;cursor:default;}
+  .btn.primary{background:var(--orange-800);color:#fff;border-color:var(--orange-800);font-weight:700;}
+  .btn.primary:hover{background:var(--orange-900);color:#fff;}
+  .btns button.on{background:var(--orange-800);border-color:var(--orange-800);color:#fff;font-weight:700;}
+  .ctrl-label{font-size:12px;font-weight:700;color:var(--sub);}
+
+  .story{font-size:16px;line-height:1.8;margin:0;}
+  .story b{background:linear-gradient(transparent 62%, var(--orange-100) 62%);}
+
+  .main-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:var(--sp-2);align-items:start;margin-top:var(--sp-2);}
+  @media (max-width:900px){ .main-grid{grid-template-columns:1fr;} }
+  @media (max-width:600px){ .ctrl-row{align-items:flex-start;} .ctrl-label{width:100%;} }
+  .figure svg{width:100%;height:auto;display:block;}
+
+  .stepper{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:var(--sp-2);padding-bottom:12px;border-bottom:1px dashed var(--line);}
+  .stepper .progress{font-size:12px;font-weight:700;color:var(--sub);text-align:center;flex:1;}
+  .steps{display:flex;flex-direction:column;gap:10px;}
+  .step{display:flex;gap:10px;padding:6px 8px;margin:0 -8px;border-radius:var(--radius-md);cursor:pointer;}
+  .step:hover{background:#f8fafc;}
+  .step.dim{opacity:.4;}
+  .step-num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .step.dim .step-num{background:#cbd5e1;}
+  .step-body{font-size:14px;line-height:1.7;}
+  .mono{font-family:Consolas,"Courier New",monospace;background:#f1f5f9;padding:1px 6px;border-radius:5px;}
+  .c-opp{color:var(--opp);font-weight:700;}
+  .c-adj{color:var(--adj);font-weight:700;}
+  .c-hyp{color:var(--hyp);font-weight:700;}
+
+  /* どの比を使う？ */
+  .picks{display:flex;flex-direction:column;gap:8px;}
+  .pick{border:1.5px solid var(--line);border-radius:var(--radius-md);padding:10px 14px;font-size:15px;cursor:pointer;background:#fff;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .pick:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .pick.locked{opacity:.45;cursor:default;}
+  .pick.locked:hover{border-color:var(--line);background:#fff;}
+  .pick.right{background:#e8f5e9;border-color:#2e7d32;}
+  .pick.wrong{background:#fdecea;border-color:#c62828;}
+  .pick b{font-size:17px;}
+  .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25;}
+  .frac .num2, .frac .den{padding:0 6px;white-space:nowrap;}
+  .frac .bar{display:block;width:100%;height:2px;background:currentColor;margin:2px 0;}
+
+  .eq{margin-top:var(--sp-2);padding:14px 16px;border:1.5px solid var(--orange-800);border-radius:var(--radius-md);background:linear-gradient(135deg,#fff3ea,#fff);}
+  .eq.pending{opacity:.55;border-color:var(--line);border-style:dashed;background:#fff;}
+  .eq .label{font-size:12px;font-weight:700;color:var(--orange-800);}
+  .eq.pending .label{color:var(--sub);}
+  .eq .value{font-size:20px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .eq .line2{font-size:16px;font-weight:700;margin-top:6px;}
+  .note{font-size:13px;color:var(--sub);margin-top:6px;}
+  .tip{background:#eef6fd;border:1px solid #b6d8f2;color:#134f77;padding:12px 16px;border-radius:var(--radius-md);font-size:14px;margin-top:var(--sp-2);}
+  .fb{font-size:14px;margin-top:8px;min-height:1.6em;}
+  .fb.ok{color:#1b5e20;font-weight:700;}
+  .fb.ng{color:#b71c1c;font-weight:700;}
+</style>
+</head>
+<body>
+
+<div class="brand-bar"></div>
+<header class="site-header">
+  <div class="inner">
+    <p class="site-title"><a href="../index.html">数学学習サイト</a></p>
+    <a class="back-link" href="../unit.html?s=math1&u=zukei-keiryo">← 単元ページに戻る</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <h1>三角比で高さ・距離を求める（立式トレーニング）</h1>
+  <p class="lead">実際の場面から<b>直角三角形を取り出し</b>、分かっている辺と求めたい辺が θ から見てどこかを確かめ、<b>どの比を使うか</b>を決めて式を立てるまでを、1段階ずつ組み立てます。計算より「式が立つまで」が本番です。</p>
+
+  <div class="card">
+    <div class="btns">
+      <span class="ctrl-label">場面</span>
+      <div class="btns" id="sceneBtns"></div>
+    </div>
+    <p class="story" id="story" style="margin-top:12px;"></p>
+  </div>
+
+  <div class="main-grid">
+    <div class="card figure">
+      <p class="section-title" id="figTitle">場面の図</p>
+      <div id="figure"></div>
+      <p class="note" id="figNote"></p>
+    </div>
+
+    <div>
+      <div class="card">
+        <p class="section-title">思考のステップ</p>
+        <div class="stepper">
+          <button class="btn" id="prevBtn">◀ 前へ</button>
+          <span class="progress" id="progress"></span>
+          <button class="btn primary" id="nextBtn">次へ ▶</button>
+        </div>
+        <div class="steps" id="steps"></div>
+      </div>
+
+      <div class="card">
+        <p class="section-title">どの比を使う？（自分で選んでみよう）</p>
+        <div class="picks" id="picks"></div>
+        <p class="fb" id="pickFb">　</p>
+      </div>
+
+      <div class="eq pending" id="eq">
+        <div class="label">立式</div>
+        <div class="value" id="eqValue">ステップ⑤まで進むと出てきます</div>
+        <div class="line2" id="eqLine2"></div>
+        <div class="note" id="eqNote"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:var(--sp-3);">
+    <p class="section-title">まとめ：立式の手順はいつも同じ</p>
+    <div class="tip" style="margin-top:0;">
+      ① 場面から<b>直角三角形</b>を取り出す　→　② <b>θ</b> と<b>直角</b>に印　→　③ 分かっている辺・求めたい辺が θ から見て<b>対辺・隣辺・斜辺のどれか</b>を言う　→　④ その2つの組み合わせで<b>使う比が決まる</b>（対辺と斜辺→sin、隣辺と斜辺→cos、対辺と隣辺→tan）　→　⑤ ことばの式に数を入れる　→　⑥ 計算。<br>
+      迷ったら、<b>求めたい辺</b>と<b>分かっている辺</b>の2つだけを見ます。使わない辺のことは考えなくて大丈夫です。
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var $ = function(id){ return document.getElementById(id); };
+  function sub(p,q){ return {x:p.x-q.x, y:p.y-q.y}; }
+  function norm(v){ var d = Math.sqrt(v.x*v.x+v.y*v.y)||1; return {x:v.x/d, y:v.y/d}; }
+  function line(p1,p2,color,w,dash){
+    return '<line x1="'+p1.x+'" y1="'+p1.y+'" x2="'+p2.x+'" y2="'+p2.y+'" stroke="'+color+'" stroke-width="'+w+
+      '" stroke-linecap="round"'+(dash?' stroke-dasharray="'+dash+'"':'')+'/>';
+  }
+  function txt(x,y,t,color,size,anchor){
+    return '<text x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" text-anchor="'+(anchor||'middle')+'" font-size="'+(size||16)+
+      '" font-weight="700" fill="'+color+'" stroke="#ffffff" stroke-width="4" paint-order="stroke" style="font-family:inherit">'+t+'</text>';
+  }
+  function rightMark(C,P1,P2,s){
+    var u1 = norm(sub(P1,C)), u2 = norm(sub(P2,C));
+    return 'M'+(C.x+u1.x*s).toFixed(1)+','+(C.y+u1.y*s).toFixed(1)+
+           'L'+(C.x+(u1.x+u2.x)*s).toFixed(1)+','+(C.y+(u1.y+u2.y)*s).toFixed(1)+
+           'L'+(C.x+u2.x*s).toFixed(1)+','+(C.y+u2.y*s).toFixed(1);
+  }
+  function arcPath(V,P1,P2,r){
+    var a1 = Math.atan2(P1.y-V.y,P1.x-V.x), a2 = Math.atan2(P2.y-V.y,P2.x-V.x);
+    var d = a2-a1;
+    while(d>Math.PI) d-=2*Math.PI;
+    while(d<-Math.PI) d+=2*Math.PI;
+    var o=[];
+    for(var i=0;i<=18;i++){ var a=a1+d*i/18; o.push((V.x+r*Math.cos(a)).toFixed(1)+','+(V.y+r*Math.sin(a)).toFixed(1)); }
+    return 'M'+o.join('L');
+  }
+  function fracHTML(n,d,nc,dc){
+    return '<span class="frac"><span class="num2 '+(nc||'')+'">'+n+'</span><span class="bar"></span><span class="den '+(dc||'')+'">'+d+'</span></span>';
+  }
+
+  var W = 620, H = 420, GY = 350;
+
+  /* ---------- 場面データ ----------
+     V＝θのある頂点、R＝直角の頂点、T＝残りの頂点
+     斜辺＝V-T、対辺（θの向かい）＝R-T、隣辺（θのとなり）＝V-R          */
+  var SCENES = [
+    {
+      key:'tree', name:'木の高さ',
+      story:'畑のはしに立つ木の高さを知りたい。木から <b>20 m</b> はなれた場所に立ち、木のてっぺんを見上げると、水平方向との角が <b>30°</b> でした。目の高さを 1.5 m とすると、木の高さは何 m でしょう。',
+      V:{x:110,y:290}, R:{x:470,y:290}, T:{x:470,y:82},
+      angLabel:'30°',
+      known:'adj', knownLabel:'20 m',
+      unknown:'opp', unknownName:'目の高さから木のてっぺんまで', symbol:'h',
+      ratio:'tan',
+      eq:'tan 30° ＝ h / 20',
+      solve:'h ＝ 20 × tan 30° ＝ 20 × 1/√3 ＝ 20√3/3 ≒ 11.5',
+      answer:'木の高さ ＝ 11.5 ＋ 1.5 ＝ 約 13.0 m',
+      note:'目の高さ 1.5 m を最後にたすのを忘れずに。三角比で出るのは「目の高さから上」の分です。',
+      deco:function(sh){
+        var s=[];
+        s.push('<rect x="0" y="'+GY+'" width="'+W+'" height="'+(H-GY)+'" fill="'+(sh?'#eef3ee':'#dcecd9')+'"/>');
+        s.push(line({x:0,y:GY},{x:W,y:GY}, sh?'#c9d6c7':'#7fa87a', 3));
+        // 木
+        s.push('<rect x="462" y="82" width="16" height="'+(GY-82)+'" rx="4" fill="'+(sh?'#e2ddd6':'#8d6e52')+'"/>');
+        s.push('<circle cx="470" cy="70" r="52" fill="'+(sh?'#e7eee4':'#5f9153')+'"/>');
+        s.push('<circle cx="428" cy="104" r="36" fill="'+(sh?'#e7eee4':'#6ba05c')+'"/>');
+        s.push('<circle cx="512" cy="104" r="36" fill="'+(sh?'#e7eee4':'#6ba05c')+'"/>');
+        // 人（目の位置が V）
+        s.push('<circle cx="110" cy="276" r="13" fill="'+(sh?'#e5e7eb':'#334155')+'"/>');
+        s.push(line({x:110,y:289},{x:110,y:326}, sh?'#e5e7eb':'#334155', 5));
+        s.push(line({x:110,y:326},{x:96,y:GY}, sh?'#e5e7eb':'#334155', 5));
+        s.push(line({x:110,y:326},{x:124,y:GY}, sh?'#e5e7eb':'#334155', 5));
+        s.push(line({x:110,y:300},{x:134,y:292}, sh?'#e5e7eb':'#334155', 5));
+        return s.join('');
+      }
+    },
+    {
+      key:'ladder', name:'はしご',
+      story:'長さ <b>4 m</b> のはしごを倉庫のかべに立てかけます。地面との角が <b>60°</b> のとき、はしごの先はかべの高さ何 m のところに届くでしょう。',
+      V:{x:150,y:GY}, R:{x:452,y:GY}, T:{x:452,y:172},
+      angLabel:'60°',
+      known:'hyp', knownLabel:'4 m（はしご）',
+      unknown:'opp', unknownName:'かべに届く高さ', symbol:'h',
+      ratio:'sin',
+      eq:'sin 60° ＝ h / 4',
+      solve:'h ＝ 4 × sin 60° ＝ 4 × √3/2 ＝ 2√3 ≒ 3.46',
+      answer:'かべの高さ 約 3.5 m のところに届く',
+      note:'はしご自身が斜辺です。「斜辺分の対辺」＝ sin なので、h ＝ 斜辺 × sin。',
+      deco:function(sh){
+        var s=[];
+        s.push('<rect x="0" y="'+GY+'" width="'+W+'" height="'+(H-GY)+'" fill="'+(sh?'#eef0f3':'#e4e7ec')+'"/>');
+        s.push(line({x:0,y:GY},{x:W,y:GY}, sh?'#d5d9df':'#94a3b8', 3));
+        s.push('<rect x="452" y="60" width="70" height="'+(GY-60)+'" fill="'+(sh?'#eceff3':'#cbd5e1')+'" stroke="'+(sh?'#e2e6ea':'#94a3b8')+'" stroke-width="2"/>');
+        s.push(txt(487, 120, '倉庫', sh?'#d4d9df':'#64748b', 15));
+        return s.join('');
+      }
+    },
+    {
+      key:'roof', name:'ハウスの屋根',
+      story:'ビニールハウスの屋根を張りかえます。軒（のき）から棟（むね）までの<b>水平の長さが 3 m</b>、屋根の傾きは <b>30°</b>。屋根の<b>斜めの長さ</b>は何 m でしょう。',
+      V:{x:130,y:288}, R:{x:370,y:288}, T:{x:370,y:150},
+      angLabel:'30°',
+      known:'adj', knownLabel:'3 m（水平）',
+      unknown:'hyp', unknownName:'屋根の斜めの長さ', symbol:'x',
+      ratio:'cos',
+      eq:'cos 30° ＝ 3 / x',
+      solve:'x × cos 30° ＝ 3 　→　 x ＝ 3 ÷ cos 30° ＝ 3 ÷ (√3/2) ＝ 6/√3 ＝ 2√3 ≒ 3.46',
+      answer:'屋根の斜めの長さ 約 3.5 m',
+      note:'求めたいものが<b>分母</b>にきたときは、まず両辺に x をかけてから割ります。「3 × cos30°」ではないので注意。',
+      deco:function(sh){
+        var s=[];
+        s.push('<rect x="0" y="'+GY+'" width="'+W+'" height="'+(H-GY)+'" fill="'+(sh?'#eef3ee':'#dcecd9')+'"/>');
+        s.push(line({x:0,y:GY},{x:W,y:GY}, sh?'#c9d6c7':'#7fa87a', 3));
+        s.push('<path d="M130,288 L370,150 L610,288 Z" fill="'+(sh?'#f2f5f8':'#dbeafe')+'" stroke="'+(sh?'#e6eaee':'#93c5fd')+'" stroke-width="2"/>');
+        s.push('<rect x="130" y="288" width="480" height="'+(GY-288)+'" fill="'+(sh?'#f2f5f8':'#e0f2fe')+'" stroke="'+(sh?'#e6eaee':'#93c5fd')+'" stroke-width="2"/>');
+        s.push(txt(490, 262, 'ビニールハウス', sh?'#dfe4ea':'#3b82f6', 15));
+        return s.join('');
+      }
+    },
+    {
+      key:'slope', name:'傾斜畑',
+      story:'斜面にある畑の、<b>斜面に沿った長さが 50 m</b>、傾斜角は <b>12°</b> です。地図に載る<b>水平方向の長さ</b>は何 m でしょう。（三角比の表より cos 12° ＝ 0.9781）',
+      V:{x:100,y:330}, R:{x:500,y:330}, T:{x:500,y:245},
+      angLabel:'12°', angAt:{dx:56, dy:36},
+      known:'hyp', knownLabel:'50 m（斜面）',
+      unknown:'adj', unknownName:'水平方向の長さ', symbol:'x',
+      ratio:'cos',
+      eq:'cos 12° ＝ x / 50',
+      solve:'x ＝ 50 × cos 12° ＝ 50 × 0.9781 ＝ 48.905',
+      answer:'水平方向の長さ 約 48.9 m',
+      note:'30°・45°・60° 以外の角は、三角比の表（または電卓）から値を読んで使います。実際の測量はこの形がほとんどです。',
+      deco:function(sh){
+        var s=[];
+        s.push('<path d="M100,330 L500,245 L500,'+H+' L100,'+H+' Z" fill="'+(sh?'#eef3ee':'#d9e7cf')+'"/>');
+        for(var i=0;i<7;i++){
+          var t=(i+1)/8, x=100+400*t, y=330-85*t;
+          s.push(line({x:x,y:y},{x:x,y:y+18}, sh?'#dde5db':'#6b8f4e', 4));
+        }
+        s.push(txt(300, 392, '斜面の畑', sh?'#dfe4ea':'#4d7c0f', 15));
+        return s.join('');
+      }
+    }
+  ];
+
+  var JP = { hyp:'斜辺', opp:'対辺', adj:'隣辺' };
+  var COL = { hyp:'#0F172A', opp:'#1D6FB8', adj:'#C74700' };
+  var CLS = { hyp:'c-hyp', opp:'c-opp', adj:'c-adj' };
+  var SAY = { sin:'斜辺分の対辺', cos:'斜辺分の隣辺', tan:'隣辺分の対辺' };
+  var USES = { sin:['opp','hyp'], cos:['adj','hyp'], tan:['opp','adj'] };
+
+  var MAX_LEVEL = 6;
+  var LEVEL_LABELS = ['① 場面を読む','② 直角三角形を取り出す','③ θ と直角に印','④ 辺の名前をつける','⑤ 使う比を決める','⑥ 立式','⑦ 答え'];
+  var si = 0, level = 0, picked = null;
+
+  function S(){ return SCENES[si]; }
+  function sides(){
+    var s = S();
+    return {
+      hyp:{ p1:s.V, p2:s.T },
+      opp:{ p1:s.R, p2:s.T },
+      adj:{ p1:s.V, p2:s.R }
+    };
+  }
+  function sideLabel(key){
+    var s = S();
+    if(key===s.known) return s.knownLabel;
+    if(key===s.unknown) return s.symbol+' ＝ ?';
+    return '';
+  }
+
+  function drawFigure(){
+    var s = S(), sd = sides(), out = [];
+    var cen = { x:(s.V.x+s.R.x+s.T.x)/3, y:(s.V.y+s.R.y+s.T.y)/3 };
+    out.push('<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="#fbfcfe"/>');
+    out.push(s.deco(level>=1));   // level1 以降は背景をうすくする
+
+    // 三角形
+    if(level>=1){
+      out.push('<path d="M'+s.V.x+','+s.V.y+'L'+s.R.x+','+s.R.y+'L'+s.T.x+','+s.T.y+'Z" fill="#ffffff" fill-opacity="0.72" stroke="none"/>');
+    }
+    var used = USES[s.ratio];
+    ['hyp','opp','adj'].forEach(function(k){
+      var named = level>=3;
+      var fade = level>=5 && used.indexOf(k)<0;
+      var c = level<1 ? '#94a3b8' : (named ? (fade ? '#cbd5e1' : COL[k]) : '#334155');
+      var w = (level>=1 && named && !fade) ? 7 : (level>=1 ? 4 : 3);
+      out.push(line(sd[k].p1, sd[k].p2, c, w, level>=1 ? null : '7 6'));
+    });
+
+    if(level>=2){
+      out.push('<path d="'+rightMark(s.R, s.V, s.T, 18)+'" fill="none" stroke="#334155" stroke-width="2.5"/>');
+      out.push('<path d="'+arcPath(s.V, s.R, s.T, 44)+'" fill="none" stroke="#C74700" stroke-width="3"/>');
+      var u1 = norm(sub(s.R,s.V)), u2 = norm(sub(s.T,s.V));
+      var b = norm({x:u1.x+u2.x, y:u1.y+u2.y});
+      // 角がせまい場面は、2辺の間に文字が入らないので位置を個別に指定する
+      var ax = s.angAt ? s.V.x + s.angAt.dx : s.V.x + b.x*66;
+      var ay = s.angAt ? s.V.y + s.angAt.dy : s.V.y + b.y*66 + 6;
+      out.push(txt(ax, ay, s.angLabel, '#C74700', 19));
+    }
+
+    // 辺のラベル（長さは最初から、名前は level3 から）
+    ['hyp','opp','adj'].forEach(function(k){
+      var mx=(sd[k].p1.x+sd[k].p2.x)/2, my=(sd[k].p1.y+sd[k].p2.y)/2;
+      var n = norm({x:mx-cen.x, y:my-cen.y});
+      var lab = sideLabel(k);
+      var fade = level>=5 && used.indexOf(k)<0;
+      if(level>=3){
+        lab = (lab ? lab+'（'+JP[k]+'）' : JP[k]);
+      }
+      if(!lab) return;
+      var c = level>=3 ? (fade ? '#94a3b8' : COL[k]) : '#334155';
+      out.push(txt(mx+n.x*34, my+n.y*34+5, lab, c, 16));
+    });
+
+    if(level>=MAX_LEVEL){
+      out.push('<rect x="14" y="14" width="'+(W-28)+'" height="46" rx="8" fill="#fff3ea" stroke="#C74700" stroke-width="2"/>');
+      out.push(txt(W/2, 45, s.answer, '#C74700', 19));
+    }
+    $('figure').innerHTML = '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'+out.join('')+'</svg>';
+    $('figTitle').textContent = level>=1 ? '図（場面から取り出した直角三角形）' : '場面の図';
+    $('figNote').innerHTML = level>=1 ? '' : '「次へ」を押すと、この場面の中にある直角三角形が浮かび上がります。';
+  }
+
+  function buildSteps(){
+    var s = S();
+    var kj = JP[s.known], uj = JP[s.unknown];
+    return [
+      { level:1, body:'場面の中から<b>直角三角形</b>を取り出す。地面と垂直な線があれば、そこが直角。' },
+      { level:2, body:'分かっている角 <b>'+s.angLabel+'</b> が θ。θ の頂点と直角の頂点に印をつける。' },
+      { level:3, body:'θ から見て、分かっている <b>'+s.knownLabel+'</b> は <span class="'+CLS[s.known]+'">'+kj+'</span>。求めたい <b>'+s.unknownName+'</b>（'+s.symbol+'）は <span class="'+CLS[s.unknown]+'">'+uj+'</span>。' },
+      { level:4, body:'<b>'+kj+'</b> と <b>'+uj+'</b> の2つが出てきた。この組み合わせで使う比は <b>'+s.ratio+'</b>（'+SAY[s.ratio]+'）。右のカードで自分で選んでみよう。' },
+      { level:5, body:'ことばの式に数を入れる：<span class="mono">'+s.eq+'</span>' },
+      { level:6, body:'式を変形して計算する：<span class="mono">'+s.solve+'</span>' }
+    ];
+  }
+
+  function renderPicks(){
+    var s = S();
+    var rows = [
+      { r:'sin', a:'対辺', b:'斜辺', ac:'c-opp', bc:'c-hyp' },
+      { r:'cos', a:'隣辺', b:'斜辺', ac:'c-adj', bc:'c-hyp' },
+      { r:'tan', a:'対辺', b:'隣辺', ac:'c-opp', bc:'c-adj' }
+    ];
+    var open = level>=4;
+    $('picks').innerHTML = rows.map(function(o){
+      var cls = 'pick';
+      if(!open) cls += ' locked';
+      if(open && level>=5 && o.r===s.ratio) cls += ' right';
+      if(open && picked===o.r && o.r!==s.ratio) cls += ' wrong';
+      return '<div class="'+cls+'" data-r="'+o.r+'"><b>'+o.r+' θ</b>＝'+fracHTML(o.a,o.b,o.ac,o.bc)+
+        '<span style="font-size:13px;color:var(--sub)">（<span class="'+o.ac+'">'+o.a+'</span>と<span class="'+o.bc+'">'+o.b+'</span>が分かるとき）</span></div>';
+    }).join('');
+    if(open){
+      Array.prototype.forEach.call($('picks').querySelectorAll('.pick'), function(el){
+        el.addEventListener('click', function(){
+          picked = el.getAttribute('data-r');
+          if(picked===s.ratio){
+            $('pickFb').className = 'fb ok';
+            $('pickFb').textContent = '正解！ '+JP[s.known]+' と '+JP[s.unknown]+' が出てきたので '+s.ratio+'（'+SAY[s.ratio]+'）を使います。';
+            if(level<5) goTo(5);
+            else renderPicks();
+          } else {
+            $('pickFb').className = 'fb ng';
+            $('pickFb').textContent = picked+' は '+SAY[picked]+'。この場面で分かっているのは '+JP[s.known]+'、求めたいのは '+JP[s.unknown]+' です。もう一度考えてみよう。';
+            renderPicks();
+          }
+        });
+      });
+    }
+    if(!open && level<4){ $('pickFb').textContent = '　'; }
+  }
+
+  function renderSteps(){
+    var s = S(), steps = buildSteps();
+    $('steps').innerHTML = steps.map(function(st,i){
+      return '<div class="step'+(st.level>level?' dim':'')+'" data-level="'+st.level+'"><div class="step-num">'+(i+1)+'</div><div class="step-body">'+st.body+'</div></div>';
+    }).join('');
+    Array.prototype.forEach.call($('steps').querySelectorAll('.step'), function(el){
+      el.addEventListener('click', function(){ goTo(+el.getAttribute('data-level')); });
+    });
+    $('progress').textContent = LEVEL_LABELS[level];
+    $('prevBtn').disabled = level<=0;
+    $('nextBtn').disabled = level>=MAX_LEVEL;
+
+    var eq = $('eq');
+    if(level>=5){
+      eq.classList.remove('pending');
+      $('eqValue').innerHTML = '<span class="mono" style="font-size:20px">'+s.eq+'</span>';
+      $('eqLine2').innerHTML = level>=MAX_LEVEL ? ('<span class="mono">'+s.solve+'</span><br><span style="color:var(--orange-800)">'+s.answer+'</span>') : '';
+      $('eqNote').innerHTML = level>=MAX_LEVEL ? s.note : '「次へ」で計算に進みます。';
+    } else {
+      eq.classList.add('pending');
+      $('eqValue').textContent = 'ステップ⑤まで進むと出てきます';
+      $('eqLine2').textContent = '';
+      $('eqNote').textContent = '';
+    }
+  }
+
+  function goTo(n){
+    level = Math.max(0, Math.min(MAX_LEVEL, n));
+    drawFigure(); renderSteps(); renderPicks();
+  }
+  function setScene(i){
+    si = i; level = 0; picked = null;
+    $('story').innerHTML = S().story;
+    $('pickFb').className = 'fb'; $('pickFb').textContent = '　';
+    Array.prototype.forEach.call($('sceneBtns').querySelectorAll('button'), function(b){
+      b.classList.toggle('on', +b.getAttribute('data-i')===i);
+    });
+    goTo(0);
+  }
+
+  $('sceneBtns').innerHTML = SCENES.map(function(s,i){
+    return '<button data-i="'+i+'">'+s.name+'</button>';
+  }).join('');
+  Array.prototype.forEach.call($('sceneBtns').querySelectorAll('button'), function(b){
+    b.addEventListener('click', function(){ setScene(+b.getAttribute('data-i')); });
+  });
+  $('prevBtn').addEventListener('click', function(){ goTo(level-1); });
+  $('nextBtn').addEventListener('click', function(){ goTo(level+1); });
+
+  setScene(0);
+})();
+</script>
+</body>
+</html>
