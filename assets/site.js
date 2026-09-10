@@ -171,8 +171,8 @@
     mathA: SVG_OPEN + '<rect x="9" y="9" width="30" height="30" rx="6"/><g fill="currentColor" stroke="none"><circle cx="17" cy="17" r="2.4"/><circle cx="31" cy="17" r="2.4"/><circle cx="24" cy="24" r="2.4"/><circle cx="17" cy="31" r="2.4"/><circle cx="31" cy="31" r="2.4"/></g></svg>',
     // 数学Ⅱ：三角関数（正弦波）
     math2: SVG_OPEN + '<path d="M6 24h36"/><path d="M6 24c4-18 8-18 12 0s8 18 12 0 8-18 12 0"/></svg>',
-    // 数学B：数列（Σ）― 中央の頂点は左端（x=13）まで届かせる（そうしないと左右が偏って見える）
-    mathB: SVG_OPEN + '<path d="M13 9h22l-22 15 22 15H13"/></svg>',
+    // 数学B：数列（Σ）― 本物の∑は「中央の頂点が右（幅の約60%）」を向き、2本の斜線は横棒の左端につながる。逆にすると鏡文字になる
+    mathB: SVG_OPEN + '<path d="M35 9H13l13 15-13 15h22"/></svg>',
     // 数学Ⅲ：微分・積分（∫）
     math3: SVG_OPEN + '<path d="M32 10c-2-4-9-4-9 2v24c0 6-7 6-9 2"/><path d="M34 34h4M10 14h4" stroke-width="1.6"/></svg>',
     // 数学C：ベクトル（矢印）
