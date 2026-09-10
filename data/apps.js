@@ -40,5 +40,14 @@ const APP_DATA = [
     description: "係数と不等号を入れると、グラフのどの部分が答えになるかを段階的に確認できます。",
     file: "apps/quadratic-inequality.html",
     added: "2026-09-08"
+  },
+  {
+    subject: "数学Ⅰ",
+    unit: "図形と計量",
+    order: 20,
+    title: "三角比の相互関係シミュレーター",
+    description: "角θを動かしながら、単位円の図の上で sin²θ+cos²θ=1、tanθ=sinθ/cosθ、1+tan²θ=1/cos²θ が成り立つ理由を1段階ずつ確かめます。確認クイズ付き。",
+    file: "apps/trig-identities.html",
+    added: "2026-09-10"
   }
 ];

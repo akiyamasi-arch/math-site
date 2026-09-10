@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>三角比の相互関係シミュレーター｜数学学習サイト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
+<style>
+  /* サイト共通（assets/style.css）と同じトークン。アプリは1ファイル完結にするためここに再掲 */
+  :root{
+    --orange-50:#FFEEE2; --orange-100:#FFDFCA; --orange-400:#FF8D44;
+    --orange-700:#E25100; --orange-800:#C74700; --orange-900:#AC3E00;
+    --ink:#1E293B; --sub:#475569; --line:#D9DEE6; --line-strong:#B9C2CF;
+    --bg:#FBFBFA; --card:#FFFFFF; --focus:#FFD866;
+    --accent:#e63946; --accent-soft:#fde2e4; --neutral:#94a3b8;
+    --cos:#C74700;      /* 横（cos） */
+    --sin:#1D6FB8;      /* 縦（sin） */
+    --tan:#6D28D9;      /* 傾き（tan） */
+    --sp-1:8px; --sp-2:16px; --sp-3:24px; --sp-4:32px; --sp-6:48px;
+    --radius-sm:4px; --radius-md:8px; --radius-pill:999px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.7;}
+  a{color:var(--orange-800);}
+  a:focus-visible, button:focus-visible, input:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+  .brand-bar{height:6px;background:var(--orange-700);}
+  .site-header{background:var(--card);border-bottom:1px solid var(--line);padding:var(--sp-2);}
+  .site-header .inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;}
+  .site-title{margin:0;font-size:18px;font-weight:700;}
+  .site-title a{color:var(--ink);text-decoration:none;}
+  .back-link{font-size:14px;font-weight:700;}
+  .wrap{max-width:1100px;margin:0 auto;padding:var(--sp-3) var(--sp-2) var(--sp-6);}
+  h1{margin:0 0 4px;font-size:26px;line-height:1.4;}
+  .lead{margin:0 0 var(--sp-3);color:var(--sub);font-size:15px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--sp-2) var(--sp-3);}
+  .section-title{font-size:13px;font-weight:700;color:var(--sub);margin:0 0 var(--sp-1);}
+  .controls{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:end;}
+  .field label{display:block;font-size:12px;font-weight:700;color:var(--sub);}
+  .field input[type=number]{font-size:16px;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius-md);width:88px;text-align:center;font-family:inherit;}
+  .slider-field{flex:1 1 260px;min-width:220px;}
+  .slider-field input[type=range]{width:100%;height:32px;accent-color:var(--orange-800);}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;}
+  .presets button, .btn{border:1px solid var(--line);background:#f8fafc;color:var(--ink);padding:8px 14px;border-radius:var(--radius-pill);font-size:14px;cursor:pointer;font-family:inherit;}
+  .presets button:hover, .btn:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .btn:disabled{opacity:.35;cursor:default;}
+  .btn.primary{background:var(--orange-800);color:#fff;border-color:var(--orange-800);font-weight:700;}
+  .btn.primary:hover{background:var(--orange-900);color:#fff;}
+
+  .main-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:var(--sp-2);align-items:start;margin-top:var(--sp-2);}
+  @media (max-width:900px){ .main-grid{grid-template-columns:1fr;} }
+  .figure svg{width:100%;height:auto;display:block;}
+  .legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:var(--sub);margin-top:var(--sp-1);}
+  .legend span::before{content:"";display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:5px;vertical-align:middle;}
+  .lg-cos::before{background:var(--cos);}
+  .lg-sin::before{background:var(--sin);}
+  .lg-tan::before{background:var(--tan);}
+  .lg-r::before{background:var(--ink);}
+
+  /* 思考のステップ（クリックで巻き戻し／早送り） */
+  .stepper{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:var(--sp-2);padding-bottom:12px;border-bottom:1px dashed var(--line);}
+  .stepper .progress{font-size:12px;font-weight:700;color:var(--sub);text-align:center;flex:1;}
+  .steps{display:flex;flex-direction:column;gap:10px;}
+  .step{display:flex;gap:10px;padding:6px 8px;margin:0 -8px;border-radius:var(--radius-md);cursor:pointer;}
+  .step:hover{background:#f8fafc;}
+  .step.dim{opacity:.4;}
+  .step-num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .step.dim .step-num{background:#cbd5e1;}
+  .step-body{font-size:14px;line-height:1.7;}
+  .mono{font-family:Consolas,"Courier New",monospace;background:#f1f5f9;padding:1px 6px;border-radius:5px;}
+
+  /* 値のチップ */
+  .values{display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--sp-2);}
+  .chip{border:1px solid var(--line);border-radius:var(--radius-pill);padding:4px 14px;font-size:15px;background:#fff;}
+  .chip b{font-weight:700;}
+  .chip.cos{border-color:var(--cos);color:var(--cos);}
+  .chip.sin{border-color:var(--sin);color:var(--sin);}
+  .chip.tan{border-color:var(--tan);color:var(--tan);}
+  .chip.hidden-val{color:var(--neutral);border-color:var(--line);}
+
+  /* 相互関係のカード */
+  .rel{margin-top:var(--sp-2);padding:12px 16px;border:1.5px solid var(--orange-800);border-radius:var(--radius-md);background:linear-gradient(135deg,#fff3ea,#fff);}
+  .rel.pending{opacity:.5;border-color:var(--line);border-style:dashed;background:#fff;}
+  .rel .label{font-size:12px;font-weight:700;color:var(--orange-800);}
+  .rel.pending .label{color:var(--sub);}
+  .rel .formula{font-size:21px;font-weight:800;letter-spacing:.02em;}
+  .rel .check{font-size:14px;color:var(--sub);font-family:Consolas,"Courier New",monospace;}
+  .warn{background:#fff3cd;border:1px solid #ffe08a;color:#7a5b00;padding:10px 14px;border-radius:var(--radius-md);font-size:14px;margin-top:var(--sp-1);}
+
+  details.table-box{margin-top:var(--sp-3);}
+  details.table-box summary{cursor:pointer;font-weight:700;font-size:15px;padding:10px 0;}
+  .tbl-scroll{overflow-x:auto;}
+  table{border-collapse:collapse;font-size:15px;min-width:520px;background:#fff;}
+  th,td{border:1px solid var(--line);padding:6px 10px;text-align:center;white-space:nowrap;}
+  th{background:var(--orange-50);}
+  td.hi{background:#fff3ea;font-weight:700;color:var(--orange-800);}
+
+  /* 確認クイズ */
+  .quiz{margin-top:var(--sp-3);}
+  .q{padding:12px 0;border-top:1px solid var(--line);}
+  .q:first-child{border-top:none;}
+  .q .qtext{font-size:15px;font-weight:700;margin-bottom:8px;}
+  .opts{display:flex;flex-wrap:wrap;gap:8px;}
+  .opts button{border:1px solid var(--line);background:#fff;color:var(--ink);padding:8px 16px;border-radius:var(--radius-md);font-size:16px;cursor:pointer;font-family:inherit;min-width:72px;}
+  .opts button:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .opts button.ok{background:#e8f5e9;border-color:#2e7d32;color:#1b5e20;font-weight:700;}
+  .opts button.ng{background:#fdecea;border-color:#c62828;color:#b71c1c;}
+  .fb{font-size:14px;margin-top:8px;color:var(--sub);}
+  .fb.ok{color:#1b5e20;}
+</style>
+</head>
+<body>
+
+<div class="brand-bar"></div>
+<header class="site-header">
+  <div class="inner">
+    <p class="site-title"><a href="../index.html">数学学習サイト</a></p>
+    <a class="back-link" href="../unit.html?s=math1&u=zukei-keiryo">← 単元ページに戻る</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <h1>三角比の相互関係シミュレーター</h1>
+  <p class="lead">角の大きさを自分で動かしながら、単位円の図の上で sin²θ + cos²θ = 1、tan θ = sin θ / cos θ、1 + tan²θ = 1/cos²θ が成り立つ理由を、1段階ずつ組み立てて確かめます。</p>
+
+  <div class="card">
+    <div class="controls">
+      <div class="field">
+        <label for="thetaNum">角 θ（度）</label>
+        <input type="number" id="thetaNum" value="45" min="0" max="180" step="1">
+      </div>
+      <div class="field slider-field">
+        <label for="thetaRange">スライダーで動かす（0°〜180°）</label>
+        <input type="range" id="thetaRange" value="45" min="0" max="180" step="1">
+      </div>
+      <div class="presets">
+        <button data-preset="0">例① 45°</button>
+        <button data-preset="1">例② 30°</button>
+        <button data-preset="2">例③ 120°（鈍角）</button>
+        <button data-preset="3">例④ 90°</button>
+      </div>
+    </div>
+    <div id="inputNote"></div>
+  </div>
+
+  <div class="main-grid">
+    <div class="card figure">
+      <p class="section-title">単位円（半径1の円）</p>
+      <div id="figure"></div>
+      <div class="legend">
+        <span class="lg-r">半径 OP = 1</span>
+        <span class="lg-cos">横 = cos θ</span>
+        <span class="lg-sin">縦 = sin θ</span>
+        <span class="lg-tan">傾き = tan θ</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <p class="section-title">思考のステップ</p>
+        <div class="stepper">
+          <button class="btn" id="prevBtn">◀ 前へ</button>
+          <span class="progress" id="progress"></span>
+          <button class="btn primary" id="nextBtn">次へ ▶</button>
+        </div>
+        <div class="steps" id="steps"></div>
+        <div class="values" id="values"></div>
+        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn" id="resetBtn">最初（白紙）にもどす</button>
+          <button class="btn" id="autoBtn">▶ 通しで自動再生する</button>
+        </div>
+      </div>
+
+      <div class="rel pending" id="rel1">
+        <div class="label">相互関係 ①</div>
+        <div class="formula">sin²θ + cos²θ = 1</div>
+        <div class="check" id="check1"></div>
+      </div>
+      <div class="rel pending" id="rel2">
+        <div class="label">相互関係 ②</div>
+        <div class="formula">tan θ = sin θ / cos θ</div>
+        <div class="check" id="check2"></div>
+      </div>
+      <div class="rel pending" id="rel3">
+        <div class="label">相互関係 ③</div>
+        <div class="formula">1 + tan²θ = 1 / cos²θ</div>
+        <div class="check" id="check3"></div>
+      </div>
+    </div>
+  </div>
+
+  <details class="table-box">
+    <summary>特別な角の三角比の表（いま選んでいる角に色が付きます）</summary>
+    <div class="tbl-scroll" id="tblBox"></div>
+  </details>
+
+  <div class="card quiz">
+    <p class="section-title">確認クイズ（相互関係を使う）</p>
+    <div id="quiz"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  // ---- 状態 ----
+  // level：どの段階まで描くか。0 = 白紙（単位円の骨組みだけ）。MAX_LEVEL で3つの関係が出そろう。
+  const MAX_LEVEL = 5;
+  const LEVEL_LABELS = [
+    '① 単位円を用意する',
+    '② 角θをとって点Pを決める',
+    '③ Pの座標は (cos θ, sin θ)',
+    '④ 三平方の定理 → sin²θ+cos²θ=1',
+    '⑤ OPの傾き → tan θ = sin θ/cos θ',
+    '⑥ x=1 との交点 → 1+tan²θ = 1/cos²θ'
+  ];
+  let level = 0;
+  let theta = 45;       // 度
+  let state = null;
+  let autoTimer = null;
+
+  const $ = function(id){ return document.getElementById(id); };
+  const MINUS = '−';                       // 表示用のマイナス記号
+
+  function fmt(x){                              // 小数第3位（−0.000 を防ぐ）
+    if(x === null || !isFinite(x)) return '—';
+    var v = x.toFixed(3);
+    if(v === '-0.000') v = '0.000';
+    return v.replace('-', MINUS);
+  }
+
+  function par(x){                              // 負の数はかっこでくくる（(−0.500)² のように）
+    return (x < 0) ? '(' + fmt(x) + ')' : fmt(x);
+  }
+
+  // 特別な角の厳密値
+  const EXACT = {
+    0:   {s:'0',    c:'1',            t:'0'},
+    30:  {s:'1/2',  c:'√3/2',    t:'1/√3'},
+    45:  {s:'√2/2', c:'√2/2', t:'1'},
+    60:  {s:'√3/2', c:'1/2',     t:'√3'},
+    90:  {s:'1',    c:'0',            t:'なし'},
+    120: {s:'√3/2', c:MINUS+'1/2',      t:MINUS+'√3'},
+    135: {s:'√2/2', c:MINUS+'√2/2', t:MINUS+'1'},
+    150: {s:'1/2',       c:MINUS+'√3/2', t:MINUS+'1/√3'},
+    180: {s:'0',         c:MINUS+'1',        t:'0'}
+  };
+
+  // ---- 数学（角 → 各値）----
+  function solve(deg){
+    var rad = deg * Math.PI / 180;
+    var s = Math.sin(rad), c = Math.cos(rad);
+    if(Math.abs(s) < 1e-12) s = 0;
+    if(Math.abs(c) < 1e-12) c = 0;
+    var tanDefined = (c !== 0);
+    var t = tanDefined ? s / c : null;
+    return { deg: deg, rad: rad, s: s, c: c, t: t, tanDefined: tanDefined, ex: EXACT[deg] || null };
+  }
+
+  function exOr(kind){                 // 厳密値があれば「√3/2 ≈ 0.866」の形で
+    var ex = state.ex;
+    var num = kind === 's' ? state.s : kind === 'c' ? state.c : state.t;
+    if(kind === 't' && !state.tanDefined) return '定義されない';
+    if(ex && ex[kind] && ex[kind] !== 'なし'){
+      // 0, 1, −1 のような値は「≈ 1.000」を付けない
+      if(ex[kind].indexOf('√') < 0 && ex[kind].indexOf('/') < 0) return ex[kind];
+      return ex[kind] + ' ≈ ' + fmt(num);
+    }
+    return fmt(num);
+  }
+
+  // ---- 図（level に応じて段階的に描く）----
+  const XMIN = -1.45, XMAX = 1.8, YMIN = -1.95, YMAX = 1.45;
+  const SVGW = 480, SC = SVGW / (XMAX - XMIN), SVGH = Math.round((YMAX - YMIN) * SC);
+  function X(u){ return ((u - XMIN) * SC).toFixed(1); }
+  function Y(v){ return ((YMAX - v) * SC).toFixed(1); }
+
+  function arcPolyline(r, fromDeg, toDeg, attrs){
+    var pts = [], n = Math.max(2, Math.round(Math.abs(toDeg - fromDeg) / 2) + 1), i, a;
+    for(i = 0; i < n; i++){
+      a = (fromDeg + (toDeg - fromDeg) * i / (n - 1)) * Math.PI / 180;
+      pts.push(X(r * Math.cos(a)) + ',' + Y(r * Math.sin(a)));
+    }
+    return '<polyline points="' + pts.join(' ') + '" ' + attrs + '/>';
+  }
+  // 文字は白いふちどり（ハロー）を付けて、線の上に重なっても読めるようにする
+  function txt(u, v, s, attrs){
+    return '<text x="' + X(u) + '" y="' + Y(v) + '" paint-order="stroke" stroke="#ffffff" ' +
+           'stroke-width="3.5" stroke-linejoin="round" ' + (attrs || '') + '>' + s + '</text>';
+  }
+
+  function drawFigure(){
+    var st = state, c = st.c, s = st.s, t = st.t;
+    var g = '';
+
+    g += '<defs><clipPath id="plotClip"><rect x="0" y="0" width="' + SVGW + '" height="' + SVGH + '"/></clipPath></defs>';
+    g += '<rect x="0" y="0" width="' + SVGW + '" height="' + SVGH + '" fill="#ffffff"/>';
+
+    [-1, 1].forEach(function(k){
+      g += '<line x1="' + X(k) + '" y1="0" x2="' + X(k) + '" y2="' + SVGH + '" stroke="#eef1f5" stroke-width="1"/>';
+      g += '<line x1="0" y1="' + Y(k) + '" x2="' + SVGW + '" y2="' + Y(k) + '" stroke="#eef1f5" stroke-width="1"/>';
+    });
+
+    // 単位円（上半分を濃く）
+    g += '<circle cx="' + X(0) + '" cy="' + Y(0) + '" r="' + SC.toFixed(1) + '" fill="none" stroke="#e3e8ef" stroke-width="1.5" stroke-dasharray="4 4"/>';
+    g += arcPolyline(1, 0, 180, 'fill="none" stroke="#B9C2CF" stroke-width="2"');
+
+    // 軸
+    g += '<line x1="0" y1="' + Y(0) + '" x2="' + SVGW + '" y2="' + Y(0) + '" stroke="#334155" stroke-width="1.6"/>';
+    g += '<line x1="' + X(0) + '" y1="0" x2="' + X(0) + '" y2="' + SVGH + '" stroke="#334155" stroke-width="1.6"/>';
+    g += txt(0.05, -0.16, 'O', 'font-size="15" fill="#475569"');
+    g += txt(1, -0.16, '1', 'font-size="14" fill="#94a3b8" text-anchor="middle"');
+    g += txt(-1, -0.16, MINUS + '1', 'font-size="14" fill="#94a3b8" text-anchor="middle"');
+    g += txt(-0.06, 0.97, '1', 'font-size="14" fill="#94a3b8" text-anchor="end"');
+
+    // level 1：半径OPと角θ
+    if(level >= 1){
+      g += arcPolyline(0.34, 0, st.deg, 'fill="none" stroke="#E25100" stroke-width="2.5"');
+      var midA = st.deg / 2 * Math.PI / 180;
+      g += txt(0.55 * Math.cos(midA), 0.55 * Math.sin(midA), 'θ = ' + st.deg + '°',
+               'font-size="16" font-weight="700" fill="#C74700" text-anchor="middle"');
+      g += '<line x1="' + X(0) + '" y1="' + Y(0) + '" x2="' + X(c) + '" y2="' + Y(s) + '" stroke="#1E293B" stroke-width="2.5"/>';
+      g += '<circle cx="' + X(c) + '" cy="' + Y(s) + '" r="6" fill="#1E293B"/>';
+      g += txt(c + (c < 0 ? -0.07 : 0.07), s + 0.11, 'P', 'font-size="16" font-weight="700" fill="#1E293B" text-anchor="' + (c < 0 ? 'end' : 'start') + '"');
+    }
+
+    // level 2：直角三角形（横=cos、縦=sin、斜辺=1）
+    if(level >= 2){
+      g += '<polygon points="' + X(0) + ',' + Y(0) + ' ' + X(c) + ',' + Y(0) + ' ' + X(c) + ',' + Y(s) + '" fill="' + (level >= 3 ? 'rgba(255,141,68,0.24)' : 'rgba(148,163,184,0.14)') + '"/>';
+      g += '<line x1="' + X(0) + '" y1="' + Y(0) + '" x2="' + X(c) + '" y2="' + Y(0) + '" stroke="#C74700" stroke-width="4"/>';
+      g += '<line x1="' + X(c) + '" y1="' + Y(0) + '" x2="' + X(c) + '" y2="' + Y(s) + '" stroke="#1D6FB8" stroke-width="4"/>';
+      if(c !== 0){
+        var d = (c > 0 ? -0.09 : 0.09);
+        g += '<polyline points="' + X(c + d) + ',' + Y(0) + ' ' + X(c + d) + ',' + Y(0.09) + ' ' + X(c) + ',' + Y(0.09) + '" fill="none" stroke="#94a3b8" stroke-width="1.5"/>';
+      }
+      g += txt(c / 2, -0.20, 'cos θ = ' + fmt(c), 'font-size="15" font-weight="700" fill="#C74700" text-anchor="middle"');
+      g += txt(c + (c < 0 ? -0.09 : 0.09), s / 2, 'sin θ = ' + fmt(s), 'font-size="15" font-weight="700" fill="#1D6FB8" text-anchor="' + (c < 0 ? 'end' : 'start') + '"');
+      var mx = c / 2 - s * 0.13, my = s / 2 + c * 0.13;
+      g += txt(mx, my, '1', 'font-size="17" font-weight="700" fill="#1E293B" text-anchor="middle"');
+      g += txt(c + (c < 0 ? 0.06 : -0.06), s + 0.28, 'P(' + fmt(c) + ', ' + fmt(s) + ')',
+               'font-size="14" fill="#475569" text-anchor="' + (c < 0 ? 'start' : 'end') + '"');
+    }
+
+    // level 3：三平方の定理の式を図の中に
+    if(level >= 3){
+      g += txt(-1.38, -1.02, 'cos²θ + sin²θ = 1²', 'font-size="16" font-weight="700" fill="#C74700"');
+      g += txt(-1.38, -1.28, fmt(c * c) + ' + ' + fmt(s * s) + ' = ' + fmt(c * c + s * s), 'font-size="15" fill="#475569"');
+    }
+
+    // level 4：直線OP（傾き = tan θ）
+    if(level >= 4){
+      if(st.tanDefined){
+        g += '<line x1="' + X(XMIN) + '" y1="' + Y(t * XMIN) + '" x2="' + X(XMAX) + '" y2="' + Y(t * XMAX) + '" stroke="#6D28D9" stroke-width="2" stroke-dasharray="7 5" clip-path="url(#plotClip)" opacity="0.85"/>';
+      }else{
+        g += '<line x1="' + X(0) + '" y1="0" x2="' + X(0) + '" y2="' + SVGH + '" stroke="#6D28D9" stroke-width="2" stroke-dasharray="7 5" opacity="0.85"/>';
+      }
+    }
+
+    // level 5：直線 x=1 との交点 T
+    if(level >= 5){
+      g += '<line x1="' + X(1) + '" y1="0" x2="' + X(1) + '" y2="' + SVGH + '" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 4"/>';
+      g += txt(1.05, 1.28, 'x = 1', 'font-size="14" fill="#94a3b8"');
+      if(st.tanDefined && t >= YMIN + 0.15 && t <= YMAX - 0.15){
+        g += '<line x1="' + X(0) + '" y1="' + Y(0) + '" x2="' + X(1) + '" y2="' + Y(t) + '" stroke="#6D28D9" stroke-width="3"/>';
+        g += '<line x1="' + X(1) + '" y1="' + Y(0) + '" x2="' + X(1) + '" y2="' + Y(t) + '" stroke="#6D28D9" stroke-width="4"/>';
+        g += '<circle cx="' + X(1) + '" cy="' + Y(t) + '" r="6" fill="#6D28D9"/>';
+        g += txt(1.07, t + 0.14, 'T(1, tan θ)', 'font-size="15" font-weight="700" fill="#6D28D9"');
+        g += txt(1.07, t / 2, 'tan θ = ' + fmt(t), 'font-size="14" font-weight="700" fill="#6D28D9"');
+        g += txt(-1.38, -1.60, 'OT = 1/|cos θ| = ' + fmt(1 / Math.abs(c)), 'font-size="15" font-weight="700" fill="#6D28D9"');
+      }else if(st.tanDefined){
+        g += txt(-1.38, -1.60, 'tan θ が大きすぎて交点Tは図の外', 'font-size="15" font-weight="700" fill="#6D28D9"');
+      }else{
+        g += txt(-1.38, -1.60, '直線OPは x=1 と平行 → 交点なし', 'font-size="15" font-weight="700" fill="#6D28D9"');
+      }
+    }
+
+    $('figure').innerHTML =
+      '<svg viewBox="0 0 ' + SVGW + ' ' + SVGH + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="単位円と三角比の図">' + g + '</svg>';
+  }
+
+  // ---- 思考のステップ（各項目は level に対応）----
+  function buildSteps(){
+    var st = state, c = st.c, s = st.s, t = st.t;
+    var tanText = st.tanDefined ? fmt(t) : '定義されない';
+    return [
+      { level: 1, body: '原点Oを中心とする半径1の円（単位円）で、x軸の正の向きから <span class="mono">θ = ' + st.deg + '°</span> だけ回った半径OPをとる。' },
+      { level: 2, body: '点Pから x軸に垂線をおろすと、横 <span class="mono">' + fmt(c) + '</span>、縦 <span class="mono">' + fmt(s) + '</span>、斜辺 <span class="mono">1</span> の直角三角形ができる。半径が1なので <b>Pの座標がそのまま (cos θ, sin θ)</b>。' },
+      { level: 3, body: 'この直角三角形に三平方の定理を使うと <span class="mono">(cos θ)² + (sin θ)² = 1²</span>。数値：<span class="mono">' + fmt(c * c) + ' + ' + fmt(s * s) + ' = ' + fmt(c * c + s * s) + '</span>。θ をどこに動かしても斜辺は1のままなので、値は変わらない。' },
+      { level: 4, body: '直線OPの傾きは（縦）÷（横）＝ <span class="mono">' + fmt(s) + ' ÷ ' + par(c) + '</span>。これが <span class="mono">tan θ = ' + tanText + '</span>。' + (st.tanDefined ? '' : '<b> cos 90° = 0 で割り算ができないので、tan 90° は定義されない。</b>') },
+      { level: 5, body: '直線 x = 1 との交点Tの y座標が tan θ。三角形 O–(1,0)–T は、はじめの直角三角形を <span class="mono">1/|cos θ|</span> 倍に拡大した形なので <span class="mono">OT = 1/|cos θ|</span>。三平方の定理から <span class="mono">1² + tan²θ = OT²</span>、つまり <span class="mono">1 + tan²θ = 1/cos²θ</span>。' }
+    ];
+  }
+
+  function renderSteps(){
+    var steps = buildSteps();
+    $('steps').innerHTML = steps.map(function(s, i){
+      return '<div class="step' + (s.level > level ? ' dim' : '') + '" data-level="' + s.level + '">' +
+             '<div class="step-num">' + (i + 1) + '</div><div class="step-body">' + s.body + '</div></div>';
+    }).join('');
+    Array.prototype.forEach.call($('steps').querySelectorAll('.step'), function(el){
+      el.addEventListener('click', function(){ stopAuto(); goTo(+el.dataset.level); });
+    });
+    $('progress').textContent = LEVEL_LABELS[level];
+    $('prevBtn').disabled = level <= 0;
+    $('nextBtn').disabled = level >= MAX_LEVEL;
+  }
+
+  function renderValues(){
+    var st = state;
+    var items = [
+      { cls: 'sin', name: 'sin ' + st.deg + '°', show: level >= 2, val: exOr('s') },
+      { cls: 'cos', name: 'cos ' + st.deg + '°', show: level >= 2, val: exOr('c') },
+      { cls: 'tan', name: 'tan ' + st.deg + '°', show: level >= 4, val: exOr('t') }
+    ];
+    $('values').innerHTML = items.map(function(it){
+      return '<span class="chip ' + (it.show ? it.cls : 'hidden-val') + '"><b>' + it.name + '</b> = ' +
+             (it.show ? it.val : '？') + '</span>';
+    }).join('');
+  }
+
+  function renderRelations(){
+    var st = state, c = st.c, s = st.s, t = st.t;
+    function set(id, checkId, need, text){
+      var box = $(id);
+      if(level >= need){
+        box.classList.remove('pending');
+        $(checkId).innerHTML = text;
+      }else{
+        box.classList.add('pending');
+        $(checkId).textContent = 'ステップ' + '③④⑤'.charAt(need - 3) + 'まで進めると確かめられます';
+      }
+    }
+    set('rel1', 'check1', 3, 'θ = ' + st.deg + '° のとき　' + par(s) + '² + ' + par(c) + '² = ' +
+        fmt(s * s) + ' + ' + fmt(c * c) + ' = <b>' + fmt(s * s + c * c) + '</b>');
+    set('rel2', 'check2', 4, st.tanDefined
+        ? ('θ = ' + st.deg + '° のとき　' + fmt(s) + ' ÷ ' + par(c) + ' = <b>' + fmt(t) + '</b>')
+        : ('θ = 90° は cos 90° = 0 なので割れない → <b>tan 90° は定義されない</b>'));
+    set('rel3', 'check3', 5, st.tanDefined
+        ? ('θ = ' + st.deg + '° のとき　1 + ' + par(t) + '² = <b>' + fmt(1 + t * t) + '</b>　／　1 ÷ ' + par(c) + '² = <b>' + fmt(1 / (c * c)) + '</b>')
+        : ('θ = 90° では cos 90° = 0 なので、この式も使えない'));
+  }
+
+  // ---- 特別な角の表 ----
+  function renderTable(){
+    var angles = [0, 30, 45, 60, 90, 120, 135, 150, 180];
+    var h = '<table><thead><tr><th>θ</th>' + angles.map(function(a){ return '<th>' + a + '°</th>'; }).join('') + '</tr></thead><tbody>';
+    ['s', 'c', 't'].forEach(function(k){
+      var name = k === 's' ? 'sin θ' : k === 'c' ? 'cos θ' : 'tan θ';
+      h += '<tr><th>' + name + '</th>' + angles.map(function(a){
+        return '<td class="' + (a === state.deg ? 'hi' : '') + '">' + EXACT[a][k] + '</td>';
+      }).join('') + '</tr>';
+    });
+    h += '</tbody></table>';
+    $('tblBox').innerHTML = h;
+  }
+
+  // ---- 確認クイズ ----
+  var QUIZ = [
+    { q: 'θ = 120° のとき、cos θ の値は？',
+      opts: ['1/2', MINUS + '1/2', '√3/2', MINUS + '√3/2'], ans: 1,
+      exp: '単位円で120° の点Pの x座標が cos θ。Pは y軸より左にあるので負で ' + MINUS + '1/2。' },
+    { q: 'sin²θ + cos²θ の値は、θ を動かすとどうなる？',
+      opts: ['θによって変わる', 'いつも1', 'いつも0', '90°のときだけ1'], ans: 1,
+      exp: '斜辺が1の直角三角形なので、三平方の定理からいつも1になる。' },
+    { q: 'sin θ = 3/5 で θ が鋭角のとき、cos θ は？',
+      opts: ['3/4', '4/5', MINUS + '4/5', '5/4'], ans: 1,
+      exp: 'cos²θ = 1 ' + MINUS + ' (3/5)² = 16/25。鋭角なので cos θ > 0 で 4/5。' },
+    { q: 'sin θ = 3/5、cos θ = ' + MINUS + '4/5 のとき、tan θ は？',
+      opts: ['3/4', MINUS + '3/4', '4/3', MINUS + '4/3'], ans: 1,
+      exp: 'tan θ = sin θ ÷ cos θ = (3/5) ÷ (' + MINUS + '4/5) = ' + MINUS + '3/4。' }
+  ];
+
+  function renderQuiz(){
+    $('quiz').innerHTML = QUIZ.map(function(item, i){
+      return '<div class="q"><div class="qtext">問' + (i + 1) + '　' + item.q + '</div>' +
+             '<div class="opts" data-q="' + i + '">' + item.opts.map(function(o, j){
+               return '<button type="button" data-i="' + j + '">' + o + '</button>';
+             }).join('') + '</div><div class="fb" id="fb' + i + '"></div></div>';
+    }).join('');
+    Array.prototype.forEach.call($('quiz').querySelectorAll('.opts'), function(box){
+      var qi = +box.dataset.q;
+      Array.prototype.forEach.call(box.querySelectorAll('button'), function(btn){
+        btn.addEventListener('click', function(){
+          var pick = +btn.dataset.i, correct = QUIZ[qi].ans;
+          Array.prototype.forEach.call(box.querySelectorAll('button'), function(b){ b.classList.remove('ok', 'ng'); });
+          btn.classList.add(pick === correct ? 'ok' : 'ng');
+          if(pick !== correct) box.querySelectorAll('button')[correct].classList.add('ok');
+          var fb = $('fb' + qi);
+          fb.className = 'fb' + (pick === correct ? ' ok' : '');
+          fb.textContent = (pick === correct ? '正解！ ' : 'おしい。正解は ' + QUIZ[qi].opts[correct] + '。') + QUIZ[qi].exp;
+        });
+      });
+    });
+  }
+
+  // ---- 進行 ----
+  function goTo(n){
+    level = Math.max(0, Math.min(MAX_LEVEL, n));
+    drawFigure();
+    renderSteps();
+    renderValues();
+    renderRelations();
+  }
+
+  function stopAuto(){
+    if(autoTimer){
+      clearInterval(autoTimer);
+      autoTimer = null;
+      $('autoBtn').textContent = '▶ 通しで自動再生する';
+    }
+  }
+
+  // 角を変えたときは、いま見ている段階を保ったまま図と数値だけ更新する
+  // （「動かしながら関係が成り立つことを確かめる」のがこのアプリのねらいのため）
+  function updateTheta(deg, backToZero){
+    if(!isFinite(deg)){
+      $('inputNote').innerHTML = '<div class="warn">0〜180 の数値を入れてください。</div>';
+      return;
+    }
+    theta = Math.max(0, Math.min(180, Math.round(deg)));
+    $('thetaNum').value = theta;
+    $('thetaRange').value = theta;
+    $('inputNote').innerHTML = (theta === 90)
+      ? '<div class="warn">θ = 90° は cos 90° = 0 になるため、tan 90° と 1+tan²θ の式は使えません。図で理由を確かめてみましょう。</div>'
+      : '';
+    state = solve(theta);
+    renderTable();
+    goTo(backToZero ? 0 : level);
+  }
+
+  // ---- イベント ----
+  var presets = [45, 30, 120, 90];
+  Array.prototype.forEach.call(document.querySelectorAll('.presets button'), function(btn){
+    btn.addEventListener('click', function(){ stopAuto(); updateTheta(presets[+btn.dataset.preset], false); });
+  });
+  $('thetaNum').addEventListener('input', function(){ stopAuto(); updateTheta(parseFloat(this.value), false); });
+  $('thetaRange').addEventListener('input', function(){ stopAuto(); updateTheta(parseFloat(this.value), false); });
+  $('prevBtn').addEventListener('click', function(){ stopAuto(); goTo(level - 1); });
+  $('nextBtn').addEventListener('click', function(){ stopAuto(); goTo(level + 1); });
+  $('resetBtn').addEventListener('click', function(){ stopAuto(); goTo(0); });
+  $('autoBtn').addEventListener('click', function(){
+    if(autoTimer){ stopAuto(); return; }
+    goTo(0);
+    $('autoBtn').textContent = '■ 停止';
+    autoTimer = setInterval(function(){
+      if(level >= MAX_LEVEL){ stopAuto(); return; }
+      goTo(level + 1);
+    }, 1400);
+  });
+
+  renderQuiz();
+  updateTheta(45, true);
+})();
+</script>
+</body>
+</html>
