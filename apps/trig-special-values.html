@@ -79,10 +79,14 @@
   .res .how{font-size:12px;color:var(--sub);}
 
   .tbl-scroll{overflow-x:auto;}
-  table{border-collapse:collapse;font-size:16px;min-width:520px;background:#fff;}
-  th,td{border:1px solid var(--line);padding:8px 12px;text-align:center;white-space:nowrap;}
+  table{border-collapse:collapse;font-size:17px;min-width:520px;background:#fff;}
+  th,td{border:1px solid var(--line);padding:10px 14px;text-align:center;white-space:nowrap;}
   th{background:var(--orange-50);}
+  td{height:62px;}
   td.hi{background:#fff3ea;font-weight:700;color:var(--orange-800);}
+  td .frac{font-weight:700;}
+  td .frac .num2, td .frac .den{padding:0 4px;}
+  .neg{display:inline-flex;align-items:center;gap:4px;vertical-align:middle;}
   .tip{background:#eef6fd;border:1px solid #b6d8f2;color:#134f77;padding:12px 16px;border-radius:var(--radius-md);font-size:14px;margin-top:var(--sp-2);}
 
   /* フラッシュ練習 */
@@ -91,7 +95,7 @@
   @media (max-width:600px){ .flash .qbig{font-size:36px;} }
   .flash .meta{font-size:13px;color:var(--sub);}
   .opts{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:var(--sp-2);}
-  .opts button{border:1.5px solid var(--line);background:#fff;color:var(--ink);padding:12px 20px;border-radius:var(--radius-md);font-size:20px;font-weight:700;cursor:pointer;font-family:inherit;min-width:92px;}
+  .opts button{border:1.5px solid var(--line);background:#fff;color:var(--ink);padding:10px 20px;border-radius:var(--radius-md);font-size:20px;font-weight:700;cursor:pointer;font-family:inherit;min-width:92px;min-height:64px;line-height:1.25;}
   .opts button:hover{border-color:var(--orange-800);background:var(--orange-50);}
   .opts button.ok{background:#e8f5e9;border-color:#2e7d32;color:#1b5e20;}
   .opts button.ng{background:#fdecea;border-color:#c62828;color:#b71c1c;}
@@ -152,28 +156,14 @@
   <h2><span class="num">2</span>覚え方の表</h2>
   <p class="sublead">つくった値をまとめると次のようになります。0°と90°は、直角三角形をぺたんとつぶした形（または単位円）で考えます。</p>
   <div class="card">
-    <div class="tbl-scroll">
-      <table>
-        <tr><th>θ</th><th>0°</th><th>30°</th><th>45°</th><th>60°</th><th>90°</th></tr>
-        <tr><th>sin θ</th><td>0</td><td class="hi">1/2</td><td class="hi">1/√2</td><td class="hi">√3/2</td><td>1</td></tr>
-        <tr><th>cos θ</th><td>1</td><td class="hi">√3/2</td><td class="hi">1/√2</td><td class="hi">1/2</td><td>0</td></tr>
-        <tr><th>tan θ</th><td>0</td><td class="hi">1/√3</td><td class="hi">1</td><td class="hi">√3</td><td>なし</td></tr>
-      </table>
-    </div>
+    <div id="mainTable"></div>
     <div class="tip">
       <b>並べ方のコツ</b>：sin は 0°から順に <span class="mono">√0/2, √1/2, √2/2, √3/2, √4/2</span> と書くと、そのまま <span class="mono">0, 1/2, 1/√2, √3/2, 1</span> になります（√2/2 と 1/√2 は同じ値）。<b>cos はその逆順</b>、<b>tan は sin ÷ cos</b>。<br>
       表を丸暗記するより、<b>1:√3:2 の三角形</b>と<b>1:1:√2 の三角形</b>を手でかいて、そこから「斜辺分の対辺」で読み取れるほうが確実です。
     </div>
     <details style="margin-top:var(--sp-2);">
       <summary style="cursor:pointer;font-weight:700;">120°・135°・150° まで（鈍角）を見る</summary>
-      <div class="tbl-scroll" style="margin-top:var(--sp-1);">
-        <table>
-          <tr><th>θ</th><th>120°</th><th>135°</th><th>150°</th><th>180°</th></tr>
-          <tr><th>sin θ</th><td>√3/2</td><td>1/√2</td><td>1/2</td><td>0</td></tr>
-          <tr><th>cos θ</th><td>-1/2</td><td>-1/√2</td><td>-√3/2</td><td>-1</td></tr>
-          <tr><th>tan θ</th><td>-√3</td><td>-1</td><td>-1/√3</td><td>0</td></tr>
-        </table>
-      </div>
+      <div id="obtuseTable" style="margin-top:var(--sp-1);"></div>
       <p class="sublead" style="margin-top:8px;">sin は同じ、cos と tan は符号が変わります（180°−θ の関係）。単位円で確かめたいときは「三角比の相互関係シミュレーター」へ。</p>
     </details>
   </div>
@@ -473,6 +463,25 @@
     180:'180°は反対向き。sin 180°=0、cos 180°=-1、tan 180°=0。'
   };
 
+  // "√3/2" のような文字列を、横線のある普通の分数の形にして返す（"-1/2" は マイナス＋分数）
+  function valHTML(v){
+    var s = String(v), neg = false;
+    if(s.charAt(0)==='-'){ neg = true; s = s.slice(1); }
+    var html;
+    if(s.indexOf('/')<0){ html = s; }
+    else { var p = s.split('/'); html = fracHTML(p[0], p[1]); }
+    return neg ? '<span class="neg">−'+html+'</span>' : html;
+  }
+  function buildTable(angles, hiAngles){
+    var head = '<tr><th>θ</th>'+angles.map(function(a){ return '<th>'+a+'°</th>'; }).join('')+'</tr>';
+    var rows = ['sin','cos','tan'].map(function(f){
+      return '<tr><th>'+f+' θ</th>'+angles.map(function(a){
+        return '<td'+(hiAngles.indexOf(a)>=0 ? ' class="hi"' : '')+'>'+valHTML(VAL[f][a])+'</td>';
+      }).join('')+'</tr>';
+    }).join('');
+    return '<div class="tbl-scroll"><table>'+head+rows+'</table></div>';
+  }
+
   var range = 'special', fns = ['sin','cos','tan'], total = 10;
   var qList = [], qi = 0, score = 0, tStart = 0, qStart = 0, wrongs = [], running = false, locked = false;
 
@@ -539,7 +548,7 @@
     $('ffb').textContent = '　'; $('ffb').className = 'fb';
     $('fbar').style.width = Math.round(qi/total*100)+'%';
     var opts = optionsFor(q);
-    $('fopts').innerHTML = opts.map(function(v){ return '<button data-v="'+v+'">'+v+'</button>'; }).join('');
+    $('fopts').innerHTML = opts.map(function(v){ return '<button data-v="'+v+'">'+valHTML(v)+'</button>'; }).join('');
     Array.prototype.forEach.call($('fopts').querySelectorAll('button'), function(b){
       b.addEventListener('click', function(){ answer(b); });
     });
@@ -564,7 +573,7 @@
       var wl = q.fn+' '+q.ang+'°';
       if(wrongs.indexOf(wl)<0) wrongs.push(wl);
       $('ffb').className = 'fb ng';
-      $('ffb').innerHTML = '正しくは <b>'+q.fn+' '+q.ang+'° ＝ '+correct+'</b><br><span style="color:var(--sub);font-weight:400">'+(HINT[q.ang]||'')+'</span><br><button class="btn primary" id="contBtn" style="margin-top:6px;">次へ ▶</button>';
+      $('ffb').innerHTML = '正しくは <b>'+q.fn+' '+q.ang+'° ＝ </b>'+valHTML(correct)+'<br><span style="color:var(--sub);font-weight:400">'+(HINT[q.ang]||'')+'</span><br><button class="btn primary" id="contBtn" style="margin-top:6px;">次へ ▶</button>';
       $('contBtn').addEventListener('click', next);
     }
   }
@@ -632,6 +641,8 @@
   });
 
   /* ---------- 起動 ---------- */
+  $('mainTable').innerHTML = buildTable([0,30,45,60,90],[30,45,60]);
+  $('obtuseTable').innerHTML = buildTable([120,135,150,180],[]);
   renderDeriv();
   showBest();
 })();
