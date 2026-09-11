@@ -70,6 +70,15 @@
   .step.dim .step-num{background:#cbd5e1;}
   .step-body{font-size:14px;line-height:1.7;}
   .mono{font-family:Consolas,"Courier New",monospace;background:#f1f5f9;padding:1px 6px;border-radius:5px;}
+  /* 分数は横線の縦組みで表示する（1/2 のような斜線表記は画面に出さない） */
+  .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25;margin:0 2px;}
+  .frac .num, .frac .den{padding:0 4px;white-space:nowrap;}
+  .frac .bar{display:block;width:100%;height:2px;background:currentColor;margin:2px 0;}
+  .neg{display:inline-flex;align-items:center;gap:3px;vertical-align:middle;}
+  .math{font-weight:700;}
+  .lead .frac, .rel .formula .frac{font-weight:inherit;}
+  .opts button{min-height:52px;line-height:1.25;}
+  td{height:54px;}
 
   /* 値のチップ */
   .values{display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--sp-2);}
@@ -123,7 +132,7 @@
 
 <div class="wrap">
   <h1>三角比の相互関係シミュレーター</h1>
-  <p class="lead">角の大きさを自分で動かしながら、単位円の図の上で sin²θ + cos²θ = 1、tan θ = sin θ / cos θ、1 + tan²θ = 1/cos²θ が成り立つ理由を、1段階ずつ組み立てて確かめます。</p>
+  <p class="lead">角の大きさを自分で動かしながら、単位円の図の上で sin²θ + cos²θ = 1、tan θ = <span class="frac"><span class="num">sin θ</span><span class="bar"></span><span class="den">cos θ</span></span>、1 + tan²θ = <span class="frac"><span class="num">1</span><span class="bar"></span><span class="den">cos²θ</span></span> が成り立つ理由を、1段階ずつ組み立てて確かめます。</p>
 
   <div class="card">
     <div class="controls">
@@ -180,12 +189,12 @@
       </div>
       <div class="rel pending" id="rel2">
         <div class="label">相互関係 ②</div>
-        <div class="formula">tan θ = sin θ / cos θ</div>
+        <div class="formula">tan θ = <span class="frac"><span class="num">sin θ</span><span class="bar"></span><span class="den">cos θ</span></span></div>
         <div class="check" id="check2"></div>
       </div>
       <div class="rel pending" id="rel3">
         <div class="label">相互関係 ③</div>
-        <div class="formula">1 + tan²θ = 1 / cos²θ</div>
+        <div class="formula">1 + tan²θ = <span class="frac"><span class="num">1</span><span class="bar"></span><span class="den">cos²θ</span></span></div>
         <div class="check" id="check3"></div>
       </div>
     </div>
@@ -214,8 +223,8 @@
     '② 角θをとって点Pを決める',
     '③ Pの座標は (cos θ, sin θ)',
     '④ 三平方の定理 → sin²θ+cos²θ=1',
-    '⑤ OPの傾き → tan θ = sin θ/cos θ',
-    '⑥ x=1 との交点 → 1+tan²θ = 1/cos²θ'
+    '⑤ OPの傾き → tan θ = {sin θ|cos θ}',
+    '⑥ x=1 との交点 → 1+tan²θ = {1|cos²θ}'
   ];
   let level = 0;
   let theta = 45;       // 度
@@ -234,6 +243,23 @@
 
   function par(x){                              // 負の数はかっこでくくる（(−0.500)² のように）
     return (x < 0) ? '(' + fmt(x) + ')' : fmt(x);
+  }
+
+  // ---- 分数の表示（1/2 のような斜線ではなく、横線の分数にする）----
+  function fracHTML(n, d){
+    return '<span class="frac"><span class="num">' + n + '</span><span class="bar"></span><span class="den">' + d + '</span></span>';
+  }
+  // 式の文字列の中の {分子|分母} を分数に置きかえる（|cos θ| のように縦棒を含む分母は fracHTML を直接使う）
+  function mathHTML(s){
+    return String(s).replace(/\{([^|{}]+)\|([^|{}]+)\}/g, function(_, n, d){ return fracHTML(n, d); });
+  }
+  // "√3/2" "−1/2" のような値の文字列を分数に（マイナスは分数の中央にそろえる）
+  function valHTML(v){
+    var s = String(v), neg = false;
+    if(s.charAt(0) === MINUS || s.charAt(0) === '-'){ neg = true; s = s.slice(1); }
+    if(s.indexOf('/') < 0) return (neg ? MINUS : '') + s;
+    var p = s.split('/'), f = fracHTML(p[0], p[1]);
+    return neg ? '<span class="neg">' + MINUS + f + '</span>' : f;
   }
 
   // 特別な角の厳密値
@@ -267,7 +293,7 @@
     if(ex && ex[kind] && ex[kind] !== 'なし'){
       // 0, 1, −1 のような値は「≈ 1.000」を付けない
       if(ex[kind].indexOf('√') < 0 && ex[kind].indexOf('/') < 0) return ex[kind];
-      return ex[kind] + ' ≈ ' + fmt(num);
+      return valHTML(ex[kind]) + ' ≈ ' + fmt(num);
     }
     return fmt(num);
   }
@@ -369,7 +395,10 @@
         g += '<circle cx="' + X(1) + '" cy="' + Y(t) + '" r="6" fill="#6D28D9"/>';
         g += txt(1.07, t + 0.14, 'T(1, tan θ)', 'font-size="15" font-weight="700" fill="#6D28D9"');
         g += txt(1.07, t / 2, 'tan θ = ' + fmt(t), 'font-size="14" font-weight="700" fill="#6D28D9"');
-        g += txt(-1.38, -1.60, 'OT = 1/|cos θ| = ' + fmt(1 / Math.abs(c)), 'font-size="15" font-weight="700" fill="#6D28D9"');
+        // SVG の文字では横線の分数が書けないので、この1か所だけ HTML を埋め込む
+        g += '<foreignObject x="' + X(-1.42) + '" y="' + Y(-1.42) + '" width="' + (SC * 1.9).toFixed(1) + '" height="56">' +
+             '<div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font:700 15px/1.2 \'Noto Sans JP\',\'Yu Gothic\',sans-serif;color:#6D28D9;background:rgba(255,255,255,0.88);padding:2px 4px;border-radius:4px;">' +
+             'OT = ' + fracHTML('1', '|cos θ|') + ' = ' + fmt(1 / Math.abs(c)) + '</div></foreignObject>';
       }else if(st.tanDefined){
         g += txt(-1.38, -1.60, 'tan θ が大きすぎて交点Tは図の外', 'font-size="15" font-weight="700" fill="#6D28D9"');
       }else{
@@ -389,8 +418,8 @@
       { level: 1, body: '原点Oを中心とする半径1の円（単位円）で、x軸の正の向きから <span class="mono">θ = ' + st.deg + '°</span> だけ回った半径OPをとる。' },
       { level: 2, body: '点Pから x軸に垂線をおろすと、横 <span class="mono">' + fmt(c) + '</span>、縦 <span class="mono">' + fmt(s) + '</span>、斜辺 <span class="mono">1</span> の直角三角形ができる。半径が1なので <b>Pの座標がそのまま (cos θ, sin θ)</b>。' },
       { level: 3, body: 'この直角三角形に三平方の定理を使うと <span class="mono">(cos θ)² + (sin θ)² = 1²</span>。数値：<span class="mono">' + fmt(c * c) + ' + ' + fmt(s * s) + ' = ' + fmt(c * c + s * s) + '</span>。θ をどこに動かしても斜辺は1のままなので、値は変わらない。' },
-      { level: 4, body: '直線OPの傾きは（縦）÷（横）＝ <span class="mono">' + fmt(s) + ' ÷ ' + par(c) + '</span>。これが <span class="mono">tan θ = ' + tanText + '</span>。' + (st.tanDefined ? '' : '<b> cos 90° = 0 で割り算ができないので、tan 90° は定義されない。</b>') },
-      { level: 5, body: '直線 x = 1 との交点Tの y座標が tan θ。三角形 O–(1,0)–T は、はじめの直角三角形を <span class="mono">1/|cos θ|</span> 倍に拡大した形なので <span class="mono">OT = 1/|cos θ|</span>。三平方の定理から <span class="mono">1² + tan²θ = OT²</span>、つまり <span class="mono">1 + tan²θ = 1/cos²θ</span>。' }
+      { level: 4, body: '直線OPの傾きは ' + fracHTML('縦', '横') + ' ＝ <span class="math">' + fracHTML(fmt(s), fmt(c)) + '</span>。これが <span class="mono">tan θ = ' + tanText + '</span>。' + (st.tanDefined ? '' : '<b> cos 90° = 0 で割り算ができないので、tan 90° は定義されない。</b>') },
+      { level: 5, body: '直線 x = 1 との交点Tの y座標が tan θ。三角形 O–(1,0)–T は、はじめの直角三角形を ' + fracHTML('1', '|cos θ|') + ' 倍に拡大した形なので <span class="math">OT = ' + fracHTML('1', '|cos θ|') + '</span>。三平方の定理から <span class="mono">1² + tan²θ = OT²</span>、つまり <span class="math">1 + tan²θ = ' + fracHTML('1', 'cos²θ') + '</span>。' }
     ];
   }
 
@@ -403,7 +432,7 @@
     Array.prototype.forEach.call($('steps').querySelectorAll('.step'), function(el){
       el.addEventListener('click', function(){ stopAuto(); goTo(+el.dataset.level); });
     });
-    $('progress').textContent = LEVEL_LABELS[level];
+    $('progress').innerHTML = mathHTML(LEVEL_LABELS[level]);
     $('prevBtn').disabled = level <= 0;
     $('nextBtn').disabled = level >= MAX_LEVEL;
   }
@@ -436,10 +465,10 @@
     set('rel1', 'check1', 3, 'θ = ' + st.deg + '° のとき　' + par(s) + '² + ' + par(c) + '² = ' +
         fmt(s * s) + ' + ' + fmt(c * c) + ' = <b>' + fmt(s * s + c * c) + '</b>');
     set('rel2', 'check2', 4, st.tanDefined
-        ? ('θ = ' + st.deg + '° のとき　' + fmt(s) + ' ÷ ' + par(c) + ' = <b>' + fmt(t) + '</b>')
+        ? ('θ = ' + st.deg + '° のとき　' + fracHTML(fmt(s), fmt(c)) + ' = <b>' + fmt(t) + '</b>')
         : ('θ = 90° は cos 90° = 0 なので割れない → <b>tan 90° は定義されない</b>'));
     set('rel3', 'check3', 5, st.tanDefined
-        ? ('θ = ' + st.deg + '° のとき　1 + ' + par(t) + '² = <b>' + fmt(1 + t * t) + '</b>　／　1 ÷ ' + par(c) + '² = <b>' + fmt(1 / (c * c)) + '</b>')
+        ? ('θ = ' + st.deg + '° のとき　1 + ' + par(t) + '² = <b>' + fmt(1 + t * t) + '</b>　／　' + fracHTML('1', par(c) + '²') + ' = <b>' + fmt(1 / (c * c)) + '</b>')
         : ('θ = 90° では cos 90° = 0 なので、この式も使えない'));
   }
 
@@ -450,7 +479,7 @@
     ['s', 'c', 't'].forEach(function(k){
       var name = k === 's' ? 'sin θ' : k === 'c' ? 'cos θ' : 'tan θ';
       h += '<tr><th>' + name + '</th>' + angles.map(function(a){
-        return '<td class="' + (a === state.deg ? 'hi' : '') + '">' + EXACT[a][k] + '</td>';
+        return '<td class="' + (a === state.deg ? 'hi' : '') + '">' + valHTML(EXACT[a][k]) + '</td>';
       }).join('') + '</tr>';
     });
     h += '</tbody></table>';
@@ -461,23 +490,23 @@
   var QUIZ = [
     { q: 'θ = 120° のとき、cos θ の値は？',
       opts: ['1/2', MINUS + '1/2', '√3/2', MINUS + '√3/2'], ans: 1,
-      exp: '単位円で120° の点Pの x座標が cos θ。Pは y軸より左にあるので負で ' + MINUS + '1/2。' },
+      exp: '単位円で120° の点Pの x座標が cos θ。Pは y軸より左にあるので負で ' + MINUS + '{1|2}。' },
     { q: 'sin²θ + cos²θ の値は、θ を動かすとどうなる？',
       opts: ['θによって変わる', 'いつも1', 'いつも0', '90°のときだけ1'], ans: 1,
       exp: '斜辺が1の直角三角形なので、三平方の定理からいつも1になる。' },
-    { q: 'sin θ = 3/5 で θ が鋭角のとき、cos θ は？',
+    { q: 'sin θ = {3|5} で θ が鋭角のとき、cos θ は？',
       opts: ['3/4', '4/5', MINUS + '4/5', '5/4'], ans: 1,
-      exp: 'cos²θ = 1 ' + MINUS + ' (3/5)² = 16/25。鋭角なので cos θ > 0 で 4/5。' },
-    { q: 'sin θ = 3/5、cos θ = ' + MINUS + '4/5 のとき、tan θ は？',
+      exp: 'cos²θ = 1 ' + MINUS + ' ({3|5})² = {16|25}。鋭角なので cos θ > 0 で {4|5}。' },
+    { q: 'sin θ = {3|5}、cos θ = ' + MINUS + '{4|5} のとき、tan θ は？',
       opts: ['3/4', MINUS + '3/4', '4/3', MINUS + '4/3'], ans: 1,
-      exp: 'tan θ = sin θ ÷ cos θ = (3/5) ÷ (' + MINUS + '4/5) = ' + MINUS + '3/4。' }
+      exp: 'tan θ = {sin θ|cos θ} = {3|5} ÷ (' + MINUS + '{4|5}) = ' + MINUS + '{3|4}。' }
   ];
 
   function renderQuiz(){
     $('quiz').innerHTML = QUIZ.map(function(item, i){
-      return '<div class="q"><div class="qtext">問' + (i + 1) + '　' + item.q + '</div>' +
+      return '<div class="q"><div class="qtext">問' + (i + 1) + '　' + mathHTML(item.q) + '</div>' +
              '<div class="opts" data-q="' + i + '">' + item.opts.map(function(o, j){
-               return '<button type="button" data-i="' + j + '">' + o + '</button>';
+               return '<button type="button" data-i="' + j + '">' + valHTML(o) + '</button>';
              }).join('') + '</div><div class="fb" id="fb' + i + '"></div></div>';
     }).join('');
     Array.prototype.forEach.call($('quiz').querySelectorAll('.opts'), function(box){
@@ -490,7 +519,7 @@
           if(pick !== correct) box.querySelectorAll('button')[correct].classList.add('ok');
           var fb = $('fb' + qi);
           fb.className = 'fb' + (pick === correct ? ' ok' : '');
-          fb.textContent = (pick === correct ? '正解！ ' : 'おしい。正解は ' + QUIZ[qi].opts[correct] + '。') + QUIZ[qi].exp;
+          fb.innerHTML = (pick === correct ? '正解！ ' : 'おしい。正解は ' + valHTML(QUIZ[qi].opts[correct]) + '。') + mathHTML(QUIZ[qi].exp);
         });
       });
     });
