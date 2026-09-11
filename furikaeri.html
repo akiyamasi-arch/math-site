@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>振り返りGEM｜数学学習サイト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
+<link rel="stylesheet" href="assets/style.css?v=20260911b">
+</head>
+<body>
+
+<div class="brand-bar"></div>
+<header class="site-header">
+  <div class="inner">
+    <p class="site-title"><a href="index.html">数学学習サイト</a></p>
+    <nav class="site-nav" aria-label="サイト内">
+      <a href="index.html#subjects">科目から探す</a>
+      <a href="furikaeri.html" aria-current="page">振り返りGEM</a>
+      <a href="iroiro.html">数学いろいろ</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <nav class="breadcrumb" aria-label="パンくずナビゲーション"><a href="index.html">トップ</a><span class="sep" aria-hidden="true">›</span><span aria-current="page">振り返りGEM</span></nav>
+
+  <p class="eyebrow">どの単元でも使える</p>
+  <h1 class="page-title">振り返りGEM</h1>
+  <p class="page-lead">学習をふり返るときに使う、AI（Gemini）のGEMです。どの単元の学習にも使えます。「何ができるようになったか」「どこでつまずいたか」を自分の言葉にしていくことで、自分の学び方を見つめ直す力（メタ認知）を鍛えます。</p>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>コースを選ぶ</h2>
+      <span>Geminiが新しいタブで開きます。Googleアカウントでのログインが必要です</span>
+    </div>
+    <div id="commonGems"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>使い方</h2>
+    </div>
+    <div class="topic">
+      <ol class="howto">
+        <li>単元の学習が一区切りついたときや、授業の終わりに開きます。</li>
+        <li>自分に合うコースを選びます。迷ったら Lv.1 から始めて、慣れてきたら上のレベルに挑戦しましょう。</li>
+        <li>AIの質問には、自分の言葉で答えましょう。うまく言えなくても大丈夫です。</li>
+        <li>名前や住所など、自分や友だちが特定できることは入力しないでください。</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="section" id="unitGemWrap" hidden>
+    <div class="section-head">
+      <h2>単元専用の振り返りGEM</h2>
+      <span>その単元の内容に合わせたGEMです</span>
+    </div>
+    <div id="unitGems"></div>
+  </div>
+
+</div>
+
+<footer>
+  このサイトは授業用の学習教材をまとめたものです。
+</footer>
+
+<script src="data/curriculum.js?v=20260911b"></script>
+<script src="data/gems.js?v=20260911b"></script>
+<script src="assets/site.js?v=20260911b"></script>
+<script>
+  Site.renderFurikaeriPage('commonGems', 'unitGemWrap', 'unitGems');
+</script>
+
+</body>
+</html>

@@ -16,6 +16,7 @@
     apps:       typeof APP_DATA   !== 'undefined' ? APP_DATA   : [],
     prints:     typeof PRINT_DATA !== 'undefined' ? PRINT_DATA : [],
     videos:     typeof VIDEO_DATA !== 'undefined' ? VIDEO_DATA : [],
+    gems:       typeof GEM_DATA   !== 'undefined' ? GEM_DATA   : [],
     news:       typeof NEWS_DATA  !== 'undefined' ? NEWS_DATA  : [],
     tips:       typeof TIPS_DATA  !== 'undefined' ? TIPS_DATA  : [],
     topics:     typeof TOPIC_DATA !== 'undefined' ? TOPIC_DATA : []
@@ -35,8 +36,7 @@
   }
   // 単元内の並び順：order（授業で扱う順番）が小さいものから。
   // order が無いものは、その後ろにデータの記載順で並ぶ。
-  const itemsFor = (list, subject, unit) => list
-    .filter(x => belongs(x, subject, unit))
+  const byOrder = list => list
     .map((x, i) => ({ x, i }))
     .sort((a, b) => {
       const oa = (a.x.order === undefined || a.x.order === null) ? Infinity : a.x.order;
@@ -44,14 +44,18 @@
       return oa === ob ? a.i - b.i : oa - ob;
     })
     .map(e => e.x);
+  const itemsFor = (list, subject, unit) => byOrder(list.filter(x => !x.common && belongs(x, subject, unit)));
+  // どの単元でも使える振り返りGEM（common: true）
+  const commonGems = () => byOrder(D.gems.filter(g => g.common));
   function counts(subject, unit){
     return {
       apps:   itemsFor(D.apps,   subject, unit).length,
       prints: itemsFor(D.prints, subject, unit).length,
-      videos: itemsFor(D.videos, subject, unit).length
+      videos: itemsFor(D.videos, subject, unit).length,
+      gems:   itemsFor(D.gems,   subject, unit).length
     };
   }
-  const total = c => c.apps + c.prints + c.videos;
+  const total = c => c.apps + c.prints + c.videos + c.gems;
   const subjectUrl = s => 'subject.html?s=' + encodeURIComponent(s.id);
   const unitUrl = (s, u) => 'unit.html?s=' + encodeURIComponent(s.id) + '&u=' + encodeURIComponent(u.id);
   const topicId = i => 't' + (i + 1);
@@ -66,6 +70,7 @@
     if(c.apps)   parts.push(`アプリ ${c.apps}`);
     if(c.prints) parts.push(`プリント ${c.prints}`);
     if(c.videos) parts.push(`動画 ${c.videos}`);
+    if(c.gems)   parts.push(`GEM ${c.gems}`);
     return parts.join('・');
   }
   const snippet = (s, n) => { const t = String(s || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n) + '…' : t; };
@@ -84,6 +89,14 @@
       <span class="tag">PDF</span>
       <h3>${esc(p.title)}</h3>
       ${p.note ? `<p>${esc(p.note)}</p>` : ''}
+    </a>`;
+  }
+  function gemCard(g){
+    const label = `${g.title}（Geminiが新しいタブで開きます）`;
+    return `<a class="card" href="${esc(g.url)}" target="_blank" rel="noopener" aria-label="${esc(label)}">
+      <span class="tag">GEM</span>
+      <h3>${esc(g.title)}</h3>
+      ${g.description ? `<p>${esc(g.description)}</p>` : ''}
     </a>`;
   }
   function videoCard(v){
@@ -121,7 +134,7 @@
   function updates(limit){
     const groups = new Map();
     const add = (arr, label) => arr.forEach(x => {
-      if(!x.added) return;
+      if(!x.added || x.common) return;
       const s = findSubject(x.subject);
       const u = s ? findUnit(s, x.unit) : null;
       const key = `${x.added}|${s ? s.id : x.subject}|${u ? u.id : x.unit}`;
@@ -129,7 +142,7 @@
       const g = groups.get(key);
       g.kinds.set(label, (g.kinds.get(label) || 0) + 1);
     });
-    add(D.apps, 'アプリ'); add(D.prints, 'プリント'); add(D.videos, '動画');
+    add(D.apps, 'アプリ'); add(D.prints, 'プリント'); add(D.videos, '動画'); add(D.gems, '振り返りGEM');
 
     const list = [];
     groups.forEach(g => {
@@ -142,6 +155,12 @@
         url: (g.s && g.u) ? unitUrl(g.s, g.u) : (g.s ? subjectUrl(g.s) : '')
       });
     });
+    const commonByDate = new Map();
+    commonGems().forEach(g => { if(g.added) commonByDate.set(g.added, (commonByDate.get(g.added) || 0) + 1); });
+    commonByDate.forEach((n, date) => list.push({
+      date, kind: '教材追加', notice: false,
+      text: `どの単元でも使える「振り返りGEM」を${n}件追加しました`, url: 'furikaeri.html'
+    }));
     D.topics.forEach((t, i) => {
       if(!t.added) return;
       list.push({ date: t.added, kind: '数学いろいろ', notice: false, text: `「${t.title}」を追加しました`, url: 'iroiro.html#' + topicId(i) });
@@ -191,6 +210,13 @@
         <span class="chev" aria-hidden="true">›</span>
       </a>`;
     });
+    if(commonGems().length) subjects.push(`<a class="hero-btn iroiro" href="furikaeri.html">
+      <span class="label">
+        <span class="name">振り返りGEM</span>
+        <span class="meta">どの単元でも使える・AIとふり返る</span>
+      </span>
+      <span class="chev" aria-hidden="true">›</span>
+    </a>`);
     subjects.push(`<a class="hero-btn iroiro" href="iroiro.html">
       <span class="label">
         <span class="name">数学いろいろ</span>
@@ -296,15 +322,42 @@
     secP.innerHTML = gridOr(itemsFor(D.prints, s, u), printCard, 'この単元のプリントは準備中です。');
     secV.innerHTML = gridOr(itemsFor(D.videos, s, u), videoCard, 'この単元の参考動画は準備中です。');
     bindVideoThumbs(secV);
+    // 振り返りGEMは、GEMがある単元だけ欄ごと表示する
+    const gemWrap = document.getElementById('gemWrap');
+    const gems = itemsFor(D.gems, s, u);
+    if(gemWrap){
+      gemWrap.hidden = !gems.length;
+      document.getElementById('gemSection').innerHTML = gems.length ? gridOr(gems, gemCard, '') : '';
+    }
+    const furikaeriLink = document.getElementById('furikaeriLink');
+    if(furikaeriLink) furikaeriLink.hidden = !commonGems().length;
     const i = s.units.indexOf(u);
     const prev = s.units[i - 1], next = s.units[i + 1];
     nav.innerHTML = `<span>${prev ? `<a href="${unitUrl(s, prev)}">← ${esc(prev.name)}</a>` : ''}</span>
       <span>${next ? `<a href="${unitUrl(s, next)}">${esc(next.name)} →</a>` : ''}</span>`;
   }
 
+  // ---- 振り返りGEMページ ----
+  function renderFurikaeriPage(commonId, unitWrapId, unitId){
+    document.getElementById(commonId).innerHTML = gridOr(commonGems(), gemCard, '振り返りGEMは準備中です。');
+    // 単元専用のGEMがある単元へのリンク（カリキュラムの順）
+    const cards = [];
+    D.curriculum.forEach(s => s.units.forEach(u => {
+      const n = itemsFor(D.gems, s, u).length;
+      if(n) cards.push(`<a class="card" href="${unitUrl(s, u)}">
+        <span class="tag">${esc(s.name)}</span>
+        <h3>${esc(u.name)}</h3>
+        <span class="meta">振り返りGEM ${n}件</span>
+      </a>`);
+    }));
+    document.getElementById(unitWrapId).hidden = !cards.length;
+    document.getElementById(unitId).innerHTML = cards.length ? `<div class="grid">${cards.join('')}</div>` : '';
+  }
+
   // データの科目名・単元名がカリキュラムに無い場合は console に警告（表示はされない）
-  [['apps', D.apps], ['prints', D.prints], ['videos', D.videos]].forEach(([name, arr]) => {
+  [['apps', D.apps], ['prints', D.prints], ['videos', D.videos], ['gems', D.gems]].forEach(([name, arr]) => {
     arr.forEach(x => {
+      if(x.common) return;
       const s = findSubject(x.subject);
       if(!s || !findUnit(s, x.unit)){
         console.warn(`[site] ${name}: 科目/単元がカリキュラムに見つかりません →`, x.subject, x.unit, x.title);
@@ -314,6 +367,6 @@
 
   window.Site = {
     renderHeroButtons, renderSubjectGrid, renderNews, renderTips,
-    renderTopicsTeaser, renderTopicsPage, renderSubjectPage, renderUnitPage, updates
+    renderTopicsTeaser, renderTopicsPage, renderSubjectPage, renderUnitPage, renderFurikaeriPage, updates
   };
 })();

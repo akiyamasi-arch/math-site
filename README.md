@@ -24,6 +24,7 @@
 ├── subject.html        … 科目ページ（URLの s= で科目を指定）
 ├── unit.html           … 単元ページ（URLの s= と u= で科目・単元を指定）
 ├── iroiro.html         … 数学いろいろ
+├── furikaeri.html      … 振り返りGEM（どの単元でも使えるAIのふり返り）
 ├── assets/
 │   ├── style.css       … 共通スタイル（デジタル庁デザインシステム準拠）
 │   ├── site.js         … 共通スクリプト（データからページを組み立てる）
@@ -33,6 +34,7 @@
 │   ├── apps.js         … シミュレーションアプリの一覧
 │   ├── prints.js       … プリント・教材の一覧
 │   ├── videos.js       … 参考動画の一覧
+│   ├── gems.js         … 振り返りGEM（Geminiの共有リンク）の一覧
 │   ├── topics.js       … 数学いろいろの記事
 │   ├── news.js         … 手書きのお知らせ
 │   └── tips.js         … 勉強のヒント（トップページ）
@@ -59,6 +61,11 @@
 
 ### 勉強のヒントを直す場合
 `data/tips.js` の `title` / `body` を書き換えます。
+
+### 振り返りGEMを追加する場合
+`data/gems.js` に1件足します（GEMの名前と共有リンクを表やExcelで渡してもらえれば、こちらで追加します）。
+- 単元専用のGEM：`subject` と `unit` を書く → その単元ページの一番下に「振り返りGEM」欄が出ます（GEMが無い単元では欄は出ません）
+- どの単元でも使えるGEM：`common: true` と書く → 「振り返りGEM」ページ（`furikaeri.html`）に出ます。このページへは、トップの「振り返りGEM」ボタン・上部メニュー・各単元ページの一番下の案内から入れます
 
 ### アプリ（HTML）を追加する場合
 1. `apps/` フォルダにHTMLファイルを追加する
@@ -90,13 +97,13 @@ git push
 数分待つと公開サイトに反映されます。
 
 ### 更新時のルール：CSS/JSの版番号を上げる
-ブラウザは `assets/*.css` `assets/*.js` `data/*.js` を最大10分ほど手元に保存（キャッシュ）します。古いCSS/JSと新しいHTMLが混ざると表示が崩れるので、各HTMLの読み込みURLに付いている `?v=20260908b` のような版番号を、**サイトを更新するたびに新しい値に揃えて書き換えます**（4つのHTMLすべて）。この作業は更新作業とセットでこちらで行います。
+ブラウザは `assets/*.css` `assets/*.js` `data/*.js` を最大10分ほど手元に保存（キャッシュ）します。古いCSS/JSと新しいHTMLが混ざると表示が崩れるので、各HTMLの読み込みURLに付いている `?v=20260908b` のような版番号を、**サイトを更新するたびに新しい値に揃えて書き換えます**（5つのHTMLすべて）。この作業は更新作業とセットでこちらで行います。
 
 一括で書き換えるコマンド（Git Bash）：
 
 ```bash
 VER=20260910a
-for f in index.html subject.html unit.html iroiro.html; do
+for f in index.html subject.html unit.html iroiro.html furikaeri.html; do
   sed -i -E "s#(src|href)=\"(assets|data)/([A-Za-z0-9_.-]+\.(js|css))(\?v=[0-9a-z]+)?\"#\1=\"\2/\3?v=$VER\"#g" "$f"
 done
 ```
