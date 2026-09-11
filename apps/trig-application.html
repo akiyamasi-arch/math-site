@@ -78,6 +78,8 @@
   .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25;}
   .frac .num2, .frac .den{padding:0 6px;white-space:nowrap;}
   .frac .bar{display:block;width:100%;height:2px;background:currentColor;margin:2px 0;}
+  .math{font-weight:700;line-height:2.2;}
+  .math .frac{margin:0 2px;}
 
   .eq{margin-top:var(--sp-2);padding:14px 16px;border:1.5px solid var(--orange-800);border-radius:var(--radius-md);background:linear-gradient(135deg,#fff3ea,#fff);}
   .eq.pending{opacity:.55;border-color:var(--line);border-style:dashed;background:#fff;}
@@ -188,6 +190,10 @@
   function fracHTML(n,d,nc,dc){
     return '<span class="frac"><span class="num2 '+(nc||'')+'">'+n+'</span><span class="bar"></span><span class="den '+(dc||'')+'">'+d+'</span></span>';
   }
+  // 式の文字列の中の {分子|分母} を、横線のある分数に置きかえる（画面に 1/2 のような斜線の分数は出さない）
+  function mathHTML(s){
+    return String(s).replace(/\{([^|{}]+)\|([^|{}]+)\}/g, function(_, n, d){ return fracHTML(n, d); });
+  }
 
   var W = 620, H = 420, GY = 350;
 
@@ -203,8 +209,8 @@
       known:'adj', knownLabel:'20 m',
       unknown:'opp', unknownName:'目の高さから木のてっぺんまで', symbol:'h',
       ratio:'tan',
-      eq:'tan 30° ＝ h / 20',
-      solve:'h ＝ 20 × tan 30° ＝ 20 × 1/√3 ＝ 20√3/3 ≒ 11.5',
+      eq:'tan 30° ＝ {h|20}',
+      solve:'h ＝ 20 × tan 30° ＝ 20 × {1|√3} ＝ {20√3|3} ≒ 11.5',
       answer:'木の高さ ＝ 11.5 ＋ 1.5 ＝ 約 13.0 m',
       note:'目の高さ 1.5 m を最後にたすのを忘れずに。三角比で出るのは「目の高さから上」の分です。',
       deco:function(sh){
@@ -233,8 +239,8 @@
       known:'hyp', knownLabel:'4 m（はしご）',
       unknown:'opp', unknownName:'かべに届く高さ', symbol:'h',
       ratio:'sin',
-      eq:'sin 60° ＝ h / 4',
-      solve:'h ＝ 4 × sin 60° ＝ 4 × √3/2 ＝ 2√3 ≒ 3.46',
+      eq:'sin 60° ＝ {h|4}',
+      solve:'h ＝ 4 × sin 60° ＝ 4 × {√3|2} ＝ 2√3 ≒ 3.46',
       answer:'かべの高さ 約 3.5 m のところに届く',
       note:'はしご自身が斜辺です。「斜辺分の対辺」＝ sin なので、h ＝ 斜辺 × sin。',
       deco:function(sh){
@@ -254,8 +260,8 @@
       known:'adj', knownLabel:'3 m（水平）',
       unknown:'hyp', unknownName:'屋根の斜めの長さ', symbol:'x',
       ratio:'cos',
-      eq:'cos 30° ＝ 3 / x',
-      solve:'x × cos 30° ＝ 3 　→　 x ＝ 3 ÷ cos 30° ＝ 3 ÷ (√3/2) ＝ 6/√3 ＝ 2√3 ≒ 3.46',
+      eq:'cos 30° ＝ {3|x}',
+      solve:'x × cos 30° ＝ 3 　→　 x ＝ {3|cos 30°} ＝ 3 ÷ {√3|2} ＝ 3 × {2|√3} ＝ {6|√3} ＝ 2√3 ≒ 3.46',
       answer:'屋根の斜めの長さ 約 3.5 m',
       note:'求めたいものが<b>分母</b>にきたときは、まず両辺に x をかけてから割ります。「3 × cos30°」ではないので注意。',
       deco:function(sh){
@@ -276,7 +282,7 @@
       known:'hyp', knownLabel:'50 m（斜面）',
       unknown:'adj', unknownName:'水平方向の長さ', symbol:'x',
       ratio:'cos',
-      eq:'cos 12° ＝ x / 50',
+      eq:'cos 12° ＝ {x|50}',
       solve:'x ＝ 50 × cos 12° ＝ 50 × 0.9781 ＝ 48.905',
       answer:'水平方向の長さ 約 48.9 m',
       note:'30°・45°・60° 以外の角は、三角比の表（または電卓）から値を読んで使います。実際の測量はこの形がほとんどです。',
@@ -380,8 +386,8 @@
       { level:2, body:'分かっている角 <b>'+s.angLabel+'</b> が θ。θ の頂点と直角の頂点に印をつける。' },
       { level:3, body:'θ から見て、分かっている <b>'+s.knownLabel+'</b> は <span class="'+CLS[s.known]+'">'+kj+'</span>。求めたい <b>'+s.unknownName+'</b>（'+s.symbol+'）は <span class="'+CLS[s.unknown]+'">'+uj+'</span>。' },
       { level:4, body:'<b>'+kj+'</b> と <b>'+uj+'</b> の2つが出てきた。この組み合わせで使う比は <b>'+s.ratio+'</b>（'+SAY[s.ratio]+'）。右のカードで自分で選んでみよう。' },
-      { level:5, body:'ことばの式に数を入れる：<span class="mono">'+s.eq+'</span>' },
-      { level:6, body:'式を変形して計算する：<span class="mono">'+s.solve+'</span>' }
+      { level:5, body:'ことばの式に数を入れる：<span class="math">'+mathHTML(s.eq)+'</span>' },
+      { level:6, body:'式を変形して計算する：<span class="math">'+mathHTML(s.solve)+'</span>' }
     ];
   }
 
@@ -436,8 +442,8 @@
     var eq = $('eq');
     if(level>=5){
       eq.classList.remove('pending');
-      $('eqValue').innerHTML = '<span class="mono" style="font-size:20px">'+s.eq+'</span>';
-      $('eqLine2').innerHTML = level>=MAX_LEVEL ? ('<span class="mono">'+s.solve+'</span><br><span style="color:var(--orange-800)">'+s.answer+'</span>') : '';
+      $('eqValue').innerHTML = '<span class="math" style="font-size:22px">'+mathHTML(s.eq)+'</span>';
+      $('eqLine2').innerHTML = level>=MAX_LEVEL ? ('<span class="math">'+mathHTML(s.solve)+'</span><br><span style="color:var(--orange-800)">'+s.answer+'</span>') : '';
       $('eqNote').innerHTML = level>=MAX_LEVEL ? s.note : '「次へ」で計算に進みます。';
     } else {
       eq.classList.add('pending');

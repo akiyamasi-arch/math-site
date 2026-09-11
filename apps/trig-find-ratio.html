@@ -94,7 +94,7 @@
   /* 練習 */
   .qtext{font-size:17px;font-weight:700;margin:0 0 var(--sp-1);}
   .opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--sp-1);}
-  .opts button{border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 18px;border-radius:var(--radius-md);font-size:17px;cursor:pointer;font-family:inherit;min-width:78px;}
+  .opts button{border:1px solid var(--line);background:#fff;color:var(--ink);padding:8px 18px;border-radius:var(--radius-md);font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;min-width:78px;min-height:62px;line-height:1.25;}
   .opts button:hover{border-color:var(--orange-800);background:var(--orange-50);}
   .opts button.ok{background:#e8f5e9;border-color:#2e7d32;color:#1b5e20;font-weight:700;}
   .opts button.ng{background:#fdecea;border-color:#c62828;color:#b71c1c;}
@@ -319,9 +319,10 @@
 
   /* ---------- 答え ---------- */
   function gcd(x,y){ return y ? gcd(y, x%y) : x; }
-  function fracText(n,d){
-    var g = gcd(n,d);
-    return (g>1) ? (n+'/'+d+' ＝ '+(n/g)+'/'+(d/g)) : (n+'/'+d);
+  // 数の分数を横線の形で返す。約分できるときは「6/10 ＝ 3/5」の形で約分後も並べる
+  function fracValueHTML(n,d){
+    var g = gcd(n,d), f = fracHTML(String(n), String(d), '', '');
+    return (g>1) ? (f+' ＝ '+fracHTML(String(n/g), String(d/g), '', '')) : f;
   }
   function answerParts(){
     var g = geom();
@@ -355,7 +356,7 @@
       { level:1, body:'<span class="c-hyp">斜辺</span>＝<b>直角の向かい側</b>の辺（いちばん長い辺）。ここでは <span class="mono">'+g.hyp.len+'</span>。' },
       { level:2, body:'<span class="c-opp">対辺</span>＝<b>θ の向かい側</b>の辺（θ にふれていない辺）。ここでは <span class="mono">'+g.opp.len+'</span>。' },
       { level:3, body:'<span class="c-adj">隣辺</span>＝<b>θ にふれている</b>辺のうち、斜辺でないほう。ここでは <span class="mono">'+g.adj.len+'</span>。' },
-      { level:4, body:'<b>'+ratio+' θ ＝ '+a.say+'</b> にあてはめる：<span class="mono">'+a.n+' ÷ '+a.d+'</span>' }
+      { level:4, body:'<b>'+ratio+' θ ＝ '+a.say+'</b> にあてはめる：'+fracHTML(String(a.n), String(a.d), a.tc, a.bc) }
     ];
   }
   function renderSteps(){
@@ -373,7 +374,7 @@
     var a = answerParts(), ans = $('answer');
     if(level>=MAX_LEVEL){
       ans.classList.remove('pending');
-      $('answerValue').innerHTML = ratio+' θ ＝ '+fracHTML(a.top,a.bot,a.tc,a.bc)+' ＝ <span class="mono" style="font-size:21px">'+fracText(a.n,a.d)+'</span>';
+      $('answerValue').innerHTML = ratio+' θ ＝ '+fracHTML(a.top,a.bot,a.tc,a.bc)+' ＝ '+fracValueHTML(a.n,a.d);
       $('answerNote').innerHTML = '（'+a.say+'）約分できるときは約分して答えます。向きを変えても、この値は変わりません。';
     } else {
       ans.classList.add('pending');
@@ -485,9 +486,9 @@
       var r = pQ.type.split('-')[1];
       $('pq').innerHTML = 'この直角三角形で <b>'+r+' θ</b> の値は？';
       var cand = [
-        {t:g.opp.len+'/'+g.hyp.len, k:'sin'},
-        {t:g.adj.len+'/'+g.hyp.len, k:'cos'},
-        {t:g.opp.len+'/'+g.adj.len, k:'tan'}
+        {t:fracHTML(String(g.opp.len), String(g.hyp.len), '', ''), k:'sin'},
+        {t:fracHTML(String(g.adj.len), String(g.hyp.len), '', ''), k:'cos'},
+        {t:fracHTML(String(g.opp.len), String(g.adj.len), '', ''), k:'tan'}
       ].sort(function(){ return Math.random()-0.5; });
       $('popts').innerHTML = cand.map(function(o){ return '<button data-k="'+o.k+'">'+o.t+'</button>'; }).join('');
       Array.prototype.forEach.call($('popts').querySelectorAll('button'), function(b){
