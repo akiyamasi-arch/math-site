@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>面積タイルで見る展開・因数分解｜数学学習サイト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
+<style>
+  /* サイト共通（assets/style.css）と同じトークン。アプリは1ファイル完結にするためここに再掲 */
+  :root{
+    --orange-50:#FFEEE2; --orange-100:#FFDFCA; --orange-400:#FF8D44;
+    --orange-700:#E25100; --orange-800:#C74700; --orange-900:#AC3E00;
+    --ink:#1E293B; --sub:#475569; --line:#D9DEE6; --line-strong:#B9C2CF;
+    --bg:#FBFBFA; --card:#FFFFFF; --focus:#FFD866;
+    --ok:#1b5e20; --ng:#b71c1c;
+    --sp-1:8px; --sp-2:16px; --sp-3:24px; --sp-4:32px; --sp-6:48px;
+    --radius-sm:4px; --radius-md:8px; --radius-pill:999px;
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  body{margin:0;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.7;}
+  a{color:var(--orange-800);}
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+  .brand-bar{height:6px;background:var(--orange-700);}
+  .site-header{background:var(--card);border-bottom:1px solid var(--line);padding:var(--sp-2);}
+  .site-header .inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;}
+  .site-title{margin:0;font-size:18px;font-weight:700;}
+  .site-title a{color:var(--ink);text-decoration:none;}
+  .back-link{font-size:14px;font-weight:700;}
+  .wrap{max-width:1100px;margin:0 auto;padding:var(--sp-3) var(--sp-2) var(--sp-6);}
+  h1{margin:0 0 4px;font-size:26px;line-height:1.4;}
+  .lead{margin:0 0 var(--sp-3);color:var(--sub);font-size:15px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--sp-2) var(--sp-3);}
+  .section-title{font-size:13px;font-weight:700;color:var(--sub);margin:0 0 var(--sp-1);}
+  .tabs{display:inline-flex;border:1px solid var(--line-strong);border-radius:var(--radius-pill);overflow:hidden;margin-bottom:var(--sp-2);}
+  .tabs button{border:0;background:#fff;color:var(--ink);padding:8px 20px;font-size:15px;cursor:pointer;font-family:inherit;}
+  .tabs button.on{background:var(--orange-800);color:#fff;font-weight:700;}
+  .controls{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:end;}
+  .expr{display:flex;align-items:center;flex-wrap:wrap;gap:4px;font-size:20px;font-weight:700;}
+  .expr input{font-size:18px;padding:6px 4px;border:1px solid var(--line-strong);border-radius:var(--radius-md);width:56px;text-align:center;font-family:inherit;}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;}
+  .presets button, .btn{border:1px solid var(--line);background:#f8fafc;color:var(--ink);padding:8px 14px;border-radius:var(--radius-pill);font-size:14px;cursor:pointer;font-family:inherit;}
+  .presets button:hover, .btn:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .btn:disabled{opacity:.35;cursor:default;}
+  .btn.primary{background:var(--orange-800);color:#fff;border-color:var(--orange-800);font-weight:700;}
+  .btn.primary:hover{background:var(--orange-900);color:#fff;}
+  .scene{margin:var(--sp-2) 0 0;font-size:14px;color:var(--sub);}
+
+  .main-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:var(--sp-2);align-items:start;margin-top:var(--sp-2);}
+  @media (max-width:900px){ .main-grid{grid-template-columns:1fr;} }
+  .figure svg{width:100%;height:auto;display:block;}
+  .tray{display:flex;flex-wrap:wrap;gap:10px;margin-top:var(--sp-1);font-size:15px;}
+  .tray .item{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:var(--radius-pill);padding:3px 12px;background:#fff;}
+  .tray .sw{display:inline-block;border-width:2px;border-style:solid;border-radius:2px;}
+  .tray .item.done{opacity:.4;}
+  .choice{margin-top:var(--sp-2);padding:12px 14px;border:1.5px dashed var(--orange-400);border-radius:var(--radius-md);background:#fffaf5;}
+  .choice .q{font-size:14px;font-weight:700;margin-bottom:8px;}
+  .choice .opts{display:flex;flex-wrap:wrap;gap:8px;}
+  .choice .opts button{border:1px solid var(--line-strong);background:#fff;padding:8px 14px;border-radius:var(--radius-md);font-size:15px;cursor:pointer;font-family:inherit;min-height:44px;}
+  .choice .opts button.sel{border-color:var(--orange-800);background:var(--orange-50);font-weight:700;}
+  .choice .opts button.tried{color:var(--sub);}
+  .judge{margin-top:8px;font-size:14px;font-weight:700;}
+  .judge.ok{color:var(--ok);} .judge.ng{color:var(--ng);}
+
+  /* 思考のステップ（クリックで巻き戻し／早送り） */
+  .stepper{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:var(--sp-2);padding-bottom:12px;border-bottom:1px dashed var(--line);}
+  .stepper .progress{font-size:12px;font-weight:700;color:var(--sub);text-align:center;flex:1;}
+  .steps{display:flex;flex-direction:column;gap:10px;}
+  .step{display:flex;gap:10px;padding:6px 8px;margin:0 -8px;border-radius:var(--radius-md);cursor:pointer;}
+  .step:hover{background:#f8fafc;}
+  .step.dim{opacity:.4;}
+  .step-num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .step.dim .step-num{background:#cbd5e1;}
+  .step-body{font-size:14px;line-height:1.7;}
+  .mono{font-family:Consolas,"Courier New",monospace;background:#f1f5f9;padding:1px 6px;border-radius:5px;}
+  .c-x2{color:#1D6FB8;font-weight:700;} .c-x{color:#2e7d32;font-weight:700;} .c-u{color:#C74700;font-weight:700;}
+
+  .answer{margin-top:var(--sp-2);padding:14px 16px;border:1.5px solid var(--orange-800);border-radius:var(--radius-md);background:linear-gradient(135deg,#fff3ea,#fff);}
+  .answer .label{font-size:12px;font-weight:700;color:var(--orange-800);}
+  .answer .value{font-size:22px;font-weight:800;}
+  .answer.pending{opacity:.6;}
+  .answer.pending .value{font-size:15px;font-weight:400;}
+  .warn{background:#fff3cd;border:1px solid #ffe08a;color:#7a5b00;padding:10px 14px;border-radius:var(--radius-md);font-size:14px;margin-top:var(--sp-1);}
+</style>
+</head>
+<body>
+
+<div class="brand-bar"></div>
+<header class="site-header">
+  <div class="inner">
+    <p class="site-title"><a href="../index.html">数学学習サイト</a></p>
+    <a class="back-link" href="../unit.html?s=math1&u=kazu-shiki">← 単元ページに戻る</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <h1>面積タイルで見る展開・因数分解</h1>
+  <p class="lead">x²・x・1 の3種類のタイルを並べて長方形をつくります。「縦 × 横」と「タイルの面積の合計」が同じ広さを表していることから、展開と因数分解のしくみを1段階ずつ確かめます。</p>
+
+  <div class="card">
+    <div class="tabs" role="tablist">
+      <button type="button" data-mode="expand" class="on">展開する</button>
+      <button type="button" data-mode="factor">因数分解する</button>
+    </div>
+
+    <div class="controls" id="expandCtl">
+      <div class="expr" aria-label="展開する式">
+        (<input type="number" id="p" value="1" min="1" max="3" aria-label="1つ目の x の係数">x +
+        <input type="number" id="a" value="2" min="1" max="6" aria-label="1つ目の数">)
+        (<input type="number" id="q" value="1" min="1" max="3" aria-label="2つ目の x の係数">x +
+        <input type="number" id="b" value="3" min="1" max="6" aria-label="2つ目の数">)
+      </div>
+      <div class="presets" id="expandPresets">
+        <button type="button" data-i="0">例① (x+2)(x+3)</button>
+        <button type="button" data-i="1">例② (x+1)(x+4)</button>
+        <button type="button" data-i="2">例③ (x+3)²</button>
+        <button type="button" data-i="3">例④ (2x+1)(x+3)</button>
+      </div>
+    </div>
+
+    <div class="controls" id="factorCtl" hidden>
+      <div class="expr" aria-label="因数分解する式">
+        x² +<input type="number" id="s" value="5" min="2" max="14" aria-label="x の係数">x +
+        <input type="number" id="t" value="6" min="1" max="24" aria-label="定数項">
+      </div>
+      <div class="presets" id="factorPresets">
+        <button type="button" data-i="0">例① x²+5x+6</button>
+        <button type="button" data-i="1">例② x²+7x+12</button>
+        <button type="button" data-i="2">例③ x²+6x+9</button>
+        <button type="button" data-i="3">例④ x²+8x+12</button>
+        <button type="button" data-i="4">例⑤ x²+4x+5</button>
+      </div>
+    </div>
+    <div id="inputNote"></div>
+    <p class="scene" id="scene"></p>
+  </div>
+
+  <div class="main-grid">
+    <div class="card figure">
+      <p class="section-title">タイルの長方形</p>
+      <div id="figure"></div>
+      <div class="tray" id="tray"></div>
+      <div class="choice" id="choice" hidden></div>
+    </div>
+
+    <div>
+      <div class="card">
+        <p class="section-title">思考のステップ</p>
+        <div class="stepper">
+          <button class="btn" id="prevBtn">◀ 前へ</button>
+          <span class="progress" id="progress"></span>
+          <button class="btn primary" id="nextBtn">次へ ▶</button>
+        </div>
+        <div class="steps" id="steps"></div>
+      </div>
+      <div class="answer pending" id="answer">
+        <div class="label">答え</div>
+        <div class="value" id="answerValue">ステップを最後まで進めると表示されます</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const MINUS = '−';
+
+  // ---- 式の表示 ----
+  // poly([[2,'x²'],[-7,'x'],[6,'']]) → "2x² − 7x + 6"
+  function poly(terms){
+    let s = '';
+    terms.forEach(([k, v]) => {
+      if(k === 0) return;
+      const abs = Math.abs(k), coef = (abs === 1 && v) ? '' : String(abs);
+      if(s === '') s = (k < 0 ? MINUS : '') + coef + v;
+      else s += (k < 0 ? ' ' + MINUS + ' ' : ' + ') + coef + v;
+    });
+    return s || '0';
+  }
+  const lin = (p, a) => poly([[p, 'x'], [a, '']]);
+
+  // ---- 状態 ----
+  const XL = 3.4;   // x の長さ（1 のタイル何枚分に見せるか）。整数にしないのは「x は 1 の何倍か決まっていない」ことを見せるため
+  const COL = {
+    x2: { f: '#CFE3F7', s: '#1D6FB8', t: 'x²' },
+    x:  { f: '#D7EFD9', s: '#2e7d32', t: 'x' },
+    u:  { f: '#FFE0CC', s: '#C74700', t: '1' }
+  };
+  let mode = 'expand';
+  let level = 0;
+  let st = null;
+  let pick = null;          // 因数分解：選んだ 1 のタイルの並べ方 [横, 縦]
+  let tried = {};           // 因数分解：試した並べ方
+
+  const LABELS = {
+    expand: ['① 長方形のわく', '② x² のタイル', '③ 右側の x タイル', '④ 下側の x タイル', '⑤ 右下の 1 タイル', '⑥ 面積を合計する'],
+    factor: ['① 手持ちのタイルを確認', '② x² を置く', '③ 1 のタイルの並べ方を選ぶ', '④ すき間を x タイルでうめる', '⑤ 縦と横の長さを読む']
+  };
+  const maxLevel = () => LABELS[mode].length - 1;
+
+  // ---- 数学 ----
+  function solveExpand(p, a, q, b){
+    return { p, a, q, b, A: p * q, B: a * q + p * b, C: a * b };
+  }
+  function solveFactor(s, t){
+    const pairs = [];
+    for(let a = 1; a * a <= t; a++) if(t % a === 0) pairs.push([a, t / a]);
+    const good = pairs.find(([a, b]) => a + b === s) || null;
+    return { s, t, pairs, good };
+  }
+
+  // ---- 図 ----
+  const SVGW = 600, ML = 70, MT = 60, MR = 16, MB = 20;
+
+  function rect(x, y, w, h, kind, sc, ox, oy){
+    const c = COL[kind];
+    const X = ox + x * sc, Y = oy + y * sc, Wd = w * sc, Ht = h * sc;
+    let g = `<rect x="${(X + 1.5).toFixed(1)}" y="${(Y + 1.5).toFixed(1)}" width="${(Wd - 3).toFixed(1)}" height="${(Ht - 3).toFixed(1)}" rx="3" fill="${c.f}" stroke="${c.s}" stroke-width="2"/>`;
+    const fs = Math.min(kind === 'x2' ? 24 : 18, Math.min(Wd, Ht) * 0.62);
+    if(fs >= 9){
+      g += `<text x="${(X + Wd / 2).toFixed(1)}" y="${(Y + Ht / 2).toFixed(1)}" font-size="${fs.toFixed(1)}" font-weight="700" fill="${c.s}" text-anchor="middle" dominant-baseline="central">${c.t}</text>`;
+    }
+    return g;
+  }
+  // 寸法線（横）
+  function dimH(x1, x2, y, label, color){
+    return `<line x1="${x1 + 3}" y1="${y}" x2="${x2 - 3}" y2="${y}" stroke="${color}" stroke-width="1.6"/>` +
+           `<line x1="${x1 + 3}" y1="${y - 6}" x2="${x1 + 3}" y2="${y + 6}" stroke="${color}" stroke-width="1.6"/>` +
+           `<line x1="${x2 - 3}" y1="${y - 6}" x2="${x2 - 3}" y2="${y + 6}" stroke="${color}" stroke-width="1.6"/>` +
+           `<text x="${(x1 + x2) / 2}" y="${y - 10}" font-size="18" font-weight="700" fill="${color}" text-anchor="middle">${label}</text>`;
+  }
+  // 寸法線（縦）
+  function dimV(y1, y2, x, label, color){
+    return `<line x1="${x}" y1="${y1 + 3}" x2="${x}" y2="${y2 - 3}" stroke="${color}" stroke-width="1.6"/>` +
+           `<line x1="${x - 6}" y1="${y1 + 3}" x2="${x + 6}" y2="${y1 + 3}" stroke="${color}" stroke-width="1.6"/>` +
+           `<line x1="${x - 6}" y1="${y2 - 3}" x2="${x + 6}" y2="${y2 - 3}" stroke="${color}" stroke-width="1.6"/>` +
+           `<text x="${x - 10}" y="${(y1 + y2) / 2}" font-size="18" font-weight="700" fill="${color}" text-anchor="end" dominant-baseline="central">${label}</text>`;
+  }
+
+  function drawFigure(){
+    let W, H;
+    const tiles = [], slots = [], topD = [], leftD = [];
+    let outline = false;
+
+    if(mode === 'expand'){
+      const { p, a, q, b } = st;
+      W = p * XL + a; H = q * XL + b; outline = true;
+      for(let i = 0; i < p; i++) for(let j = 0; j < q; j++) tiles.push({ x: i * XL, y: j * XL, w: XL, h: XL, k: 'x2', g: 1 });
+      for(let i = 0; i < a; i++) for(let j = 0; j < q; j++) tiles.push({ x: p * XL + i, y: j * XL, w: 1, h: XL, k: 'x', g: 2 });
+      for(let i = 0; i < p; i++) for(let j = 0; j < b; j++) tiles.push({ x: i * XL, y: q * XL + j, w: XL, h: 1, k: 'x', g: 3 });
+      for(let i = 0; i < a; i++) for(let j = 0; j < b; j++) tiles.push({ x: p * XL + i, y: q * XL + j, w: 1, h: 1, k: 'u', g: 4 });
+      for(let i = 0; i < p; i++) topD.push([i * XL, (i + 1) * XL, 'x', '#1D6FB8']);
+      topD.push([p * XL, W, String(a), '#C74700']);
+      for(let j = 0; j < q; j++) leftD.push([j * XL, (j + 1) * XL, 'x', '#1D6FB8']);
+      leftD.push([q * XL, H, String(b), '#C74700']);
+    }else{
+      const pr = (level >= 2 && pick) ? pick : null;
+      const a = pr ? pr[0] : 0, b = pr ? pr[1] : 0;
+      const ok = pr && (a + b === st.s);
+      W = XL + (pr ? a : 3); H = XL + (pr ? b : 3);
+      if(level >= 1) tiles.push({ x: 0, y: 0, w: XL, h: XL, k: 'x2', g: 0 });
+      if(pr){
+        for(let i = 0; i < a; i++) for(let j = 0; j < b; j++) tiles.push({ x: XL + i, y: XL + j, w: 1, h: 1, k: 'u', g: 0 });
+        if(level >= 3 && ok){
+          for(let i = 0; i < a; i++) tiles.push({ x: XL + i, y: 0, w: 1, h: XL, k: 'x', g: 0 });
+          for(let j = 0; j < b; j++) tiles.push({ x: 0, y: XL + j, w: XL, h: 1, k: 'x', g: 0 });
+        }else{
+          slots.push({ x: XL, y: 0, w: a, h: XL, n: a });
+          slots.push({ x: 0, y: XL, w: XL, h: b, n: b });
+        }
+      }
+      if(level >= 4 && ok){
+        outline = true;
+        topD.push([0, XL, 'x', '#1D6FB8'], [XL, W, String(a), '#C74700']);
+        leftD.push([0, XL, 'x', '#1D6FB8'], [XL, H, String(b), '#C74700']);
+      }
+    }
+
+    const sc = Math.min(64, (SVGW - ML - MR) / W, 420 / H);
+    const SVGH = Math.round(MT + H * sc + MB);
+    const ox = ML, oy = MT;
+    let g = `<rect x="0" y="0" width="${SVGW}" height="${SVGH}" fill="#ffffff"/>`;
+
+    // わく（展開のときは最初から、因数分解のときは完成してから）
+    if(outline){
+      g += `<rect x="${ox}" y="${oy}" width="${(W * sc).toFixed(1)}" height="${(H * sc).toFixed(1)}" fill="#fbfcfe" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 4"/>`;
+    }
+    // すき間（因数分解で x タイルが入る場所）
+    slots.forEach(sl => {
+      g += `<rect x="${ox + sl.x * sc + 1.5}" y="${oy + sl.y * sc + 1.5}" width="${(sl.w * sc - 3).toFixed(1)}" height="${(sl.h * sc - 3).toFixed(1)}" fill="#f3faf3" stroke="#2e7d32" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+      const fs = Math.min(18, Math.min(sl.w, sl.h) * sc * 0.5);
+      g += `<text x="${ox + (sl.x + sl.w / 2) * sc}" y="${oy + (sl.y + sl.h / 2) * sc}" font-size="${fs.toFixed(1)}" font-weight="700" fill="#2e7d32" text-anchor="middle" dominant-baseline="central">?</text>`;
+    });
+    tiles.forEach(t => {
+      if(mode === 'expand' && t.g > level) return;
+      g += rect(t.x, t.y, t.w, t.h, t.k, sc, ox, oy);
+    });
+    topD.forEach(([x1, x2, lb, c]) => { g += dimH(ox + x1 * sc, ox + x2 * sc, MT - 16, lb, c); });
+    leftD.forEach(([y1, y2, lb, c]) => { g += dimV(oy + y1 * sc, oy + y2 * sc, ML - 16, lb, c); });
+
+    if(mode === 'factor' && level === 0){
+      g += `<text x="${SVGW / 2}" y="${MT + 80}" font-size="16" fill="#94a3b8" text-anchor="middle">「次へ」を押して、タイルを並べはじめよう</text>`;
+    }
+    $('figure').innerHTML = `<svg viewBox="0 0 ${SVGW} ${SVGH}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="面積タイルの図">${g}</svg>`;
+  }
+
+  // ---- 手持ちのタイル ----
+  function renderTray(){
+    const sw = (k, w, h) => `<span class="sw" style="width:${w}px;height:${h}px;background:${COL[k].f};border-color:${COL[k].s}"></span>`;
+    let items;
+    if(mode === 'expand'){
+      const { A, B, C } = st;
+      const used = [level >= 1 ? A : 0, (level >= 2 ? st.a * st.q : 0) + (level >= 3 ? st.p * st.b : 0), level >= 4 ? C : 0];
+      items = [
+        { k: 'x2', html: sw('x2', 18, 18), name: 'x²', n: used[0], all: level >= 1 },
+        { k: 'x',  html: sw('x', 6, 18),  name: 'x',  n: used[1], all: level >= 3 },
+        { k: 'u',  html: sw('u', 6, 6),   name: '1',  n: used[2], all: level >= 4 }
+      ];
+      $('tray').innerHTML = '<span style="font-size:13px;color:var(--sub);align-self:center;">並べたタイル：</span>' +
+        items.map(it => `<span class="item">${it.html}<b class="c-${it.k}">${it.name}</b> × ${it.n} 枚</span>`).join('');
+    }else{
+      const ok = pick && pick[0] + pick[1] === st.s;
+      const left = [level >= 1 ? 0 : 1, (level >= 3 && ok) ? 0 : st.s, (level >= 2 && pick) ? 0 : st.t];
+      items = [
+        { k: 'x2', html: sw('x2', 18, 18), name: 'x²', n: left[0] },
+        { k: 'x',  html: sw('x', 6, 18),  name: 'x',  n: left[1] },
+        { k: 'u',  html: sw('u', 6, 6),   name: '1',  n: left[2] }
+      ];
+      $('tray').innerHTML = '<span style="font-size:13px;color:var(--sub);align-self:center;">手持ちのタイル（残り）：</span>' +
+        items.map(it => `<span class="item${it.n === 0 ? ' done' : ''}">${it.html}<b class="c-${it.k}">${it.name}</b> × ${it.n} 枚</span>`).join('');
+    }
+  }
+
+  // ---- 因数分解：1 のタイルの並べ方を選ぶ ----
+  function renderChoice(){
+    const box = $('choice');
+    if(mode !== 'factor' || level < 2){ box.hidden = true; return; }
+    box.hidden = false;
+    let h = `<div class="q">1 のタイル ${st.t} 枚を、x² の右下に長方形に並べよう。どう並べる？</div><div class="opts">`;
+    st.pairs.forEach(([a, b], i) => {
+      const sel = pick && pick[0] === a && pick[1] === b;
+      h += `<button type="button" data-i="${i}" class="${sel ? 'sel' : ''}${tried[a + 'x' + b] ? ' tried' : ''}">横 ${a} × 縦 ${b}${tried[a + 'x' + b] && !sel ? (a + b === st.s ? ' ○' : ' ×') : ''}</button>`;
+    });
+    h += '</div>';
+    if(pick){
+      const [a, b] = pick, need = a + b;
+      if(need === st.s){
+        h += `<div class="judge ok">すき間は右に ${a} 本分、下に ${b} 本分。x タイルが ${a} + ${b} = ${need} 枚必要で、手持ちの ${st.s} 枚とぴったり合う！ →「次へ」</div>`;
+      }else{
+        h += `<div class="judge ng">すき間をうめるには x タイルが ${a} + ${b} = ${need} 枚必要。でも手持ちは ${st.s} 枚なので${need > st.s ? '足りない' : '余ってしまう'}。ほかの並べ方を試そう。</div>`;
+      }
+    }
+    if(!st.good && st.pairs.every(([a, b]) => tried[a + 'x' + b])){
+      h += `<div class="warn">どの並べ方でも x タイルが ${st.s} 枚ぴったりになりません。このようなときは、<b>整数の範囲では因数分解できない</b>ということです。</div>`;
+    }
+    box.innerHTML = h;
+    box.querySelectorAll('.opts button').forEach(btn => btn.addEventListener('click', () => {
+      pick = st.pairs[+btn.dataset.i];
+      tried[pick[0] + 'x' + pick[1]] = true;
+      goTo(2);
+    }));
+  }
+
+  // ---- 思考のステップ ----
+  function buildSteps(){
+    if(mode === 'expand'){
+      const { p, a, q, b, A, B, C } = st;
+      const P1 = '(' + lin(p, a) + ')', P2 = '(' + lin(q, b) + ')';
+      return [
+        { level: 1, body: `横 <span class="mono">${lin(p, a)}</span>、縦 <span class="mono">${lin(q, b)}</span> の長方形の面積は <span class="mono">${P1}${P2}</span>。この長方形をタイルでしきつめる。まず左上に、1辺 x の正方形 <span class="c-x2">x²</span> が ${p} × ${q} = ${A} 枚 → <span class="mono">${poly([[A, 'x²']])}</span>` },
+        { level: 2, body: `右側は横 1・縦 x の細長いタイル <span class="c-x">x</span>。横に ${a} 本、縦に ${q} 段で ${a} × ${q} = ${a * q} 枚 → <span class="mono">${poly([[a * q, 'x']])}</span>` },
+        { level: 3, body: `下側は横 x・縦 1 のタイル <span class="c-x">x</span>。横に ${p} 本、縦に ${b} 段で ${p} × ${b} = ${p * b} 枚 → <span class="mono">${poly([[p * b, 'x']])}</span>` },
+        { level: 4, body: `右下のすみは 1 × 1 のタイル <span class="c-u">1</span>。${a} × ${b} = ${C} 枚 → <span class="mono">${C}</span>` },
+        { level: 5, body: `同じ種類のタイルをまとめる。<span class="c-x">x</span> は ${a * q} + ${p * b} = ${B} 枚。面積の合計は <span class="mono">${poly([[A, 'x²'], [B, 'x'], [C, '']])}</span>。これが「縦 × 横」と同じ広さ。` }
+      ];
+    }
+    const { s, t } = st;
+    const a = pick ? pick[0] : '□', b = pick ? pick[1] : '□';
+    return [
+      { level: 1, body: `手持ちは <span class="c-x2">x²</span> 1枚、<span class="c-x">x</span> ${s} 枚、<span class="c-u">1</span> ${t} 枚（合計の面積が <span class="mono">x² + ${s}x + ${t}</span>）。これを全部使ってすき間のない長方形をつくりたい。まず <span class="c-x2">x²</span> を左上に置く。` },
+      { level: 2, body: `<span class="c-u">1</span> のタイル ${t} 枚を x² の右下に長方形に並べる（図の下のボタンで選ぶ）。すき間をうめる <span class="c-x">x</span> の枚数は「横 ＋ 縦」になるので、<b>掛けて ${t}、足して ${s}</b> になる並べ方を探すことになる。` },
+      { level: 3, body: `すき間に <span class="c-x">x</span> を入れる：右に ${a} 枚、下に ${b} 枚。手持ちの ${s} 枚をちょうど使い切って長方形が完成。` },
+      { level: 4, body: `長方形の横は <span class="mono">x + ${a}</span>、縦は <span class="mono">x + ${b}</span>。面積は「縦 × 横」でも表せるので <span class="mono">x² + ${s}x + ${t} = (x + ${a})(x + ${b})</span>` }
+    ];
+  }
+
+  function answerText(){
+    if(mode === 'expand'){
+      const { p, a, q, b, A, B, C } = st;
+      const left = (p === q && a === b) ? '(' + lin(p, a) + ')²' : '(' + lin(p, a) + ')(' + lin(q, b) + ')';
+      return left + ' = ' + poly([[A, 'x²'], [B, 'x'], [C, '']]);
+    }
+    const [a, b] = pick;
+    const right = a === b ? '(x + ' + a + ')²' : '(x + ' + a + ')(x + ' + b + ')';
+    return 'x² + ' + st.s + 'x + ' + st.t + ' = ' + right;
+  }
+
+  function renderSteps(){
+    const steps = buildSteps();
+    $('steps').innerHTML = steps.map((s, i) =>
+      `<div class="step${s.level > level ? ' dim' : ''}" data-level="${s.level}">
+         <div class="step-num">${i + 1}</div><div class="step-body">${s.body}</div>
+       </div>`).join('');
+    $('steps').querySelectorAll('.step').forEach(el => el.addEventListener('click', () => goTo(+el.dataset.level)));
+    $('progress').textContent = LABELS[mode][level];
+    $('prevBtn').disabled = level <= 0;
+    $('nextBtn').disabled = level >= maxLevel() || blocked(level);
+    const ans = $('answer');
+    if(level >= maxLevel()){ ans.classList.remove('pending'); $('answerValue').textContent = answerText(); }
+    else{
+      ans.classList.add('pending');
+      $('answerValue').textContent = (mode === 'factor' && level === 2 && !(pick && pick[0] + pick[1] === st.s))
+        ? '並べ方を選んで、x タイルがぴったり合うものを見つけよう'
+        : 'ステップを最後まで進めると表示されます';
+    }
+  }
+
+  // 因数分解では、正しい並べ方を見つけるまで ③ より先に進めない
+  function blocked(lv){
+    return mode === 'factor' && lv >= 2 && !(pick && pick[0] + pick[1] === st.s);
+  }
+
+  function goTo(n){
+    n = Math.max(0, Math.min(maxLevel(), n));
+    while(n > 2 && blocked(2)) n--;       // 飛ばして先に行こうとしたときも ③ で止める
+    level = n;
+    drawFigure();
+    renderTray();
+    renderChoice();
+    renderSteps();
+  }
+
+  // ---- 入力 → 白紙から ----
+  const intIn = (id, lo, hi) => { const v = Number($(id).value); return (Number.isInteger(v) && v >= lo && v <= hi) ? v : null; };
+
+  function render(){
+    let note = '';
+    if(mode === 'expand'){
+      const p = intIn('p', 1, 3), a = intIn('a', 1, 6), q = intIn('q', 1, 3), b = intIn('b', 1, 6);
+      if(p === null || q === null || a === null || b === null){
+        $('inputNote').innerHTML = '<div class="warn">x の係数は 1〜3、たす数は 1〜6 の整数を入れてください（タイルで表せる大きさにしています）。</div>';
+        return;
+      }
+      st = solveExpand(p, a, q, b);
+      $('scene').textContent = (p === 1 && q === 1)
+        ? `畑でいうと：1辺 x m の正方形の畑を、横に ${a} m、縦に ${b} m 広げたときの広さを、区画ごとに数えることになります。`
+        : 'x の係数が 2 以上のときは、x² のタイルが何枚も並びます。たすき掛けの形 (2x+1)(x+3) も同じように数えられます。';
+    }else{
+      const s = intIn('s', 2, 14), t = intIn('t', 1, 24);
+      if(s === null || t === null){
+        $('inputNote').innerHTML = '<div class="warn">x の係数は 2〜14、定数項は 1〜24 の整数を入れてください。</div>';
+        return;
+      }
+      st = solveFactor(s, t);
+      pick = null; tried = {};
+      $('scene').textContent = 'マイナスの項がある式は、タイルでは表しにくいので「たすき掛けナビ」で練習しましょう。';
+    }
+    $('inputNote').innerHTML = note;
+    goTo(0);
+  }
+
+  const EX_PRESETS = [[1, 2, 1, 3], [1, 1, 1, 4], [1, 3, 1, 3], [2, 1, 1, 3]];
+  const FA_PRESETS = [[5, 6], [7, 12], [6, 9], [8, 12], [4, 5]];
+  $('expandPresets').querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => {
+    const v = EX_PRESETS[+btn.dataset.i];
+    ['p', 'a', 'q', 'b'].forEach((id, i) => { $(id).value = v[i]; });
+    render();
+  }));
+  $('factorPresets').querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => {
+    const v = FA_PRESETS[+btn.dataset.i];
+    $('s').value = v[0]; $('t').value = v[1];
+    render();
+  }));
+  ['p', 'a', 'q', 'b', 's', 't'].forEach(id => $(id).addEventListener('input', render));
+  document.querySelectorAll('.tabs button').forEach(btn => btn.addEventListener('click', () => {
+    mode = btn.dataset.mode;
+    document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b === btn));
+    $('expandCtl').hidden = mode !== 'expand';
+    $('factorCtl').hidden = mode !== 'factor';
+    render();
+  }));
+  $('prevBtn').addEventListener('click', () => goTo(level - 1));
+  $('nextBtn').addEventListener('click', () => goTo(level + 1));
+
+  render();
+})();
+</script>
+</body>
+</html>

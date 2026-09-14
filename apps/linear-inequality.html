@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数直線で解く1次不等式・連立不等式｜数学学習サイト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
+<style>
+  /* サイト共通（assets/style.css）と同じトークン。アプリは1ファイル完結にするためここに再掲 */
+  :root{
+    --orange-50:#FFEEE2; --orange-100:#FFDFCA; --orange-400:#FF8D44;
+    --orange-700:#E25100; --orange-800:#C74700; --orange-900:#AC3E00;
+    --ink:#1E293B; --sub:#475569; --line:#D9DEE6; --line-strong:#B9C2CF;
+    --bg:#FBFBFA; --card:#FFFFFF; --focus:#FFD866;
+    --c1:#1D6FB8; --c2:#C74700; --ok:#1b5e20; --ng:#b71c1c;
+    --sp-1:8px; --sp-2:16px; --sp-3:24px; --sp-4:32px; --sp-6:48px;
+    --radius-sm:4px; --radius-md:8px; --radius-pill:999px;
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  body{margin:0;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.7;}
+  a{color:var(--orange-800);}
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+  .brand-bar{height:6px;background:var(--orange-700);}
+  .site-header{background:var(--card);border-bottom:1px solid var(--line);padding:var(--sp-2);}
+  .site-header .inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;}
+  .site-title{margin:0;font-size:18px;font-weight:700;}
+  .site-title a{color:var(--ink);text-decoration:none;}
+  .back-link{font-size:14px;font-weight:700;}
+  .wrap{max-width:1100px;margin:0 auto;padding:var(--sp-3) var(--sp-2) var(--sp-6);}
+  h1{margin:0 0 4px;font-size:26px;line-height:1.4;}
+  .lead{margin:0 0 var(--sp-3);color:var(--sub);font-size:15px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--sp-2) var(--sp-3);}
+  .section-title{font-size:13px;font-weight:700;color:var(--sub);margin:0 0 var(--sp-1);}
+  .tabs{display:inline-flex;border:1px solid var(--line-strong);border-radius:var(--radius-pill);overflow:hidden;margin-bottom:var(--sp-2);}
+  .tabs button{border:0;background:#fff;color:var(--ink);padding:8px 20px;font-size:15px;cursor:pointer;font-family:inherit;}
+  .tabs button.on{background:var(--orange-800);color:#fff;font-weight:700;}
+  .ineq{display:flex;align-items:center;flex-wrap:wrap;gap:4px;font-size:20px;font-weight:700;margin-bottom:8px;}
+  .ineq .no{display:inline-flex;width:28px;height:28px;border-radius:50%;color:#fff;font-size:14px;align-items:center;justify-content:center;margin-right:6px;}
+  .ineq input{font-size:18px;padding:6px 4px;border:1px solid var(--line-strong);border-radius:var(--radius-md);width:64px;text-align:center;font-family:inherit;}
+  .ineq select{font-size:18px;padding:6px 4px;border:1px solid var(--line-strong);border-radius:var(--radius-md);font-family:inherit;background:#fff;}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .presets button, .btn{border:1px solid var(--line);background:#f8fafc;color:var(--ink);padding:8px 14px;border-radius:var(--radius-pill);font-size:14px;cursor:pointer;font-family:inherit;}
+  .presets button:hover, .btn:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .btn:disabled{opacity:.35;cursor:default;}
+  .btn.primary{background:var(--orange-800);color:#fff;border-color:var(--orange-800);font-weight:700;}
+  .btn.primary:hover{background:var(--orange-900);color:#fff;}
+  .scene{margin:var(--sp-1) 0 0;font-size:14px;color:var(--sub);}
+
+  .main-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:var(--sp-2);align-items:start;margin-top:var(--sp-2);}
+  @media (max-width:900px){ .main-grid{grid-template-columns:1fr;} }
+  .figure svg{width:100%;height:auto;display:block;}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--sub);margin-top:var(--sp-1);}
+
+  /* 思考のステップ（クリックで巻き戻し／早送り） */
+  .stepper{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:var(--sp-2);padding-bottom:12px;border-bottom:1px dashed var(--line);}
+  .stepper .progress{font-size:12px;font-weight:700;color:var(--sub);text-align:center;flex:1;}
+  .steps{display:flex;flex-direction:column;gap:10px;}
+  .step{display:flex;gap:10px;padding:6px 8px;margin:0 -8px;border-radius:var(--radius-md);cursor:pointer;}
+  .step:hover{background:#f8fafc;}
+  .step.dim{opacity:.4;}
+  .step-num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .step.dim .step-num{background:#cbd5e1;}
+  .step-body{font-size:14px;line-height:1.9;}
+  .m{font-weight:700;white-space:nowrap;}
+  .flip{display:inline-block;margin-top:4px;padding:4px 10px;border-radius:var(--radius-md);background:#fdecea;color:var(--ng);font-weight:700;}
+  .keep{color:var(--ok);font-weight:700;}
+  /* 分数は横線の縦組みで表示する（1/2 のような斜線表記は画面に出さない） */
+  .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25;margin:0 2px;}
+  .frac .num, .frac .den{padding:0 4px;white-space:nowrap;}
+  .frac .bar{display:block;width:100%;height:2px;background:currentColor;margin:2px 0;}
+  .neg{display:inline-flex;align-items:center;gap:3px;vertical-align:middle;}
+
+  .answer{margin-top:var(--sp-2);padding:14px 16px;border:1.5px solid var(--orange-800);border-radius:var(--radius-md);background:linear-gradient(135deg,#fff3ea,#fff);}
+  .answer .label{font-size:12px;font-weight:700;color:var(--orange-800);}
+  .answer .value{font-size:22px;font-weight:800;}
+  .answer .more{font-size:14px;margin-top:6px;}
+  .answer.pending{opacity:.6;}
+  .answer.pending .value{font-size:15px;font-weight:400;}
+  .warn{background:#fff3cd;border:1px solid #ffe08a;color:#7a5b00;padding:10px 14px;border-radius:var(--radius-md);font-size:14px;margin-top:var(--sp-1);}
+</style>
+</head>
+<body>
+
+<div class="brand-bar"></div>
+<header class="site-header">
+  <div class="inner">
+    <p class="site-title"><a href="../index.html">数学学習サイト</a></p>
+    <a class="back-link" href="../unit.html?s=math1&u=kazu-shiki">← 単元ページに戻る</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <h1>数直線で解く1次不等式・連立不等式</h1>
+  <p class="lead">不等式を解く手順（移項 → 両辺を割る）を1段階ずつ進め、答えを数直線に表します。マイナスの数で割るときに不等号の向きが変わるところと、連立不等式で2つの範囲が重なるところに注目しましょう。</p>
+
+  <div class="card">
+    <div class="tabs" role="tablist">
+      <button type="button" data-mode="single" class="on">1次不等式</button>
+      <button type="button" data-mode="system">連立不等式</button>
+    </div>
+    <div id="rows"></div>
+    <div class="presets" id="presets"></div>
+    <div id="inputNote"></div>
+    <p class="scene" id="scene"></p>
+  </div>
+
+  <div class="main-grid">
+    <div class="card figure">
+      <p class="section-title">数直線</p>
+      <div id="figure"></div>
+      <div class="legend">
+        <span>● 塗りつぶした丸：その数を<b>ふくむ</b>（≦・≧）</span>
+        <span>○ 白い丸：その数は<b>ふくまない</b>（＜・＞）</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <p class="section-title">思考のステップ</p>
+        <div class="stepper">
+          <button class="btn" id="prevBtn">◀ 前へ</button>
+          <span class="progress" id="progress"></span>
+          <button class="btn primary" id="nextBtn">次へ ▶</button>
+        </div>
+        <div class="steps" id="steps"></div>
+      </div>
+      <div class="answer pending" id="answer">
+        <div class="label">答え</div>
+        <div class="value" id="answerValue">ステップを最後まで進めると表示されます</div>
+        <div class="more" id="answerMore"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const MINUS = '−';
+  const OPS = ['<', '≦', '>', '≧'];
+  const FLIP = { '<': '>', '≦': '≧', '>': '<', '≧': '≦' };
+  const num = n => (n < 0 ? MINUS + Math.abs(n) : String(n));
+  const par = n => (n < 0 ? '(' + num(n) + ')' : String(n));
+  const gcd = (x, y) => { x = Math.abs(x); y = Math.abs(y); while(y){ [x, y] = [y, x % y]; } return x || 1; };
+  const fracHTML = (n, d) => `<span class="frac"><span class="num">${n}</span><span class="bar"></span><span class="den">${d}</span></span>`;
+  function poly(terms){
+    let s = '';
+    terms.forEach(([k, v]) => {
+      if(k === 0) return;
+      const abs = Math.abs(k), coef = (abs === 1 && v) ? '' : String(abs);
+      if(s === '') s = (k < 0 ? MINUS : '') + coef + v;
+      else s += (k < 0 ? ' ' + MINUS + ' ' : ' + ') + coef + v;
+    });
+    return s || '0';
+  }
+
+  // ---- 有理数（分数のまま扱う）----
+  const Q = (n, d) => { if(d < 0){ n = -n; d = -d; } const g = gcd(n, d); return { n: n / g, d: d / g }; };
+  const qv = r => r.n / r.d;
+  function qHTML(r){
+    if(r.d === 1) return num(r.n);
+    const fr = fracHTML(Math.abs(r.n), r.d);
+    return r.n < 0 ? `<span class="neg">${MINUS}${fr}</span>` : fr;
+  }
+
+  // ---- 状態 ----
+  let mode = 'single';
+  let level = 0;
+  let sols = [];        // 各不等式の解
+  let ctx = null;       // 文章題の補足
+  const LABELS = {
+    single: ['式を確認する', '① 移項する', '② 両辺を x の係数で割る', '③ 数直線に表す', '④ 答え'],
+    system: ['式を確認する', '① 1つ目を解く', '② 2つ目を解く', '③ 1つ目を数直線に', '④ 2つ目を数直線に', '⑤ 重なった部分が答え']
+  };
+  const maxLevel = () => LABELS[mode].length - 1;
+
+  // 1本の不等式 ax + b (op) cx + d を解く
+  function solveOne(a, b, op, c, d){
+    const A = a - c, B = d - b;
+    const r = { a, b, op, c, d, A, B };
+    if(A === 0){
+      const holds = op === '<' ? 0 < B : op === '≦' ? 0 <= B : op === '>' ? 0 > B : 0 >= B;
+      r.kind = holds ? 'all' : 'none';
+      r.iv = holds ? { lo: -Infinity, hi: Infinity } : null;
+      return r;
+    }
+    r.kind = 'ray';
+    r.k = Q(B, A);
+    r.op2 = A < 0 ? FLIP[op] : op;
+    const inc = r.op2 === '≦' || r.op2 === '≧';
+    r.iv = (r.op2 === '<' || r.op2 === '≦')
+      ? { lo: -Infinity, hi: qv(r.k), hiQ: r.k, hiInc: inc }
+      : { lo: qv(r.k), loQ: r.k, loInc: inc, hi: Infinity };
+    return r;
+  }
+  function intersect(i1, i2){
+    if(!i1 || !i2) return null;
+    const out = {};
+    if(i1.lo > i2.lo || (i1.lo === i2.lo && !i1.loInc)){ out.lo = i1.lo; out.loQ = i1.loQ; out.loInc = i1.loInc; }
+    else { out.lo = i2.lo; out.loQ = i2.loQ; out.loInc = i2.loInc; }
+    if(i1.hi < i2.hi || (i1.hi === i2.hi && !i1.hiInc)){ out.hi = i1.hi; out.hiQ = i1.hiQ; out.hiInc = i1.hiInc; }
+    else { out.hi = i2.hi; out.hiQ = i2.hiQ; out.hiInc = i2.hiInc; }
+    if(out.lo > out.hi) return null;
+    if(out.lo === out.hi && !(out.loInc && out.hiInc)) return null;
+    return out;
+  }
+  function ivHTML(iv){
+    if(!iv) return '解なし';
+    const L = iv.lo === -Infinity, H = iv.hi === Infinity;
+    if(L && H) return 'すべての実数';
+    if(L) return `x ${iv.hiInc ? '≦' : '<'} ${qHTML(iv.hiQ)}`;
+    if(H) return `x ${iv.loInc ? '≧' : '>'} ${qHTML(iv.loQ)}`;
+    if(iv.lo === iv.hi) return `x = ${qHTML(iv.loQ)}`;
+    return `${qHTML(iv.loQ)} ${iv.loInc ? '≦' : '<'} x ${iv.hiInc ? '≦' : '<'} ${qHTML(iv.hiQ)}`;
+  }
+  const ineqText = r => `${poly([[r.a, 'x'], [r.b, '']])} ${r.op} ${poly([[r.c, 'x'], [r.d, '']])}`;
+
+  // ---- 図（数直線）----
+  function drawFigure(){
+    const W = 600, x0 = 40, x1 = 560;
+    const yA = mode === 'single' ? 120 : 170, H = yA + 60;
+    // 表示範囲：境界の点が中ほどに来るように
+    const ks = sols.filter(s => s.kind === 'ray').map(s => qv(s.k));
+    let lo, hi;
+    if(ks.length){ lo = Math.floor(Math.min(...ks)) - 4; hi = Math.ceil(Math.max(...ks)) + 4; }
+    else { lo = -5; hi = 5; }
+    if(hi - lo < 10){ const m = (hi + lo) / 2; lo = Math.floor(m - 5); hi = Math.ceil(m + 5); }
+    const step = (hi - lo) > 30 ? 5 : (hi - lo) > 16 ? 2 : 1;
+    const px = v => x0 + (v - lo) / (hi - lo) * (x1 - x0);
+    let g = `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`;
+    g += `<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#334155"/></marker></defs>`;
+
+    // どの不等式を描くか（段階に合わせる）
+    const show = mode === 'single' ? [level >= 3] : [level >= 3, level >= 4];
+    const pointShow = mode === 'single' ? [level >= 2] : [level >= 3, level >= 4];
+    const colors = ['#1D6FB8', '#C74700'];
+
+    // 重なり（連立の最後）
+    if(mode === 'system' && level >= 5){
+      const iv = intersect(sols[0].iv, sols[1].iv);
+      if(iv){
+        const a = Math.max(px(Math.max(iv.lo, lo - 1)), x0 - 20), b = Math.min(px(Math.min(iv.hi, hi + 1)), x1 + 20);
+        g += `<rect x="${a}" y="${yA - 100}" width="${Math.max(b - a, 4)}" height="100" fill="rgba(46,125,50,0.16)"/>`;
+        g += `<text x="${Math.min(Math.max((a + b) / 2, 90), 510)}" y="${yA - 108}" font-size="15" font-weight="700" fill="#1b5e20" text-anchor="middle">重なった部分</text>`;
+      }else{
+        g += `<text x="${W / 2}" y="${yA - 108}" font-size="15" font-weight="700" fill="#b71c1c" text-anchor="middle">重なる部分がない → 解なし</text>`;
+      }
+    }
+
+    // 軸と目もり
+    g += `<line x1="${x0 - 20}" y1="${yA}" x2="${x1 + 25}" y2="${yA}" stroke="#334155" stroke-width="2" marker-end="url(#ar)"/>`;
+    for(let v = Math.ceil(lo / step) * step; v <= hi; v += step){
+      g += `<line x1="${px(v)}" y1="${yA - 5}" x2="${px(v)}" y2="${yA + 5}" stroke="#94a3b8" stroke-width="1.5"/>`;
+      g += `<text x="${px(v)}" y="${yA + 24}" font-size="13" fill="#94a3b8" text-anchor="middle">${num(v)}</text>`;
+    }
+
+    sols.forEach((s, i) => {
+      const hgt = 36 + i * 34, col = colors[i];
+      if(s.kind === 'ray'){
+        const k = qv(s.k), X = px(k), right = s.op2 === '>' || s.op2 === '≧', inc = s.op2 === '≦' || s.op2 === '≧';
+        if(show[i]){
+          const end = right ? x1 + 15 : x0 - 15;
+          g += `<polyline points="${X},${yA} ${X},${yA - hgt} ${end},${yA - hgt}" fill="none" stroke="${col}" stroke-width="3"/>`;
+          g += `<polygon points="${end},${yA - hgt - 6} ${end + (right ? 10 : -10)},${yA - hgt} ${end},${yA - hgt + 6}" fill="${col}"/>`;
+          g += `<text x="${right ? X + 8 : X - 8}" y="${yA - hgt - 8}" font-size="14" font-weight="700" fill="${col}" text-anchor="${right ? 'start' : 'end'}">${mode === 'system' ? (i ? '②' : '①') + ' ' : ''}x ${s.op2} …</text>`;
+        }
+        if(pointShow[i]){
+          g += `<circle cx="${X}" cy="${yA}" r="7" fill="${inc ? col : '#fff'}" stroke="${col}" stroke-width="2.5"/>`;
+          g += svgVal(X, yA + 44 + i * 2, s.k, col);
+        }
+      }else if(show[i]){
+        const y = yA - hgt;
+        if(s.kind === 'all'){
+          g += `<line x1="${x0 - 15}" y1="${y}" x2="${x1 + 15}" y2="${y}" stroke="${col}" stroke-width="3"/>`;
+          g += `<text x="${W / 2}" y="${y - 8}" font-size="14" font-weight="700" fill="${col}" text-anchor="middle">すべての実数</text>`;
+        }else{
+          g += `<text x="${W / 2}" y="${y}" font-size="14" font-weight="700" fill="${col}" text-anchor="middle">解なし（どの x も満たさない）</text>`;
+        }
+      }
+    });
+    $('figure').innerHTML = `<svg viewBox="0 0 ${W} ${H + 20}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="数直線">${g}</svg>`;
+  }
+  // SVG に値を書く（分数は横線の縦組みで描く）
+  function svgVal(x, y, r, col){
+    if(r.d === 1) return `<text x="${x}" y="${y}" font-size="16" font-weight="700" fill="${col}" text-anchor="middle">${num(r.n)}</text>`;
+    const w = Math.max(String(Math.abs(r.n)).length, String(r.d).length) * 9 + 6;
+    let s = `<text x="${x}" y="${y - 8}" font-size="14" font-weight="700" fill="${col}" text-anchor="middle">${Math.abs(r.n)}</text>`;
+    s += `<line x1="${x - w / 2}" y1="${y - 3}" x2="${x + w / 2}" y2="${y - 3}" stroke="${col}" stroke-width="1.6"/>`;
+    s += `<text x="${x}" y="${y + 12}" font-size="14" font-weight="700" fill="${col}" text-anchor="middle">${r.d}</text>`;
+    if(r.n < 0) s += `<text x="${x - w / 2 - 3}" y="${y}" font-size="16" font-weight="700" fill="${col}" text-anchor="end">${MINUS}</text>`;
+    return s;
+  }
+
+  // ---- ステップの文言 ----
+  function solveSteps(r, tag){
+    const out = [];
+    const m1 = `<span class="m">${ineqText(r)}</span>`;
+    const m2 = `<span class="m">${poly([[r.a, 'x'], [-r.c, 'x']]) === '0' ? '0' : poly([[r.a, 'x'], [-r.c, 'x']])} ${r.op} ${poly([[r.d, ''], [-r.b, '']])}</span>`;
+    const lhs = r.A === 0 ? '0' : poly([[r.A, 'x']]);
+    out.push(`${tag}${m1} の x の項を左辺、数の項を右辺に集める（移項すると符号が変わる）→ ${m2}　まとめて <span class="m">${lhs} ${r.op} ${num(r.B)}</span>`);
+    if(r.A === 0){
+      out.push(`x の項が消えて <span class="m">0 ${r.op} ${num(r.B)}</span>。これは ${r.kind === 'all' ? '<b>いつでも正しい</b> → どんな x でも成り立つ（すべての実数）' : '<b>正しくない</b> → どんな x でも成り立たない（解なし）'}`);
+    }else if(r.A < 0){
+      out.push(`両辺を <b>${num(r.A)}</b> で割る。<br><span class="flip">マイナスの数で割るので、不等号の向きが逆になる！ ${r.op} → ${r.op2}</span><br><span style="color:var(--sub)">（例：2 &lt; 3 の両辺に ${MINUS}1 を掛けると ${MINUS}2 &gt; ${MINUS}3。大小が入れかわる）</span><br>→ <span class="m">x ${r.op2} ${qHTML(r.k)}</span>`);
+    }else{
+      out.push(`両辺を <b>${r.A}</b> で割る。<span class="keep">プラスの数で割るので、不等号の向きはそのまま。</span> → <span class="m">x ${r.op2} ${qHTML(r.k)}</span>`);
+    }
+    return out;
+  }
+
+  function buildSteps(){
+    if(mode === 'single'){
+      const s = sols[0], st = solveSteps(s, '');
+      let draw;
+      if(s.kind === 'ray'){
+        const inc = s.op2 === '≦' || s.op2 === '≧', right = s.op2 === '>' || s.op2 === '≧';
+        draw = `境界の ${qHTML(s.k)} に${inc ? '<b>塗りつぶした丸</b>（ふくむ）' : '<b>白い丸</b>（ふくまない）'}をかき、「x ${s.op2}」なので${right ? '<b>右側</b>（大きい方）' : '<b>左側</b>（小さい方）'}に線をのばす。`;
+      }else draw = s.kind === 'all' ? '数直線全体が答えになる。' : '数直線に塗る部分はない。';
+      return [
+        { level: 1, body: st[0] },
+        { level: 2, body: st[1] },
+        { level: 3, body: draw },
+        { level: 4, body: `数直線の線が引かれた部分の x が、元の不等式を満たす。` }
+      ];
+    }
+    const a = solveSteps(sols[0], '<b>①</b> '), b = solveSteps(sols[1], '<b>②</b> ');
+    return [
+      { level: 1, body: a[0] + '<br>' + a[1] },
+      { level: 2, body: b[0] + '<br>' + b[1] },
+      { level: 3, body: `①の答え <span class="m">${ivHTML(sols[0].iv)}</span> を数直線に<span style="color:var(--c1);font-weight:700;">青</span>でかく。` },
+      { level: 4, body: `②の答え <span class="m">${ivHTML(sols[1].iv)}</span> を同じ数直線に<span style="color:var(--c2);font-weight:700;">オレンジ</span>でかく。` },
+      { level: 5, body: `連立不等式の答えは「①も②も両方満たす x」。つまり<b>2本の線が重なった部分</b>。` }
+    ];
+  }
+
+  function renderSteps(){
+    $('steps').innerHTML = buildSteps().map((s, i) =>
+      `<div class="step${s.level > level ? ' dim' : ''}" data-level="${s.level}">
+         <div class="step-num">${i + 1}</div><div class="step-body">${s.body}</div>
+       </div>`).join('');
+    $('steps').querySelectorAll('.step').forEach(el => el.addEventListener('click', () => goTo(+el.dataset.level)));
+    $('progress').textContent = LABELS[mode][level];
+    $('prevBtn').disabled = level <= 0;
+    $('nextBtn').disabled = level >= maxLevel();
+    const ans = $('answer');
+    if(level >= maxLevel()){
+      ans.classList.remove('pending');
+      const iv = mode === 'single' ? sols[0].iv : intersect(sols[0].iv, sols[1].iv);
+      $('answerValue').innerHTML = ivHTML(iv);
+      $('answerMore').innerHTML = ctx && mode === 'single' ? ctx(sols[0]) : '';
+    }else{
+      ans.classList.add('pending');
+      $('answerValue').textContent = 'ステップを最後まで進めると表示されます';
+      $('answerMore').innerHTML = '';
+    }
+  }
+
+  function goTo(n){
+    level = Math.max(0, Math.min(maxLevel(), n));
+    drawFigure();
+    renderSteps();
+  }
+
+  // ---- 入力欄 ----
+  function rowHTML(i, v){
+    const col = i ? 'var(--c2)' : 'var(--c1)';
+    return `<div class="ineq">${mode === 'system' ? `<span class="no" style="background:${col}">${i ? '②' : '①'}</span>` : ''}
+      <input type="number" id="a${i}" value="${v[0]}" aria-label="左辺の x の係数">x +
+      <input type="number" id="b${i}" value="${v[1]}" aria-label="左辺の数">
+      <select id="op${i}" aria-label="不等号">${OPS.map(o => `<option${o === v[2] ? ' selected' : ''}>${o}</option>`).join('')}</select>
+      <input type="number" id="c${i}" value="${v[3]}" aria-label="右辺の x の係数">x +
+      <input type="number" id="d${i}" value="${v[4]}" aria-label="右辺の数"></div>`;
+  }
+  const PRESETS = {
+    single: [
+      { name: '例① 3x−5 > 7', v: [[3, -5, '>', 0, 7]] },
+      { name: '例② −2x+3 ≦ 9', v: [[-2, 3, '≦', 0, 9]] },
+      { name: '例③ 5x+2 < 2x−7', v: [[5, 2, '<', 2, -7]] },
+      { name: '例④ 2x−1 ≧ 4x+2', v: [[2, -1, '≧', 4, 2]] },
+      { name: '例⑤ 苗の本数（予算3000円）', v: [[120, 800, '≦', 0, 3000]], ctx: 'nae' }
+    ],
+    system: [
+      { name: '例① 範囲がはさまれる', v: [[3, -2, '>', 0, 4], [2, 1, '≦', 1, 6]] },
+      { name: '例② 同じ向き', v: [[1, 3, '<', 2, 0], [5, 1, '≧', 3, 9]] },
+      { name: '例③ 解なし', v: [[2, 5, '<', 0, 1], [-1, 2, '<', 0, 1]] },
+      { name: '例④ 1点だけ', v: [[3, 0, '≧', 1, 4], [-2, 1, '≧', 0, -3]] }
+    ]
+  };
+  const CTX = {
+    nae: {
+      scene: '場面：1本 120 円の苗を x 本と、800 円の肥料を1袋買う。代金の合計を 3000 円以内にしたい。→ 120x + 800 ≦ 3000',
+      fn: s => `x は苗の本数なので 0 以上の整数。${qHTML(s.k)} ＝ ${(qv(s.k)).toFixed(2)}… 以下の整数で最大のものは <b>${Math.floor(qv(s.k))}</b>。→ 苗は<b>最大 ${Math.floor(qv(s.k))} 本</b>まで買える。`
+    }
+  };
+
+  function buildRows(vals){
+    $('rows').innerHTML = vals.map((v, i) => rowHTML(i, v)).join('');
+    $('rows').querySelectorAll('input, select').forEach(el => el.addEventListener('input', () => { ctx = null; $('scene').textContent = ''; render(); }));
+  }
+  function buildPresets(){
+    $('presets').innerHTML = PRESETS[mode].map((p, i) => `<button type="button" data-i="${i}">${p.name}</button>`).join('');
+    $('presets').querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => usePreset(+btn.dataset.i)));
+  }
+  function usePreset(i){
+    const p = PRESETS[mode][i];
+    buildRows(p.v);
+    ctx = p.ctx ? CTX[p.ctx].fn : null;
+    $('scene').textContent = p.ctx ? CTX[p.ctx].scene : '';
+    render();
+  }
+
+  function render(){
+    const n = mode === 'single' ? 1 : 2;
+    const out = [];
+    for(let i = 0; i < n; i++){
+      const a = Number($('a' + i).value), b = Number($('b' + i).value), c = Number($('c' + i).value), d = Number($('d' + i).value);
+      if(![a, b, c, d].every(v => Number.isInteger(v) && Math.abs(v) <= 9999)){
+        $('inputNote').innerHTML = '<div class="warn">係数と数は整数を入れてください（−9999〜9999）。</div>';
+        return;
+      }
+      out.push(solveOne(a, b, $('op' + i).value, c, d));
+    }
+    $('inputNote').innerHTML = '';
+    sols = out;
+    goTo(0);
+  }
+
+  document.querySelectorAll('.tabs button').forEach(btn => btn.addEventListener('click', () => {
+    mode = btn.dataset.mode;
+    document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b === btn));
+    buildPresets();
+    usePreset(0);
+  }));
+  $('prevBtn').addEventListener('click', () => goTo(level - 1));
+  $('nextBtn').addEventListener('click', () => goTo(level + 1));
+
+  buildPresets();
+  usePreset(0);
+})();
+</script>
+</body>
+</html>

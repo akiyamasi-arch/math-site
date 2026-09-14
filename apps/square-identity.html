@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>正方形で見る (x+y)² と x²+y²｜数学学習サイト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
+<style>
+  /* サイト共通（assets/style.css）と同じトークン。アプリは1ファイル完結にするためここに再掲 */
+  :root{
+    --orange-50:#FFEEE2; --orange-100:#FFDFCA; --orange-400:#FF8D44;
+    --orange-700:#E25100; --orange-800:#C74700; --orange-900:#AC3E00;
+    --ink:#1E293B; --sub:#475569; --line:#D9DEE6; --line-strong:#B9C2CF;
+    --bg:#FBFBFA; --card:#FFFFFF; --focus:#FFD866;
+    --cx:#1D6FB8; --cy:#C74700; --cxy:#2e7d32;
+    --sp-1:8px; --sp-2:16px; --sp-3:24px; --sp-4:32px; --sp-6:48px;
+    --radius-sm:4px; --radius-md:8px; --radius-pill:999px;
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  body{margin:0;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.7;}
+  a{color:var(--orange-800);}
+  a:focus-visible, button:focus-visible, input:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+  .brand-bar{height:6px;background:var(--orange-700);}
+  .site-header{background:var(--card);border-bottom:1px solid var(--line);padding:var(--sp-2);}
+  .site-header .inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;}
+  .site-title{margin:0;font-size:18px;font-weight:700;}
+  .site-title a{color:var(--ink);text-decoration:none;}
+  .back-link{font-size:14px;font-weight:700;}
+  .wrap{max-width:1100px;margin:0 auto;padding:var(--sp-3) var(--sp-2) var(--sp-6);}
+  h1{margin:0 0 4px;font-size:26px;line-height:1.4;}
+  .lead{margin:0 0 var(--sp-3);color:var(--sub);font-size:15px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--sp-2) var(--sp-3);}
+  .section-title{font-size:13px;font-weight:700;color:var(--sub);margin:0 0 var(--sp-1);}
+  .controls{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:end;}
+  .field label{display:block;font-size:12px;font-weight:700;color:var(--sub);}
+  .slider-field{flex:1 1 200px;min-width:180px;}
+  .slider-field input[type=range]{width:100%;height:32px;accent-color:var(--orange-800);}
+  .slider-field .val{font-size:18px;font-weight:700;}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;}
+  .presets button, .btn{border:1px solid var(--line);background:#f8fafc;color:var(--ink);padding:8px 14px;border-radius:var(--radius-pill);font-size:14px;cursor:pointer;font-family:inherit;}
+  .presets button:hover, .btn:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .btn:disabled{opacity:.35;cursor:default;}
+  .btn.primary{background:var(--orange-800);color:#fff;border-color:var(--orange-800);font-weight:700;}
+  .btn.primary:hover{background:var(--orange-900);color:#fff;}
+
+  .main-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:var(--sp-2);align-items:start;margin-top:var(--sp-2);}
+  @media (max-width:900px){ .main-grid{grid-template-columns:1fr;} }
+  .figure svg{width:100%;height:auto;display:block;max-width:520px;margin:0 auto;}
+  .values{display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--sp-2);}
+  .chip{border:1px solid var(--line);border-radius:var(--radius-pill);padding:4px 14px;font-size:15px;background:#fff;}
+  .chip.hidden-val{color:#94a3b8;}
+
+  /* 思考のステップ（クリックで巻き戻し／早送り） */
+  .stepper{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:var(--sp-2);padding-bottom:12px;border-bottom:1px dashed var(--line);}
+  .stepper .progress{font-size:12px;font-weight:700;color:var(--sub);text-align:center;flex:1;}
+  .steps{display:flex;flex-direction:column;gap:10px;}
+  .step{display:flex;gap:10px;padding:6px 8px;margin:0 -8px;border-radius:var(--radius-md);cursor:pointer;}
+  .step:hover{background:#f8fafc;}
+  .step.dim{opacity:.4;}
+  .step-num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .step.dim .step-num{background:#cbd5e1;}
+  .step-body{font-size:14px;line-height:1.7;}
+  .mono{font-family:Consolas,"Courier New",monospace;background:#f1f5f9;padding:1px 6px;border-radius:5px;}
+  .cx{color:var(--cx);font-weight:700;} .cy{color:var(--cy);font-weight:700;} .cxy{color:var(--cxy);font-weight:700;}
+
+  .rel{margin-top:var(--sp-2);padding:12px 16px;border:1.5px solid var(--orange-800);border-radius:var(--radius-md);background:linear-gradient(135deg,#fff3ea,#fff);}
+  .rel.pending{opacity:.5;border-color:var(--line);border-style:dashed;background:#fff;}
+  .rel .label{font-size:12px;font-weight:700;color:var(--orange-800);}
+  .rel.pending .label{color:var(--sub);}
+  .rel .formula{font-size:21px;font-weight:800;}
+  .rel .check{font-size:14px;color:var(--sub);}
+
+  .quiz{margin-top:var(--sp-3);}
+  .q{padding:12px 0;border-top:1px solid var(--line);}
+  .q:first-child{border-top:none;}
+  .q .qtext{font-size:15px;font-weight:700;margin-bottom:8px;}
+  .opts{display:flex;flex-wrap:wrap;gap:8px;}
+  .opts button{border:1px solid var(--line);background:#fff;color:var(--ink);padding:8px 16px;border-radius:var(--radius-md);font-size:16px;cursor:pointer;font-family:inherit;min-width:72px;min-height:44px;}
+  .opts button:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .opts button.ok{background:#e8f5e9;border-color:#2e7d32;color:#1b5e20;font-weight:700;}
+  .opts button.ng{background:#fdecea;border-color:#c62828;color:#b71c1c;}
+  .fb{font-size:14px;margin-top:8px;color:var(--sub);}
+  .fb.ok{color:#1b5e20;}
+</style>
+</head>
+<body>
+
+<div class="brand-bar"></div>
+<header class="site-header">
+  <div class="inner">
+    <p class="site-title"><a href="../index.html">数学学習サイト</a></p>
+    <a class="back-link" href="../unit.html?s=math1&u=kazu-shiki">← 単元ページに戻る</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <h1>正方形で見る (x+y)² と x²+y²</h1>
+  <p class="lead">1辺が x+y の正方形を4つに切り分けると、(x+y)² = x² + 2xy + y² が「面積」として見えます。さらにそこから、x と y の値を知らなくても「和 x+y と積 xy」だけで x² + y² を求める方法を組み立てます。</p>
+
+  <div class="card">
+    <div class="controls">
+      <div class="field slider-field">
+        <label for="xs">x の長さ：<span class="val cx" id="xv"></span></label>
+        <input type="range" id="xs" min="0.5" max="6" step="0.5" value="3">
+      </div>
+      <div class="field slider-field">
+        <label for="ys">y の長さ：<span class="val cy" id="yv"></span></label>
+        <input type="range" id="ys" min="0.5" max="6" step="0.5" value="2">
+      </div>
+      <div class="presets">
+        <button type="button" data-x="3" data-y="2">例① x=3, y=2</button>
+        <button type="button" data-x="4" data-y="1">例② x=4, y=1</button>
+        <button type="button" data-x="2.5" data-y="2.5">例③ x=y</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <div class="card figure">
+      <p class="section-title">1辺 x+y の正方形</p>
+      <div id="figure"></div>
+      <div class="values" id="values"></div>
+    </div>
+
+    <div>
+      <div class="card">
+        <p class="section-title">思考のステップ</p>
+        <div class="stepper">
+          <button class="btn" id="prevBtn">◀ 前へ</button>
+          <span class="progress" id="progress"></span>
+          <button class="btn primary" id="nextBtn">次へ ▶</button>
+        </div>
+        <div class="steps" id="steps"></div>
+      </div>
+      <div class="rel pending" id="rel1">
+        <div class="label">わかったこと ①（展開の公式）</div>
+        <div class="formula">(x + y)² = x² + 2xy + y²</div>
+        <div class="check" id="check1"></div>
+      </div>
+      <div class="rel pending" id="rel2">
+        <div class="label">わかったこと ②（和と積で表す）</div>
+        <div class="formula">x² + y² = (x + y)² − 2xy</div>
+        <div class="check" id="check2"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card quiz">
+    <p class="section-title">確認問題（x と y を求めずに計算しよう）</p>
+    <div id="quiz"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const MINUS = '−';
+  const f = v => String(Math.round(v * 100) / 100);
+
+  const LABELS = ['① 1辺 x+y の正方形', '② 4つに切り分ける', '③ 面積をたす', '④ xy の2枚を取りのぞく', '⑤ 和と積だけで計算する'];
+  const MAX_LEVEL = 4;
+  let level = 0, x = 3, y = 2;
+
+  // ---- 図 ----
+  function drawFigure(){
+    const W = 520, H = 470, S = 360, ox = 90, oy = 70;
+    const k = S / (x + y), X = x * k, Y = y * k;
+    let g = `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`;
+    const lab = (cx, cy, s, color, size) => `<text x="${cx}" y="${cy}" font-size="${size || 22}" font-weight="700" fill="${color}" text-anchor="middle" dominant-baseline="central">${s}</text>`;
+    const removed = level >= 3;
+
+    if(level >= 1){
+      g += `<rect x="${ox}" y="${oy}" width="${X}" height="${X}" fill="#CFE3F7" stroke="#1D6FB8" stroke-width="2"/>`;
+      g += `<rect x="${ox + X}" y="${oy + X}" width="${Y}" height="${Y}" fill="#FFE0CC" stroke="#C74700" stroke-width="2"/>`;
+      const xyFill = removed ? 'url(#hatch)' : '#D7EFD9', xyStroke = removed ? '#94a3b8' : '#2e7d32';
+      g += `<defs><pattern id="hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="10" height="10" fill="#f1f5f9"/><line x1="0" y1="0" x2="0" y2="10" stroke="#cbd5e1" stroke-width="4"/></pattern></defs>`;
+      g += `<rect x="${ox + X}" y="${oy}" width="${Y}" height="${X}" fill="${xyFill}" stroke="${xyStroke}" stroke-width="2" ${removed ? 'stroke-dasharray="6 4"' : ''}/>`;
+      g += `<rect x="${ox}" y="${oy + X}" width="${X}" height="${Y}" fill="${xyFill}" stroke="${xyStroke}" stroke-width="2" ${removed ? 'stroke-dasharray="6 4"' : ''}/>`;
+      const sz = v => Math.max(12, Math.min(24, v * 0.28));
+      g += lab(ox + X / 2, oy + X / 2, 'x²', '#1D6FB8', sz(X));
+      g += lab(ox + X + Y / 2, oy + X + Y / 2, 'y²', '#C74700', sz(Y));
+      g += lab(ox + X + Y / 2, oy + X / 2, 'xy', removed ? '#94a3b8' : '#2e7d32', sz(Math.min(X, Y)));
+      g += lab(ox + X / 2, oy + X + Y / 2, 'xy', removed ? '#94a3b8' : '#2e7d32', sz(Math.min(X, Y)));
+      if(level >= 2 && !removed){
+        g += lab(ox + X / 2, oy + X / 2 + sz(X) + 4, '= ' + f(x * x), '#1D6FB8', 14);
+        if(Y > 40) g += lab(ox + X + Y / 2, oy + X + Y / 2 + sz(Y) + 2, '= ' + f(y * y), '#C74700', 13);
+      }
+    }
+    // 外わく
+    g += `<rect x="${ox}" y="${oy}" width="${S}" height="${S}" fill="none" stroke="#1E293B" stroke-width="3"/>`;
+    // 辺の長さ
+    const dimH = (x1, x2, yy, s, c) => `<line x1="${x1 + 2}" y1="${yy}" x2="${x2 - 2}" y2="${yy}" stroke="${c}" stroke-width="2"/><line x1="${x1 + 2}" y1="${yy - 6}" x2="${x1 + 2}" y2="${yy + 6}" stroke="${c}" stroke-width="2"/><line x1="${x2 - 2}" y1="${yy - 6}" x2="${x2 - 2}" y2="${yy + 6}" stroke="${c}" stroke-width="2"/>` + lab((x1 + x2) / 2, yy - 16, s, c, 18);
+    const dimV = (y1, y2, xx, s, c) => `<line x1="${xx}" y1="${y1 + 2}" x2="${xx}" y2="${y2 - 2}" stroke="${c}" stroke-width="2"/><line x1="${xx - 6}" y1="${y1 + 2}" x2="${xx + 6}" y2="${y1 + 2}" stroke="${c}" stroke-width="2"/><line x1="${xx - 6}" y1="${y2 - 2}" x2="${xx + 6}" y2="${y2 - 2}" stroke="${c}" stroke-width="2"/>` + `<text x="${xx - 12}" y="${(y1 + y2) / 2}" font-size="18" font-weight="700" fill="${c}" text-anchor="end" dominant-baseline="central">${s}</text>`;
+    g += dimH(ox, ox + X, oy - 18, 'x', '#1D6FB8');
+    g += dimH(ox + X, ox + S, oy - 18, 'y', '#C74700');
+    g += dimV(oy, oy + X, ox - 18, 'x', '#1D6FB8');
+    g += dimV(oy + X, oy + S, ox - 18, 'y', '#C74700');
+    g += lab(ox + S / 2, oy + S + 30, level >= 2 ? `面積 (x+y)² = ${f(x + y)}² = ${f((x + y) * (x + y))}` : '面積は (x+y)²', '#1E293B', 17);
+    if(removed){
+      g += lab(ox + S / 2, oy + S + 58, `残り（x² と y²）= ${f((x + y) * (x + y))} − 2×${f(x * y)} = ${f(x * x + y * y)}`, '#C74700', 16);
+    }
+    $('figure').innerHTML = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="1辺x+yの正方形を切り分けた図">${g}</svg>`;
+  }
+
+  function buildSteps(){
+    return [
+      { level: 1, body: `縦と横に切れ目を入れると、<span class="cx">x²</span>（1辺 x の正方形）、<span class="cy">y²</span>（1辺 y の正方形）、<span class="cxy">xy</span>（縦 x・横 y の長方形）が <b>2枚</b> に分かれる。` },
+      { level: 2, body: `全体の面積 = 部分の面積の和。<span class="mono">(x+y)² = x² + xy + xy + y² = x² + 2xy + y²</span><br>いまの値：<span class="mono">${f(x + y)}² = ${f(x * x)} + 2×${f(x * y)} + ${f(y * y)} = ${f((x + y) * (x + y))}</span>` },
+      { level: 3, body: `ほしいのが <span class="cx">x²</span> + <span class="cy">y²</span> だけなら、大きな正方形から <span class="cxy">xy</span> の長方形2枚を取りのぞけばよい。<span class="mono">x² + y² = (x+y)² − 2xy</span>` },
+      { level: 4, body: `右辺には「和 x+y」と「積 xy」しか出てこない。だから <b>x と y がそれぞれ何かわからなくても</b>、和 ${f(x + y)} と積 ${f(x * y)} から <span class="mono">${f(x + y)}² − 2×${f(x * y)} = ${f(x * x + y * y)}</span> と計算できる。スライダーを動かして、いつでも成り立つか確かめよう。` }
+    ];
+  }
+
+  function renderSteps(){
+    $('steps').innerHTML = buildSteps().map((s, i) =>
+      `<div class="step${s.level > level ? ' dim' : ''}" data-level="${s.level}">
+         <div class="step-num">${i + 1}</div><div class="step-body">${s.body}</div>
+       </div>`).join('');
+    $('steps').querySelectorAll('.step').forEach(el => el.addEventListener('click', () => goTo(+el.dataset.level)));
+    $('progress').textContent = LABELS[level];
+    $('prevBtn').disabled = level <= 0;
+    $('nextBtn').disabled = level >= MAX_LEVEL;
+    const set = (id, cid, need, txt) => {
+      if(level >= need){ $(id).classList.remove('pending'); $(cid).innerHTML = txt; }
+      else { $(id).classList.add('pending'); $(cid).textContent = `ステップ${need === 2 ? '③' : '④'}まで進めると確かめられます`; }
+    };
+    set('rel1', 'check1', 2, `x = ${f(x)}, y = ${f(y)} のとき　${f((x + y) * (x + y))} = ${f(x * x)} + ${f(2 * x * y)} + ${f(y * y)}`);
+    set('rel2', 'check2', 3, `x = ${f(x)}, y = ${f(y)} のとき　${f(x * x + y * y)} = ${f((x + y) * (x + y))} ${MINUS} ${f(2 * x * y)}`);
+    $('values').innerHTML = [
+      ['x + y', f(x + y), true], ['xy', f(x * y), true],
+      ['(x+y)²', f((x + y) * (x + y)), level >= 2], ['x² + y²', f(x * x + y * y), level >= 3]
+    ].map(([n, v, show]) => `<span class="chip${show ? '' : ' hidden-val'}"><b>${n}</b> = ${show ? v : '？'}</span>`).join('');
+  }
+
+  function goTo(n){
+    level = Math.max(0, Math.min(MAX_LEVEL, n));
+    drawFigure();
+    renderSteps();
+  }
+
+  // 長さを変えても段階は保ったまま、図と数値だけ更新する（いつでも成り立つことを確かめるため）
+  function update(){
+    x = Number($('xs').value); y = Number($('ys').value);
+    $('xv').textContent = f(x); $('yv').textContent = f(y);
+    goTo(level);
+  }
+
+  // ---- 確認問題 ----
+  const QUIZ = [
+    { q: 'x + y = 5、xy = 3 のとき、x² + y² の値は？', opts: ['19', '25', '22', '31'], ans: 0,
+      exp: 'x² + y² = (x+y)² − 2xy = 25 − 6 = 19。' },
+    { q: 'x + y = 4、xy = 1 のとき、x² + y² の値は？', opts: ['16', '14', '15', '18'], ans: 1,
+      exp: 'x² + y² = 4² − 2×1 = 16 − 2 = 14。' },
+    { q: 'x = √3 + 1、y = √3 − 1 のとき、x² + y² の値は？', opts: ['12', '4', '8', '10'], ans: 2,
+      exp: 'x + y = 2√3、xy = (√3)² − 1² = 2。よって x² + y² = (2√3)² − 2×2 = 12 − 4 = 8。x² と y² を別々に計算するより楽！' }
+  ];
+  function renderQuiz(){
+    $('quiz').innerHTML = QUIZ.map((it, i) =>
+      `<div class="q"><div class="qtext">問${i + 1}　${it.q}</div><div class="opts" data-q="${i}">` +
+      it.opts.map((o, j) => `<button type="button" data-i="${j}">${o}</button>`).join('') +
+      `</div><div class="fb" id="fb${i}"></div></div>`).join('');
+    $('quiz').querySelectorAll('.opts').forEach(box => {
+      const qi = +box.dataset.q;
+      box.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => {
+        const pick = +btn.dataset.i, ok = QUIZ[qi].ans;
+        box.querySelectorAll('button').forEach(b => b.classList.remove('ok', 'ng'));
+        btn.classList.add(pick === ok ? 'ok' : 'ng');
+        if(pick !== ok) box.querySelectorAll('button')[ok].classList.add('ok');
+        const fb = $('fb' + qi);
+        fb.className = 'fb' + (pick === ok ? ' ok' : '');
+        fb.textContent = (pick === ok ? '正解！ ' : 'おしい。正解は ' + QUIZ[qi].opts[ok] + '。') + QUIZ[qi].exp;
+      }));
+    });
+  }
+
+  document.querySelectorAll('.presets button').forEach(btn => btn.addEventListener('click', () => {
+    $('xs').value = btn.dataset.x; $('ys').value = btn.dataset.y; update();
+  }));
+  $('xs').addEventListener('input', update);
+  $('ys').addEventListener('input', update);
+  $('prevBtn').addEventListener('click', () => goTo(level - 1));
+  $('nextBtn').addEventListener('click', () => goTo(level + 1));
+
+  renderQuiz();
+  update();
+})();
+</script>
+</body>
+</html>

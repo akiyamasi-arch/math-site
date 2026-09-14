@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>循環小数を分数に直す｜数学学習サイト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
+<style>
+  /* サイト共通（assets/style.css）と同じトークン。アプリは1ファイル完結にするためここに再掲 */
+  :root{
+    --orange-50:#FFEEE2; --orange-100:#FFDFCA; --orange-400:#FF8D44;
+    --orange-700:#E25100; --orange-800:#C74700; --orange-900:#AC3E00;
+    --ink:#1E293B; --sub:#475569; --line:#D9DEE6; --line-strong:#B9C2CF;
+    --bg:#FBFBFA; --card:#FFFFFF; --focus:#FFD866;
+    --ok:#1b5e20; --ng:#b71c1c;
+    --sp-1:8px; --sp-2:16px; --sp-3:24px; --sp-4:32px; --sp-6:48px;
+    --radius-sm:4px; --radius-md:8px; --radius-pill:999px;
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  body{margin:0;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.7;}
+  a{color:var(--orange-800);}
+  a:focus-visible, button:focus-visible, input:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+  .brand-bar{height:6px;background:var(--orange-700);}
+  .site-header{background:var(--card);border-bottom:1px solid var(--line);padding:var(--sp-2);}
+  .site-header .inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;}
+  .site-title{margin:0;font-size:18px;font-weight:700;}
+  .site-title a{color:var(--ink);text-decoration:none;}
+  .back-link{font-size:14px;font-weight:700;}
+  .wrap{max-width:1100px;margin:0 auto;padding:var(--sp-3) var(--sp-2) var(--sp-6);}
+  h1{margin:0 0 4px;font-size:26px;line-height:1.4;}
+  .lead{margin:0 0 var(--sp-3);color:var(--sub);font-size:15px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--sp-2) var(--sp-3);}
+  .section-title{font-size:13px;font-weight:700;color:var(--sub);margin:0 0 var(--sp-1);}
+  .controls{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:end;}
+  .field label{display:block;font-size:12px;font-weight:700;color:var(--sub);}
+  .field input{font-size:18px;padding:6px 8px;border:1px solid var(--line-strong);border-radius:var(--radius-md);width:110px;text-align:center;font-family:Consolas,"Courier New",monospace;}
+  .field input.short{width:60px;}
+  .dotsep{font-size:26px;font-weight:700;padding-bottom:2px;}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;}
+  .presets button, .btn{border:1px solid var(--line);background:#f8fafc;color:var(--ink);padding:8px 14px;border-radius:var(--radius-pill);font-size:14px;cursor:pointer;font-family:inherit;}
+  .presets button:hover, .btn:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .btn:disabled{opacity:.35;cursor:default;}
+  .btn.primary{background:var(--orange-800);color:#fff;border-color:var(--orange-800);font-weight:700;}
+  .btn.primary:hover{background:var(--orange-900);color:#fff;}
+  .target{margin-top:var(--sp-2);font-size:15px;}
+  .target .big{font-size:26px;font-weight:700;margin:0 6px;}
+
+  /* 循環小数の点（くり返す部分の最初と最後の数字の上に打つ） */
+  .rd{position:relative;display:inline-block;}
+  .rd::after{content:"";position:absolute;left:50%;top:-0.05em;width:.2em;height:.2em;margin-left:-.1em;border-radius:50%;background:currentColor;}
+
+  .main-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:var(--sp-2);align-items:start;margin-top:var(--sp-2);}
+  @media (max-width:900px){ .main-grid{grid-template-columns:1fr;} }
+  .main-grid > *{min-width:0;}   /* 図の横スクロールをカードの中だけにとどめる */
+  .figure svg{width:100%;height:auto;display:block;}
+  .fig-scroll{overflow-x:auto;}
+  .legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:var(--sub);margin-top:var(--sp-1);}
+  .legend i{display:inline-block;width:14px;height:14px;border-radius:3px;margin-right:4px;vertical-align:middle;border:1px solid #cbd5e1;}
+
+  /* 思考のステップ（クリックで巻き戻し／早送り） */
+  .stepper{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:var(--sp-2);padding-bottom:12px;border-bottom:1px dashed var(--line);}
+  .stepper .progress{font-size:12px;font-weight:700;color:var(--sub);text-align:center;flex:1;}
+  .steps{display:flex;flex-direction:column;gap:10px;}
+  .step{display:flex;gap:10px;padding:6px 8px;margin:0 -8px;border-radius:var(--radius-md);cursor:pointer;}
+  .step:hover{background:#f8fafc;}
+  .step.dim{opacity:.4;}
+  .step-num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .step.dim .step-num{background:#cbd5e1;}
+  .step-body{font-size:14px;line-height:1.9;}
+  .mono{font-family:Consolas,"Courier New",monospace;background:#f1f5f9;padding:1px 6px;border-radius:5px;}
+  /* 分数は横線の縦組みで表示する（1/2 のような斜線表記は画面に出さない） */
+  .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25;margin:0 2px;}
+  .frac .num, .frac .den{padding:0 4px;white-space:nowrap;}
+  .frac .bar{display:block;width:100%;height:2px;background:currentColor;margin:2px 0;}
+
+  .answer{margin-top:var(--sp-2);padding:14px 16px;border:1.5px solid var(--orange-800);border-radius:var(--radius-md);background:linear-gradient(135deg,#fff3ea,#fff);}
+  .answer .label{font-size:12px;font-weight:700;color:var(--orange-800);}
+  .answer .value{font-size:24px;font-weight:800;}
+  .answer .check{font-size:14px;color:var(--sub);margin-top:6px;}
+  .answer.pending{opacity:.6;}
+  .answer.pending .value{font-size:15px;font-weight:400;}
+  .warn{background:#fff3cd;border:1px solid #ffe08a;color:#7a5b00;padding:10px 14px;border-radius:var(--radius-md);font-size:14px;margin-top:var(--sp-1);}
+  .tip{background:#eef6ff;border:1px solid #c6dcf5;color:#174a7c;padding:10px 14px;border-radius:var(--radius-md);font-size:14px;margin-top:var(--sp-2);}
+</style>
+</head>
+<body>
+
+<div class="brand-bar"></div>
+<header class="site-header">
+  <div class="inner">
+    <p class="site-title"><a href="../index.html">数学学習サイト</a></p>
+    <a class="back-link" href="../unit.html?s=math1&u=kazu-shiki">← 単元ページに戻る</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <h1>循環小数を分数に直す</h1>
+  <p class="lead">0.272727… のように同じ数字が限りなく続く小数（循環小数）は、10倍・100倍した式と並べて引き算すると「限りなく続くしっぽ」が消えて、分数に直せます。そのしくみを1段階ずつ確かめます。</p>
+
+  <div class="card">
+    <div class="controls">
+      <div class="field"><label for="I">整数部分</label><input class="short" id="I" value="0" inputmode="numeric" maxlength="1"></div>
+      <span class="dotsep">.</span>
+      <div class="field"><label for="P">くり返さない部分（なければ空）</label><input id="P" value="" inputmode="numeric" maxlength="3"></div>
+      <div class="field"><label for="R">くり返す部分</label><input id="R" value="27" inputmode="numeric" maxlength="6"></div>
+      <div class="presets">
+        <button type="button" data-i="0">例① 0.333…</button>
+        <button type="button" data-i="1">例② 0.2727…</button>
+        <button type="button" data-i="2">例③ 0.1666…</button>
+        <button type="button" data-i="3">例④ 1.2323…</button>
+        <button type="button" data-i="4">例⑤ 0.142857…</button>
+        <button type="button" data-i="5">例⑥ 0.999… ？</button>
+      </div>
+    </div>
+    <div id="inputNote"></div>
+    <div class="target" id="target"></div>
+  </div>
+
+  <div class="main-grid">
+    <div class="card figure">
+      <p class="section-title">数字をならべて比べる</p>
+      <div class="fig-scroll"><div id="figure"></div></div>
+      <div class="legend">
+        <span><i style="background:#FFD9BF"></i>くり返す部分（1かたまり目）</span>
+        <span><i style="background:#FFF1E6"></i>くり返す部分（次のかたまり）</span>
+        <span><i style="background:#E6EAF0"></i>くり返さない部分</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <p class="section-title">思考のステップ</p>
+        <div class="stepper">
+          <button class="btn" id="prevBtn">◀ 前へ</button>
+          <span class="progress" id="progress"></span>
+          <button class="btn primary" id="nextBtn">次へ ▶</button>
+        </div>
+        <div class="steps" id="steps"></div>
+      </div>
+      <div class="answer pending" id="answer">
+        <div class="label">答え</div>
+        <div class="value" id="answerValue">ステップを最後まで進めると表示されます</div>
+        <div class="check" id="answerCheck"></div>
+      </div>
+      <div id="tipBox"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const fracHTML = (n, d) => `<span class="frac"><span class="num">${n}</span><span class="bar"></span><span class="den">${d}</span></span>`;
+  const gcd = (x, y) => { while(y){ [x, y] = [y, x % y]; } return x; };
+  const pow10 = k => Math.pow(10, k);
+  const mulLabel = k => (k === 0 ? '' : String(pow10(k))) + 'x';
+
+  const LABELS = ['① x とおく', '② くり返しの長さを見る', '③ 10倍・100倍… してずらす', '④ しっぽがそろう', '⑤ 引き算してしっぽを消す', '⑥ 割って約分する'];
+  const MAX_LEVEL = 5;
+  let level = 0;
+  let st = null;
+
+  // ---- 数学 ----
+  function solve(I, P, R){
+    const m = P.length, n = R.length;
+    const big = Number(String(I) + P + R), small = Number(String(I) + P);
+    const N = big - small;
+    const D = pow10(m + n) - pow10(m);
+    const g = gcd(N, D);
+    return { I, P, R, m, n, kBig: m + n, kSmall: m, N, D, g, Nr: N / g, Dr: D / g };
+  }
+  // 小数部分の数字列（くり返さない部分 + くり返す部分を何回も）
+  const F = () => st.P + st.R.repeat(Math.ceil(40 / st.n) + 2);
+  // 循環小数の記号（くり返す部分の最初と最後に点）
+  function notation(s){
+    const R = s.R;
+    const dotted = R.length === 1 ? `<span class="rd">${R}</span>`
+      : `<span class="rd">${R[0]}</span>${R.slice(1, -1)}<span class="rd">${R[R.length - 1]}</span>`;
+    return `${s.I}.${s.P}${dotted}`;
+  }
+  const longForm = (s, digits) => `${s.I}.${F().slice(0, digits || 10)}…`;
+
+  // ---- 図 ----
+  const CW = 26, FR = 12, LBL = 150;
+  function drawFigure(){
+    const s = st;
+    const intCols = Math.max(String(s.I).length + s.kBig, String(s.N).length, 1);
+    const pointX = LBL + 14 + intCols * CW;
+    const W = Math.max(pointX + CW * 0.5 + FR * CW + 44, 560);
+    const cxInt = j => pointX - (j - 0.5) * CW;                  // 右から j 番目の整数の位（j=1 が一の位）
+    const cxFr = i => pointX + CW * 0.5 + (i + 0.5) * CW;        // 小数第 (i+1) 位
+    const fStr = F();
+    const colorOf = gi => gi < s.m ? '#E6EAF0' : (Math.floor((gi - s.m) / s.n) % 2 === 0 ? '#FFD9BF' : '#FFF1E6');
+
+    let g = '';
+    const label = (y, txt, color) => `<text x="${LBL}" y="${y}" font-size="19" font-weight="700" fill="${color || '#1E293B'}" text-anchor="end" dominant-baseline="central">${txt}</text>`;
+    const cell = (cx, y, d, fill, color, extra) =>
+      (fill ? `<rect x="${cx - CW / 2 + 1}" y="${y - 15}" width="${CW - 2}" height="30" rx="3" fill="${fill}"/>` : '') +
+      `<text x="${cx}" y="${y}" font-size="20" font-family="Consolas,'Courier New',monospace" font-weight="700" fill="${color || '#1E293B'}" text-anchor="middle" dominant-baseline="central" ${extra || ''}>${d}</text>`;
+
+    // 「x を k けたずらした数」を1行描く
+    function row(y, k, lab, labColor, fade){
+      let h = label(y, lab, labColor);
+      const intStr = String(Number(String(s.I) + fStr.slice(0, k)));
+      // 整数部分：F から移ってきた数字は色を付ける
+      for(let j = 1; j <= intStr.length; j++){
+        const d = intStr[intStr.length - j];
+        const gi = k - j;                                   // F の何番目から来た数字か（負なら元の整数部分）
+        h += cell(cxInt(j), y, d, gi >= 0 ? colorOf(gi) : null, fade ? '#94a3b8' : null);
+      }
+      h += `<text x="${pointX + CW * 0.25}" y="${y + 2}" font-size="22" font-weight="700" fill="#1E293B" text-anchor="middle" dominant-baseline="central">.</text>`;
+      for(let i = 0; i < FR; i++){
+        h += cell(cxFr(i), y, fStr[k + i], colorOf(k + i), fade ? '#94a3b8' : null);
+      }
+      h += `<text x="${cxFr(FR) - 4}" y="${y}" font-size="20" fill="#475569" dominant-baseline="central">…</text>`;
+      return h;
+    }
+
+    let y = 40;
+    g += row(y, 0, 'x =', '#C74700');
+
+    if(level >= 1){
+      // くり返しの1かたまりに括弧
+      const x1 = cxFr(s.m) - CW / 2, x2 = cxFr(s.m + s.n - 1) + CW / 2;
+      g += `<path d="M${x1 + 2},${y + 20} v6 H${x2 - 2} v-6" fill="none" stroke="#C74700" stroke-width="2"/>`;
+      g += `<text x="${(x1 + x2) / 2}" y="${y + 42}" font-size="14" font-weight="700" fill="#C74700" text-anchor="middle">${s.n}けたでくり返す</text>`;
+      if(s.m > 0){
+        const p1 = cxFr(0) - CW / 2, p2 = cxFr(s.m - 1) + CW / 2;
+        g += `<path d="M${p1 + 2},${y + 20} v6 H${p2 - 2} v-6" fill="none" stroke="#64748b" stroke-width="2"/>`;
+        g += `<text x="${(p1 + p2) / 2}" y="${y + 42}" font-size="13" fill="#475569" text-anchor="middle">くり返さない</text>`;
+      }
+    }
+
+    let yEnd = y + 60;
+    if(level >= 2){
+      const yB = 150, yS = 200;
+      g += row(yB, s.kBig, mulLabel(s.kBig) + ' =', '#1D6FB8');
+      g += row(yS, s.kSmall, (level >= 4 ? '−) ' : '') + mulLabel(s.kSmall) + ' =', '#1D6FB8');
+      g += `<text x="${pointX + CW * 0.25}" y="${yB - 26}" font-size="13" fill="#1D6FB8" text-anchor="middle">小数点が ${s.kBig} けた右へ</text>`;
+      yEnd = yS + 30;
+
+      if(level >= 3){
+        const x1 = cxFr(0) - CW / 2 - 3, x2 = cxFr(FR - 1) + CW / 2 + 3;
+        g += `<rect x="${x1}" y="${yB - 19}" width="${x2 - x1}" height="${yS - yB + 38}" rx="8" fill="rgba(46,125,50,0.06)" stroke="#2e7d32" stroke-width="2.5" stroke-dasharray="7 4"/>`;
+        g += `<text x="${(x1 + x2) / 2}" y="${yS + 36}" font-size="14" font-weight="700" fill="#2e7d32" text-anchor="middle">小数点より後ろは、どこまで行っても まったく同じ</text>`;
+        yEnd = yS + 46;
+      }
+      if(level >= 4){
+        const yL = yS + 54, yR = yL + 34;
+        g += `<line x1="${LBL - 70}" y1="${yL}" x2="${cxFr(FR)}" y2="${yL}" stroke="#1E293B" stroke-width="2"/>`;
+        g += label(yR, `${s.D}x =`, '#C74700');
+        const nStr = String(s.N);
+        for(let j = 1; j <= nStr.length; j++) g += cell(cxInt(j), yR, nStr[nStr.length - j], '#FFEEE2', '#C74700');
+        g += `<text x="${pointX + CW * 0.25}" y="${yR + 2}" font-size="22" font-weight="700" fill="#cbd5e1" text-anchor="middle" dominant-baseline="central">.</text>`;
+        for(let i = 0; i < FR; i++) g += cell(cxFr(i), yR, '0', null, '#cbd5e1');
+        g += `<line x1="${cxFr(0) - CW / 2}" y1="${yR}" x2="${cxFr(FR - 1) + CW / 2}" y2="${yR}" stroke="#b71c1c" stroke-width="2"/>`;
+        g += `<text x="${(cxFr(0) + cxFr(FR - 1)) / 2}" y="${yR + 32}" font-size="14" font-weight="700" fill="#b71c1c" text-anchor="middle">しっぽは 0 − 0 で消える！</text>`;
+        yEnd = yR + 44;
+      }
+    }
+    const H = yEnd + 10;
+    $('figure').innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="min-width:520px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="循環小数の数字を並べた図">${g}</svg>`;
+  }
+
+  // ---- 思考のステップ ----
+  function buildSteps(){
+    const s = st;
+    const bigMul = pow10(s.kBig), smallMul = pow10(s.kSmall);
+    const smallTxt = s.kSmall === 0 ? 'x' : smallMul + 'x';
+    const bigLong = `${String(Number(String(s.I) + F().slice(0, s.kBig)))}.${F().slice(s.kBig, s.kBig + 6)}…`;
+    const smallLong = `${String(Number(String(s.I) + F().slice(0, s.kSmall)))}.${F().slice(s.kSmall, s.kSmall + 6)}…`;
+    const reduced = s.g > 1;
+    return [
+      { level: 1, body: `求めたい数を <span class="mono">x = ${longForm(s, 8)}</span> とおく。くり返す部分は「${s.R}」の <b>${s.n} けた</b>` + (s.m > 0 ? `。小数点のすぐ後ろの「${s.P}」（${s.m} けた）はくり返さない。` : '。') },
+      { level: 2, body: s.m === 0
+          ? `両辺を ${bigMul} 倍すると小数点が ${s.n} けた右にずれて <span class="mono">${bigMul}x = ${bigLong}</span>。くり返しのかたまりがちょうど1つ分、小数点の左に移る。`
+          : `くり返しの始まりを小数点のすぐ後ろにそろえるため、${smallMul} 倍した <span class="mono">${smallMul}x = ${smallLong}</span> と、さらに1かたまり分ずらした ${bigMul} 倍 <span class="mono">${bigMul}x = ${bigLong}</span> を用意する。` },
+      { level: 3, body: `2つの式を上下に並べると、小数点より後ろの数字（しっぽ）が<b>どこまで行ってもまったく同じ</b>になっている。` },
+      { level: 4, body: `上の式から下の式を引くと、しっぽは消える。<span class="mono">${bigMul}x − ${smallTxt} = ${String(Number(String(s.I) + F().slice(0, s.kBig)))} − ${String(Number(String(s.I) + F().slice(0, s.kSmall)))}</span> より <span class="mono">${s.D}x = ${s.N}</span>` },
+      { level: 5, body: `両辺を ${s.D} で割ると x = ${fracHTML(s.N, s.D)}` + (reduced ? `。分子と分母を ${s.g} で割って約分すると ${s.Dr === 1 ? s.Nr : fracHTML(s.Nr, s.Dr)}` : '（これ以上約分できない）') }
+    ];
+  }
+
+  // 分数を小数に直して確かめる（筆算のわり算）
+  function divide(n, d, digits){
+    let q = Math.floor(n / d), r = n % d, out = '';
+    for(let i = 0; i < digits; i++){ r *= 10; out += Math.floor(r / d); r %= d; }
+    return q + '.' + out + '…';
+  }
+
+  function renderSteps(){
+    $('steps').innerHTML = buildSteps().map((s, i) =>
+      `<div class="step${s.level > level ? ' dim' : ''}" data-level="${s.level}">
+         <div class="step-num">${i + 1}</div><div class="step-body">${s.body}</div>
+       </div>`).join('');
+    $('steps').querySelectorAll('.step').forEach(el => el.addEventListener('click', () => goTo(+el.dataset.level)));
+    $('progress').textContent = LABELS[level];
+    $('prevBtn').disabled = level <= 0;
+    $('nextBtn').disabled = level >= MAX_LEVEL;
+    const ans = $('answer');
+    if(level >= MAX_LEVEL){
+      ans.classList.remove('pending');
+      $('answerValue').innerHTML = notation(st) + ' ＝ ' + (st.Dr === 1 ? st.Nr : fracHTML(st.Nr, st.Dr));
+      $('answerCheck').innerHTML = st.Dr === 1
+        ? '' : `確かめ：${st.Nr} ÷ ${st.Dr} を計算すると ${divide(st.Nr, st.Dr, 10)}（元の小数と同じ）`;
+      $('tipBox').innerHTML = (st.Dr === 1)
+        ? `<div class="tip"><b>ふしぎ？</b> 0.999… は「1 にとても近い数」ではなく、<b>1 とぴったり等しい</b>数です。1 − 0.999… の差は、どんなに小さい正の数よりも小さい（0 しかない）からです。${fracHTML(1, 3)} ＝ 0.333… の両辺を3倍しても確かめられます。</div>`
+        : '<div class="tip">わかったこと：循環小数は、どれも<b>分数（整数 ÷ 整数）で表せる</b>。つまり有理数。反対に、√2 のように「くり返さずに限りなく続く小数」は分数で表せない（無理数）。</div>';
+    }else{
+      ans.classList.add('pending');
+      $('answerValue').textContent = 'ステップを最後まで進めると表示されます';
+      $('answerCheck').textContent = '';
+      $('tipBox').innerHTML = '';
+    }
+  }
+
+  function goTo(n){
+    level = Math.max(0, Math.min(MAX_LEVEL, n));
+    drawFigure();
+    renderSteps();
+  }
+
+  // ---- 入力 → 白紙から ----
+  function render(){
+    const I = $('I').value.trim() === '' ? '0' : $('I').value.trim();
+    const P = $('P').value.trim(), R = $('R').value.trim();
+    if(!/^\d$/.test(I) || !/^\d{0,3}$/.test(P) || !/^\d{1,6}$/.test(R)){
+      $('inputNote').innerHTML = '<div class="warn">数字だけを入れてください。整数部分は1けた、くり返さない部分は0〜3けた、くり返す部分は1〜6けたです。</div>';
+      return;
+    }
+    if(/^0+$/.test(R)){
+      $('inputNote').innerHTML = '<div class="warn">くり返す部分が 0 だけだと、ふつうの（終わりのある）小数になります。0 以外の数字を入れてください。</div>';
+      return;
+    }
+    $('inputNote').innerHTML = '';
+    st = solve(Number(I), P, R);
+    $('target').innerHTML = `分数に直す数：<span class="big">${notation(st)}</span>（${longForm(st, 12)}）`;
+    goTo(0);
+  }
+
+  const PRESETS = [['0', '', '3'], ['0', '', '27'], ['0', '1', '6'], ['1', '', '23'], ['0', '', '142857'], ['0', '', '9']];
+  document.querySelectorAll('.presets button').forEach(btn => btn.addEventListener('click', () => {
+    const v = PRESETS[+btn.dataset.i];
+    $('I').value = v[0]; $('P').value = v[1]; $('R').value = v[2];
+    render();
+  }));
+  ['I', 'P', 'R'].forEach(id => $(id).addEventListener('input', render));
+  $('prevBtn').addEventListener('click', () => goTo(level - 1));
+  $('nextBtn').addEventListener('click', () => goTo(level + 1));
+
+  render();
+})();
+</script>
+</body>
+</html>

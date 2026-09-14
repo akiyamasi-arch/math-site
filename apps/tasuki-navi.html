@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>たすき掛けナビ｜数学学習サイト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
+<style>
+  /* サイト共通（assets/style.css）と同じトークン。アプリは1ファイル完結にするためここに再掲 */
+  :root{
+    --orange-50:#FFEEE2; --orange-100:#FFDFCA; --orange-400:#FF8D44;
+    --orange-700:#E25100; --orange-800:#C74700; --orange-900:#AC3E00;
+    --ink:#1E293B; --sub:#475569; --line:#D9DEE6; --line-strong:#B9C2CF;
+    --bg:#FBFBFA; --card:#FFFFFF; --focus:#FFD866;
+    --ok:#1b5e20; --ng:#b71c1c; --blue:#1D6FB8; --purple:#6D28D9;
+    --sp-1:8px; --sp-2:16px; --sp-3:24px; --sp-4:32px; --sp-6:48px;
+    --radius-sm:4px; --radius-md:8px; --radius-pill:999px;
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  body{margin:0;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.7;}
+  a{color:var(--orange-800);}
+  a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+  .brand-bar{height:6px;background:var(--orange-700);}
+  .site-header{background:var(--card);border-bottom:1px solid var(--line);padding:var(--sp-2);}
+  .site-header .inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;}
+  .site-title{margin:0;font-size:18px;font-weight:700;}
+  .site-title a{color:var(--ink);text-decoration:none;}
+  .back-link{font-size:14px;font-weight:700;}
+  .wrap{max-width:1100px;margin:0 auto;padding:var(--sp-3) var(--sp-2) var(--sp-6);}
+  h1{margin:0 0 4px;font-size:26px;line-height:1.4;}
+  .lead{margin:0 0 var(--sp-3);color:var(--sub);font-size:15px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--sp-2) var(--sp-3);}
+  .section-title{font-size:13px;font-weight:700;color:var(--sub);margin:0 0 var(--sp-1);}
+  .controls{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:end;}
+  .expr{display:flex;align-items:center;flex-wrap:wrap;gap:4px;font-size:20px;font-weight:700;}
+  .expr input{font-size:18px;padding:6px 4px;border:1px solid var(--line-strong);border-radius:var(--radius-md);width:64px;text-align:center;font-family:inherit;}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;}
+  .presets button, .btn{border:1px solid var(--line);background:#f8fafc;color:var(--ink);padding:8px 14px;border-radius:var(--radius-pill);font-size:14px;cursor:pointer;font-family:inherit;}
+  .presets button:hover, .btn:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .btn:disabled{opacity:.35;cursor:default;}
+  .btn.primary{background:var(--orange-800);color:#fff;border-color:var(--orange-800);font-weight:700;}
+  .btn.primary:hover{background:var(--orange-900);color:#fff;}
+  .target{margin-top:var(--sp-2);font-size:15px;}
+  .target b{font-size:22px;}
+
+  .main-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:var(--sp-2);align-items:start;margin-top:var(--sp-2);}
+  @media (max-width:900px){ .main-grid{grid-template-columns:1fr;} }
+  .figure svg{width:100%;height:auto;display:block;}
+  .choice{margin-top:var(--sp-2);padding:12px 14px;border:1.5px dashed var(--orange-400);border-radius:var(--radius-md);background:#fffaf5;}
+  .choice .q{font-size:14px;font-weight:700;margin-bottom:8px;}
+  .choice .opts{display:flex;flex-wrap:wrap;gap:8px;}
+  .choice .opts button{border:1px solid var(--line-strong);background:#fff;padding:6px 12px;border-radius:var(--radius-md);font-size:16px;cursor:pointer;font-family:inherit;min-height:44px;min-width:76px;line-height:1.2;}
+  .choice .opts button.sel{border-color:var(--orange-800);background:var(--orange-50);font-weight:700;}
+  .choice .opts button.tried-ng{color:#94a3b8;text-decoration:line-through;}
+  .choice .opts button.tried-ok{border-color:#2e7d32;color:var(--ok);}
+  .choice .opts .vs{display:block;font-size:11px;color:var(--sub);}
+  .choice details{margin-top:8px;font-size:14px;}
+  .choice summary{cursor:pointer;color:var(--orange-800);font-weight:700;}
+  .note{font-size:14px;color:var(--sub);margin:0;}
+
+  .history{margin-top:var(--sp-2);}
+  .history table{border-collapse:collapse;font-size:15px;width:100%;}
+  .history th, .history td{border:1px solid var(--line);padding:4px 8px;text-align:center;}
+  .history th{background:var(--orange-50);font-size:13px;}
+  .history td.ok{color:var(--ok);font-weight:700;} .history td.ng{color:var(--ng);}
+  .tbl-scroll{overflow-x:auto;}
+
+  /* 思考のステップ（クリックで巻き戻し／早送り） */
+  .stepper{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:var(--sp-2);padding-bottom:12px;border-bottom:1px dashed var(--line);}
+  .stepper .progress{font-size:12px;font-weight:700;color:var(--sub);text-align:center;flex:1;}
+  .steps{display:flex;flex-direction:column;gap:10px;}
+  .step{display:flex;gap:10px;padding:6px 8px;margin:0 -8px;border-radius:var(--radius-md);cursor:pointer;}
+  .step:hover{background:#f8fafc;}
+  .step.dim{opacity:.4;}
+  .step-num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .step.dim .step-num{background:#cbd5e1;}
+  .step-body{font-size:14px;line-height:1.7;}
+  .mono{font-family:Consolas,"Courier New",monospace;background:#f1f5f9;padding:1px 6px;border-radius:5px;}
+  .judge{font-weight:700;} .judge.ok{color:var(--ok);} .judge.ng{color:var(--ng);}
+
+  .answer{margin-top:var(--sp-2);padding:14px 16px;border:1.5px solid var(--orange-800);border-radius:var(--radius-md);background:linear-gradient(135deg,#fff3ea,#fff);}
+  .answer .label{font-size:12px;font-weight:700;color:var(--orange-800);}
+  .answer .value{font-size:22px;font-weight:800;}
+  .answer.pending{opacity:.6;}
+  .answer.pending .value{font-size:15px;font-weight:400;}
+  .warn{background:#fff3cd;border:1px solid #ffe08a;color:#7a5b00;padding:10px 14px;border-radius:var(--radius-md);font-size:14px;margin-top:var(--sp-1);}
+</style>
+</head>
+<body>
+
+<div class="brand-bar"></div>
+<header class="site-header">
+  <div class="inner">
+    <p class="site-title"><a href="../index.html">数学学習サイト</a></p>
+    <a class="back-link" href="../unit.html?s=math1&u=kazu-shiki">← 単元ページに戻る</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <h1>たすき掛けナビ</h1>
+  <p class="lead">ax² + bx + c の因数分解を、「数の組み合わせを自分で選んで → 斜めに掛けて → 足して確かめる」の順に進めます。はずれても大丈夫。合う組み合わせが見つかるまで何度でも試せます。</p>
+
+  <div class="card">
+    <div class="controls">
+      <div class="expr" aria-label="因数分解する式">
+        <input type="number" id="a" value="2" aria-label="x² の係数">x² +
+        <input type="number" id="b" value="-7" aria-label="x の係数">x +
+        <input type="number" id="c" value="6" aria-label="定数項">
+      </div>
+      <div class="presets">
+        <button type="button" data-i="0">例① 2x²+7x+3</button>
+        <button type="button" data-i="1">例② 2x²−7x+6</button>
+        <button type="button" data-i="2">例③ 6x²+x−2</button>
+        <button type="button" data-i="3">例④ x²−5x+6</button>
+        <button type="button" data-i="4">例⑤ 3x²+5x+4</button>
+      </div>
+    </div>
+    <div id="inputNote"></div>
+    <div class="target" id="target"></div>
+  </div>
+
+  <div class="main-grid">
+    <div class="card figure">
+      <p class="section-title">たすき掛けの図</p>
+      <div id="figure"></div>
+      <div class="choice" id="choiceA" hidden></div>
+      <div class="choice" id="choiceC" hidden></div>
+      <div class="history" id="history"></div>
+    </div>
+
+    <div>
+      <div class="card">
+        <p class="section-title">思考のステップ</p>
+        <div class="stepper">
+          <button class="btn" id="prevBtn">◀ 前へ</button>
+          <span class="progress" id="progress"></span>
+          <button class="btn primary" id="nextBtn">次へ ▶</button>
+        </div>
+        <div class="steps" id="steps"></div>
+        <div style="margin-top:12px;" id="retryBox"></div>
+      </div>
+      <div class="answer pending" id="answer">
+        <div class="label">答え</div>
+        <div class="value" id="answerValue">ステップを最後まで進めると表示されます</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const MINUS = '−';
+  const num = n => (n < 0 ? MINUS + Math.abs(n) : String(n));
+  const par = n => (n < 0 ? '(' + num(n) + ')' : String(n));
+  function poly(terms){
+    let s = '';
+    terms.forEach(([k, v]) => {
+      if(k === 0) return;
+      const abs = Math.abs(k), coef = (abs === 1 && v) ? '' : String(abs);
+      if(s === '') s = (k < 0 ? MINUS : '') + coef + v;
+      else s += (k < 0 ? ' ' + MINUS + ' ' : ' + ') + coef + v;
+    });
+    return s || '0';
+  }
+  const lin = (p, q) => poly([[p, 'x'], [q, '']]);
+  const gcd = (x, y) => { x = Math.abs(x); y = Math.abs(y); while(y){ [x, y] = [y, x % y]; } return x; };
+
+  // ---- 状態 ----
+  const LABELS = ['式を確認する', '① x² の係数を分ける', '② 定数項を分ける', '③ 斜めに掛ける', '④ 足して x の係数と比べる', '⑤ 横に読んで答えを書く'];
+  const MAX_LEVEL = 5;
+  let level = 0;
+  let st = null;
+  let pa = null;   // [p, r]
+  let pc = null;   // [q, s]
+  let tried = [];  // { p, r, q, s, sum }
+
+  // ---- 数学 ----
+  function solve(a, b, c){
+    let g = gcd(gcd(a, b), c);
+    if(a < 0) g = -g;                       // x² の係数が負なら −(…) でくくる
+    const A = a / g, B = b / g, C = c / g;
+    const aPairs = [];
+    // 上の段に大きい方を置く（2x²−7x+6 → (2x−3)(x−2) の形で答えが出る）
+    for(let p = 1; p * p <= A; p++) if(A % p === 0) aPairs.push([A / p, p]);
+    const cPairs = [];
+    const absC = Math.abs(C);
+    [1, -1].forEach(sg => {
+      for(let d = 1; d <= absC; d++){
+        if(absC % d) continue;
+        const q = sg * d, s = C / q;
+        cPairs.push([q, s]);
+      }
+    });
+    // 見やすい順：|q| の小さい順、正を先に
+    cPairs.sort((u, v) => (u[0] < 0) - (v[0] < 0) || Math.abs(u[0]) - Math.abs(v[0]));
+    let sol = null;
+    aPairs.forEach(([p, r]) => cPairs.forEach(([q, s]) => { if(!sol && p * s + q * r === B) sol = { p, r, q, s }; }));
+    return { a, b, c, g, A, B, C, aPairs, cPairs, sol, total: aPairs.length * cPairs.length };
+  }
+  const sumNow = () => (pa && pc) ? pa[0] * pc[1] + pc[0] * pa[1] : null;
+  const isHit = () => sumNow() === st.B;
+
+  // ---- 図 ----
+  function drawFigure(){
+    const W = 560, H = 300;
+    const xL = 150, xR = 290, xP = 450, y1 = 80, y2 = 170, yS = 245;
+    let g = `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`;
+    const box = (x, y, v, color, filled) =>
+      `<rect x="${x - 30}" y="${y - 24}" width="60" height="48" rx="6" fill="${filled ? '#fff' : '#f8fafc'}" stroke="${filled ? color : '#cbd5e1'}" stroke-width="${filled ? 2.5 : 1.5}" ${filled ? '' : 'stroke-dasharray="5 4"'}/>` +
+      `<text x="${x}" y="${y}" font-size="26" font-weight="700" fill="${filled ? color : '#94a3b8'}" text-anchor="middle" dominant-baseline="central">${v}</text>`;
+    const t = (x, y, s, attrs) => `<text x="${x}" y="${y}" ${attrs || ''}>${s}</text>`;
+
+    g += t(xL, 30, 'x の係数', 'font-size="14" fill="#475569" text-anchor="middle"');
+    g += t(xR, 30, '定数', 'font-size="14" fill="#475569" text-anchor="middle"');
+    g += t(xP, 30, '斜めに掛けた数', 'font-size="14" fill="#475569" text-anchor="middle"');
+
+    const showA = level >= 1 && pa, showC = level >= 2 && pc;
+    // 斜めの線（③から）
+    if(level >= 3 && pa && pc){
+      g += `<line x1="${xL + 30}" y1="${y1 + 10}" x2="${xR - 30}" y2="${y2 - 10}" stroke="#1D6FB8" stroke-width="3"/>`;
+      g += `<line x1="${xL + 30}" y1="${y2 - 10}" x2="${xR - 30}" y2="${y1 + 10}" stroke="#6D28D9" stroke-width="3"/>`;
+    }
+    g += box(xL, y1, showA ? pa[0] : '?', '#C74700', showA);
+    g += box(xL, y2, showA ? pa[1] : '?', '#C74700', showA);
+    g += box(xR, y1, showC ? num(pc[0]) : '?', '#1E293B', showC);
+    g += box(xR, y2, showC ? num(pc[1]) : '?', '#1E293B', showC);
+
+    // 縦に掛けると元の係数になることの確認
+    g += `<line x1="${xL - 50}" y1="${y2 + 38}" x2="${xP + 90}" y2="${y2 + 38}" stroke="#334155" stroke-width="1.5"/>`;
+    if(showA) g += t(xL, yS, `${pa[0]}×${pa[1]} = ${st.A}`, 'font-size="16" fill="#C74700" text-anchor="middle" font-weight="700"');
+    if(showC) g += t(xR, yS, `${par(pc[0])}×${par(pc[1])} = ${num(st.C)}`, 'font-size="16" fill="#1E293B" text-anchor="middle" font-weight="700"');
+
+    if(level >= 3 && pa && pc){
+      const top = pc[0] * pa[1], bot = pa[0] * pc[1];
+      g += t(xR + 48, y1 + 8, '→', 'font-size="22" fill="#6D28D9"');
+      g += t(xR + 48, y2 + 8, '→', 'font-size="22" fill="#1D6FB8"');
+      g += t(xP, y1, `${par(pc[0])}×${pa[1]} = ${num(top)}`, 'font-size="20" font-weight="700" fill="#6D28D9" text-anchor="middle" dominant-baseline="central"');
+      g += t(xP, y2, `${pa[0]}×${par(pc[1])} = ${num(bot)}`, 'font-size="20" font-weight="700" fill="#1D6FB8" text-anchor="middle" dominant-baseline="central"');
+    }
+    if(level >= 4 && pa && pc){
+      const sum = sumNow(), ok = sum === st.B;
+      g += t(xP, yS, `合計 ${num(sum)}`, `font-size="20" font-weight="700" fill="${ok ? '#1b5e20' : '#b71c1c'}" text-anchor="middle"`);
+      g += t(xP, yS + 32, ok ? `x の係数 ${num(st.B)} と一致 ○` : `x の係数 ${num(st.B)} と違う ×`, `font-size="15" font-weight="700" fill="${ok ? '#1b5e20' : '#b71c1c'}" text-anchor="middle"`);
+    }
+    if(level >= 5 && pa && pc){
+      g += `<rect x="${xL - 44}" y="${y1 - 32}" width="${xR - xL + 88}" height="64" rx="10" fill="none" stroke="#E25100" stroke-width="2"/>`;
+      g += `<rect x="${xL - 44}" y="${y2 - 32}" width="${xR - xL + 88}" height="64" rx="10" fill="none" stroke="#E25100" stroke-width="2"/>`;
+      g += t(8, y1, '(' + lin(pa[0], pc[0]) + ')', 'font-size="15" fill="#E25100" font-weight="700" dominant-baseline="central"');
+      g += t(8, y2, '(' + lin(pa[1], pc[1]) + ')', 'font-size="15" fill="#E25100" font-weight="700" dominant-baseline="central"');
+    }
+    $('figure').innerHTML = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="たすき掛けの図">${g}</svg>`;
+  }
+
+  // ---- 選択パネル ----
+  function renderChoices(){
+    const bA = $('choiceA'), bC = $('choiceC');
+    // ① x² の係数
+    if(level >= 1){
+      bA.hidden = false;
+      if(st.aPairs.length === 1){
+        bA.innerHTML = `<p class="note">① x² の係数 ${st.A} を掛け算に分ける方法は <b>${st.aPairs[0][0]} × ${st.aPairs[0][1]}</b> だけ。左の列に縦に書く。` +
+          (st.A === 1 ? '（係数が 1 のときは、左の列はどちらも 1。つまり「<b>掛けて ' + num(st.C) + '、足して ' + num(st.B) + '</b>」の2数を探すのと同じ）' : '') + '</p>';
+      }else{
+        bA.innerHTML = `<div class="q">① 掛けて ${st.A} になる2数を選ぼう（左の列に縦に書く）</div><div class="opts">` +
+          st.aPairs.map(([p, r], i) => `<button type="button" data-i="${i}" class="${pa && pa[0] === p ? 'sel' : ''}">${p} と ${r}</button>`).join('') + '</div>';
+        bA.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => {
+          pa = st.aPairs[+btn.dataset.i]; pc = null; goTo(1);
+        }));
+      }
+    }else bA.hidden = true;
+
+    // ② 定数項
+    if(level >= 2 && pa){
+      bC.hidden = false;
+      const key = (q, s) => pa[0] + ',' + pa[1] + ',' + q + ',' + s;
+      const done = {};
+      tried.forEach(tr => { done[tr.p + ',' + tr.r + ',' + tr.q + ',' + tr.s] = tr.sum === st.B ? 'ok' : 'ng'; });
+      let h = `<div class="q">② 掛けて ${num(st.C)} になる2数を選ぼう（上・下の順番も大事）</div><div class="opts">`;
+      h += st.cPairs.map(([q, s], i) => {
+        const d = done[key(q, s)], sel = pc && pc[0] === q && pc[1] === s;
+        return `<button type="button" data-i="${i}" class="${sel ? 'sel' : ''}${d && !sel ? ' tried-' + d : ''}"><span class="vs">上・下</span>${num(q)}・${num(s)}</button>`;
+      }).join('') + '</div>';
+      h += `<details><summary>ヒント：符号の決め方</summary>` +
+        (st.C > 0
+          ? `定数項 ${num(st.C)} はプラスなので、2数は<b>同じ符号</b>。x の係数 ${num(st.B)} が${st.B >= 0 ? 'プラスなら両方プラス' : 'マイナスなら両方マイナス'}を試そう。`
+          : `定数項 ${num(st.C)} はマイナスなので、2数は<b>ちがう符号</b>（片方がプラス、片方がマイナス）。`) +
+        `</details>`;
+      bC.innerHTML = h;
+      bC.querySelectorAll('.opts button').forEach(btn => btn.addEventListener('click', () => {
+        pc = st.cPairs[+btn.dataset.i]; goTo(2);
+      }));
+    }else bC.hidden = true;
+  }
+
+  function renderHistory(){
+    if(!tried.length){ $('history').innerHTML = ''; return; }
+    let h = `<p class="section-title">試した組み合わせ（${tried.length} / 全 ${st.total} 通り）</p><div class="tbl-scroll"><table><thead><tr><th>左の列</th><th>右の列</th><th>斜めに掛けて足す</th><th>判定</th></tr></thead><tbody>`;
+    tried.forEach(tr => {
+      const ok = tr.sum === st.B;
+      h += `<tr><td>${tr.p}・${tr.r}</td><td>${num(tr.q)}・${num(tr.s)}</td><td>${par(tr.q)}×${tr.r} + ${tr.p}×${par(tr.s)} = ${num(tr.sum)}</td><td class="${ok ? 'ok' : 'ng'}">${ok ? '○' : '×'}</td></tr>`;
+    });
+    h += '</tbody></table></div>';
+    if(!st.sol && tried.length >= st.total){
+      h += `<div class="warn">全部の組み合わせ（${st.total} 通り）を試しても、x の係数 ${num(st.B)} になりませんでした。このようなときは、<b>整数の範囲では因数分解できない</b>ということです。</div>`;
+    }
+    $('history').innerHTML = h;
+  }
+
+  function logTry(){
+    if(!(pa && pc)) return;
+    const [p, r] = pa, [q, s] = pc;
+    if(tried.some(tr => tr.p === p && tr.r === r && tr.q === q && tr.s === s)) return;
+    tried.push({ p, r, q, s, sum: p * s + q * r });
+  }
+
+  // ---- 思考のステップ ----
+  function buildSteps(){
+    const P = pa ? pa : ['□', '□'], Q = pc ? pc : ['□', '□'];
+    const sum = sumNow();
+    const topP = pc ? num(pc[0] * pa[1]) : '□', botP = pc ? num(pa[0] * pc[1]) : '□';
+    return [
+      { level: 1, body: `x² の係数 <span class="mono">${st.A}</span> を「掛けて ${st.A}」の2数に分けて、左の列に縦に書く → <span class="mono">${P[0]}</span> と <span class="mono">${P[1]}</span>` },
+      { level: 2, body: `定数項 <span class="mono">${num(st.C)}</span> を「掛けて ${num(st.C)}」の2数に分けて、右の列に縦に書く → 上 <span class="mono">${pc ? num(Q[0]) : '□'}</span>、下 <span class="mono">${pc ? num(Q[1]) : '□'}</span>` },
+      { level: 3, body: `斜めに掛ける：右上 × 左下 = <span class="mono">${topP}</span>、左上 × 右下 = <span class="mono">${botP}</span>` },
+      { level: 4, body: `2つを足すと <span class="mono">${sum === null ? '□' : num(sum)}</span>。これが x の係数 <span class="mono">${num(st.B)}</span> になれば当たり。` +
+          (level >= 4 && sum !== null ? (sum === st.B ? ' <span class="judge ok">一致した！</span>' : ' <span class="judge ng">ちがう → ②に戻って別の組を試す</span>') : '') },
+      { level: 5, body: `図を<b>横に</b>読む：上の段が <span class="mono">${pc ? lin(P[0], Q[0]) : '□'}</span>、下の段が <span class="mono">${pc ? lin(P[1], Q[1]) : '□'}</span>。それぞれをかっこでくくって掛ける。` }
+    ];
+  }
+
+  function answerText(){
+    const [p, r] = pa, [q, s] = pc;
+    const f1 = '(' + lin(p, q) + ')', f2 = '(' + lin(r, s) + ')';
+    const body = (p === r && q === s) ? f1 + '²' : f1 + f2;
+    const pre = st.g === 1 ? '' : st.g === -1 ? MINUS : num(st.g);
+    return poly([[st.a, 'x²'], [st.b, 'x'], [st.c, '']]) + ' = ' + pre + body;
+  }
+
+  function blocked(lv){
+    if(lv === 1) return !pa;
+    if(lv === 2) return !pc;
+    if(lv === 4) return !isHit();
+    return false;
+  }
+
+  function renderSteps(){
+    $('steps').innerHTML = buildSteps().map((s, i) =>
+      `<div class="step${s.level > level ? ' dim' : ''}" data-level="${s.level}">
+         <div class="step-num">${i + 1}</div><div class="step-body">${s.body}</div>
+       </div>`).join('');
+    $('steps').querySelectorAll('.step').forEach(el => el.addEventListener('click', () => goTo(+el.dataset.level)));
+    $('progress').textContent = LABELS[level];
+    $('prevBtn').disabled = level <= 0;
+    $('nextBtn').disabled = level >= MAX_LEVEL || blocked(level);
+    $('retryBox').innerHTML = (level === 4 && pa && pc && !isHit())
+      ? '<button class="btn primary" id="retryBtn">② に戻って別の組み合わせを試す</button>' : '';
+    if($('retryBtn')) $('retryBtn').addEventListener('click', () => { pc = null; goTo(2); });
+    const ans = $('answer');
+    if(level >= MAX_LEVEL){ ans.classList.remove('pending'); $('answerValue').textContent = answerText(); }
+    else { ans.classList.add('pending'); $('answerValue').textContent = 'ステップを最後まで進めると表示されます'; }
+  }
+
+  function goTo(n){
+    n = Math.max(0, Math.min(MAX_LEVEL, n));
+    for(let lv = 1; lv < n; lv++){ if(blocked(lv)){ n = lv; break; } }   // 選んでいない段階は飛ばせない
+    level = n;
+    if(level >= 4) logTry();
+    drawFigure();
+    renderChoices();
+    renderHistory();
+    renderSteps();
+  }
+
+  // ---- 入力 → 白紙から ----
+  function render(){
+    const a = Number($('a').value), b = Number($('b').value), c = Number($('c').value);
+    const okInt = v => Number.isInteger(v) && Math.abs(v) <= 60;
+    if(!okInt(a) || !okInt(b) || !okInt(c) || a === 0 || c === 0){
+      $('inputNote').innerHTML = '<div class="warn">x² の係数と定数項は 0 以外の整数、x の係数は整数を入れてください（−60〜60）。</div>';
+      $('target').innerHTML = '';
+      return;
+    }
+    st = solve(a, b, c);
+    let note = '';
+    if(st.g === -1) note = `<div class="warn">x² の係数がマイナスなので、まず全体を ${MINUS}1 でくくって <b>${MINUS}(${poly([[st.A, 'x²'], [st.B, 'x'], [st.C, '']])})</b> とし、かっこの中を因数分解します。</div>`;
+    else if(st.g !== 1) note = `<div class="warn">3つの係数がすべて ${Math.abs(st.g)} で割り切れるので、先に <b>${num(st.g)}(${poly([[st.A, 'x²'], [st.B, 'x'], [st.C, '']])})</b> とくくり、かっこの中を因数分解します。</div>`;
+    $('inputNote').innerHTML = note;
+    $('target').innerHTML = `因数分解する式：<b>${poly([[st.A, 'x²'], [st.B, 'x'], [st.C, '']])}</b>　（x² の係数 ${st.A}、x の係数 ${num(st.B)}、定数項 ${num(st.C)}）`;
+    pa = st.aPairs.length === 1 ? st.aPairs[0] : null;
+    pc = null;
+    tried = [];
+    goTo(0);
+  }
+
+  const PRESETS = [[2, 7, 3], [2, -7, 6], [6, 1, -2], [1, -5, 6], [3, 5, 4]];
+  document.querySelectorAll('.presets button').forEach(btn => btn.addEventListener('click', () => {
+    const v = PRESETS[+btn.dataset.i];
+    $('a').value = v[0]; $('b').value = v[1]; $('c').value = v[2];
+    render();
+  }));
+  ['a', 'b', 'c'].forEach(id => $(id).addEventListener('input', render));
+  $('prevBtn').addEventListener('click', () => goTo(level - 1));
+  $('nextBtn').addEventListener('click', () => goTo(level + 1));
+
+  render();
+})();
+</script>
+</body>
+</html>

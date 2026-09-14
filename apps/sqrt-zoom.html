@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>√2 はどれくらい？（数直線で追いつめる）｜数学学習サイト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
+<style>
+  /* サイト共通（assets/style.css）と同じトークン。アプリは1ファイル完結にするためここに再掲 */
+  :root{
+    --orange-50:#FFEEE2; --orange-100:#FFDFCA; --orange-400:#FF8D44;
+    --orange-700:#E25100; --orange-800:#C74700; --orange-900:#AC3E00;
+    --ink:#1E293B; --sub:#475569; --line:#D9DEE6; --line-strong:#B9C2CF;
+    --bg:#FBFBFA; --card:#FFFFFF; --focus:#FFD866;
+    --lt:#1D6FB8; --gt:#C74700; --ok:#1b5e20;
+    --sp-1:8px; --sp-2:16px; --sp-3:24px; --sp-4:32px; --sp-6:48px;
+    --radius-sm:4px; --radius-md:8px; --radius-pill:999px;
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  body{margin:0;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.7;}
+  a{color:var(--orange-800);}
+  a:focus-visible, button:focus-visible, input:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+  .brand-bar{height:6px;background:var(--orange-700);}
+  .site-header{background:var(--card);border-bottom:1px solid var(--line);padding:var(--sp-2);}
+  .site-header .inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;}
+  .site-title{margin:0;font-size:18px;font-weight:700;}
+  .site-title a{color:var(--ink);text-decoration:none;}
+  .back-link{font-size:14px;font-weight:700;}
+  .wrap{max-width:1100px;margin:0 auto;padding:var(--sp-3) var(--sp-2) var(--sp-6);}
+  h1{margin:0 0 4px;font-size:26px;line-height:1.4;}
+  .lead{margin:0 0 var(--sp-3);color:var(--sub);font-size:15px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--sp-2) var(--sp-3);}
+  .section-title{font-size:13px;font-weight:700;color:var(--sub);margin:0 0 var(--sp-1);}
+  .controls{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:end;}
+  .field label{display:block;font-size:12px;font-weight:700;color:var(--sub);}
+  .field input{font-size:18px;padding:6px 8px;border:1px solid var(--line-strong);border-radius:var(--radius-md);width:96px;text-align:center;font-family:inherit;}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;}
+  .presets button, .btn{border:1px solid var(--line);background:#f8fafc;color:var(--ink);padding:8px 14px;border-radius:var(--radius-pill);font-size:14px;cursor:pointer;font-family:inherit;}
+  .presets button:hover, .btn:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .btn:disabled{opacity:.35;cursor:default;}
+  .btn.primary{background:var(--orange-800);color:#fff;border-color:var(--orange-800);font-weight:700;}
+  .btn.primary:hover{background:var(--orange-900);color:#fff;}
+  .target{margin-top:var(--sp-2);font-size:15px;}
+
+  .main-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:var(--sp-2);align-items:start;margin-top:var(--sp-2);}
+  @media (max-width:900px){ .main-grid{grid-template-columns:1fr;} }
+  .figure svg{width:100%;height:auto;display:block;}
+  .tryrow{margin-top:var(--sp-2);}
+  .tryrow .q{font-size:14px;font-weight:700;margin-bottom:8px;}
+  .ticks{display:flex;flex-wrap:wrap;gap:6px;}
+  .ticks button{border:1px solid var(--line-strong);background:#fff;padding:6px 10px;border-radius:var(--radius-md);font-size:16px;cursor:pointer;font-family:Consolas,"Courier New",monospace;min-height:44px;min-width:60px;}
+  .ticks button:hover{border-color:var(--orange-800);}
+  .ticks button.lt{background:#e8f1fb;border-color:var(--lt);color:var(--lt);}
+  .ticks button.gt{background:var(--orange-50);border-color:var(--gt);color:var(--gt);}
+  .ticks button.eq{background:#e8f5e9;border-color:var(--ok);color:var(--ok);font-weight:700;}
+  .result{margin-top:10px;font-size:16px;min-height:28px;}
+  .result b.lt{color:var(--lt);} .result b.gt{color:var(--gt);} .result b.eq{color:var(--ok);}
+  .found{margin-top:8px;padding:8px 12px;border-radius:var(--radius-md);background:#e8f5e9;color:var(--ok);font-weight:700;font-size:15px;}
+
+  /* 思考のステップ（クリックで巻き戻し／早送り） */
+  .stepper{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:var(--sp-2);padding-bottom:12px;border-bottom:1px dashed var(--line);}
+  .stepper .progress{font-size:12px;font-weight:700;color:var(--sub);text-align:center;flex:1;}
+  .steps{display:flex;flex-direction:column;gap:10px;}
+  .step{display:flex;gap:10px;padding:6px 8px;margin:0 -8px;border-radius:var(--radius-md);cursor:pointer;}
+  .step:hover{background:#f8fafc;}
+  .step.dim{opacity:.4;}
+  .step.now{background:#fffaf5;}
+  .step-num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .step.dim .step-num{background:#cbd5e1;}
+  .step-body{font-size:14px;line-height:1.7;}
+  .mono{font-family:Consolas,"Courier New",monospace;background:#f1f5f9;padding:1px 6px;border-radius:5px;}
+
+  .answer{margin-top:var(--sp-2);padding:14px 16px;border:1.5px solid var(--orange-800);border-radius:var(--radius-md);background:linear-gradient(135deg,#fff3ea,#fff);}
+  .answer .label{font-size:12px;font-weight:700;color:var(--orange-800);}
+  .answer .value{font-size:22px;font-weight:800;}
+  .answer .more{font-size:14px;margin-top:6px;}
+  .answer.pending{opacity:.6;}
+  .answer.pending .value{font-size:15px;font-weight:400;}
+  .warn{background:#fff3cd;border:1px solid #ffe08a;color:#7a5b00;padding:10px 14px;border-radius:var(--radius-md);font-size:14px;margin-top:var(--sp-1);}
+  /* 分数は横線の縦組みで表示する */
+  .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25;margin:0 2px;}
+  .frac .num, .frac .den{padding:0 4px;white-space:nowrap;}
+  .frac .bar{display:block;width:100%;height:2px;background:currentColor;margin:2px 0;}
+</style>
+</head>
+<body>
+
+<div class="brand-bar"></div>
+<header class="site-header">
+  <div class="inner">
+    <p class="site-title"><a href="../index.html">数学学習サイト</a></p>
+    <a class="back-link" href="../unit.html?s=math1&u=kazu-shiki">← 単元ページに戻る</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <h1>√2 はどれくらい？（数直線で追いつめる）</h1>
+  <p class="lead">面積 2 m² の正方形の畑をつくりたい。1辺は何 m にすればいい？――「予想した数を2乗して、面積より大きいか小さいか」を確かめながら、数直線を拡大して √2 を1けたずつ追いつめます。</p>
+
+  <div class="card">
+    <div class="controls">
+      <div class="field"><label for="N">正方形の面積（m²）</label><input type="number" id="N" value="2" min="0.01" max="99" step="0.01"></div>
+      <div class="presets">
+        <button type="button" data-n="2">√2</button>
+        <button type="button" data-n="3">√3</button>
+        <button type="button" data-n="5">√5</button>
+        <button type="button" data-n="7">√7</button>
+        <button type="button" data-n="6.25">√6.25（くらべてみよう）</button>
+      </div>
+    </div>
+    <div id="inputNote"></div>
+    <div class="target" id="target"></div>
+  </div>
+
+  <div class="main-grid">
+    <div class="card figure">
+      <p class="section-title">正方形と数直線</p>
+      <div id="figure"></div>
+      <div class="tryrow" id="tryrow"></div>
+    </div>
+
+    <div>
+      <div class="card">
+        <p class="section-title">しぼりこみの記録</p>
+        <div class="stepper">
+          <button class="btn" id="prevBtn">◀ 前の桁へ</button>
+          <span class="progress" id="progress"></span>
+          <button class="btn primary" id="nextBtn">次の桁へ ▶</button>
+        </div>
+        <div class="steps" id="steps"></div>
+      </div>
+      <div class="answer pending" id="answer">
+        <div class="label">わかったこと</div>
+        <div class="value" id="answerValue">小数第4位まで追いつめると表示されます</div>
+        <div class="more" id="answerMore"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const fracHTML = (n, d) => `<span class="frac"><span class="num">${n}</span><span class="bar"></span><span class="den">${d}</span></span>`;
+  const MAXD = 4;                                 // 小数第4位まで
+  const PLACE = ['整数', '小数第1位', '小数第2位', '小数第3位', '小数第4位'];
+
+  let Nn = 200;        // 面積 × 100（整数で持って、2乗との比較を誤差なく行う）
+  let Nstr = '2';
+  let hist = [];       // 桁ごとの記録 { base, tests:{k:-1|0|1}, found, exact }
+  let d = 0;           // いま調べている桁（MAXD+1 = まとめ）
+  let last = null;     // 最後に2乗した候補 k
+
+  // k / 10^d を2乗して面積と比べる（−1：小さい、0：ぴったり、1：大きい）
+  const cmp = (k, dd) => { const L = k * k * 100, R = Nn * Math.pow(10, 2 * dd); return L < R ? -1 : L > R ? 1 : 0; };
+  const fmt = (k, dd) => (k / Math.pow(10, dd)).toFixed(dd);
+  function fmtSq(k, dd){                            // 2乗を誤差なく小数で
+    if(dd === 0) return String(k * k);
+    let s = String(k * k).padStart(2 * dd + 1, '0');
+    s = s.slice(0, s.length - 2 * dd) + '.' + s.slice(s.length - 2 * dd);
+    return s.replace(/0+$/, '').replace(/\.$/, '');
+  }
+  const rootInt = () => Math.floor(Math.sqrt(Nn / 100));
+
+  function ticksOf(dd){
+    const h = hist[dd];
+    if(dd === 0){ const M = Math.min(10, Math.max(2, rootInt() + 2)); return Array.from({ length: M + 1 }, (_, i) => i); }
+    return Array.from({ length: 11 }, (_, j) => h.base * 10 + j);
+  }
+  function newDigit(dd, base){
+    const h = { base, tests: {}, found: null, exact: null };
+    if(dd > 0){ h.tests[base * 10] = -1; h.tests[base * 10 + 10] = 1; }    // 両端は前の桁でわかっている
+    return h;
+  }
+  function checkFound(dd){
+    const h = hist[dd], ks = ticksOf(dd);
+    h.found = null; h.exact = null;
+    ks.forEach(k => { if(h.tests[k] === 0) h.exact = k; });
+    for(let i = 0; i + 1 < ks.length; i++){
+      if(h.tests[ks[i]] === -1 && h.tests[ks[i + 1]] === 1) h.found = ks[i];
+    }
+  }
+
+  // ---- 図 ----
+  function drawFigure(){
+    const W = 600, H = 380;
+    let g = `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`;
+    const root = Math.sqrt(Nn / 100);
+    // 上：正方形の比較
+    const S = 150, ox = 70, oy = 30;             // 面積 N の正方形の1辺を 150px にする
+    g += `<rect x="${ox}" y="${oy}" width="${S}" height="${S}" fill="rgba(46,125,50,0.10)" stroke="#2e7d32" stroke-width="2.5"/>`;
+    g += `<text x="${ox + S / 2}" y="${oy + S / 2}" font-size="17" font-weight="700" fill="#2e7d32" text-anchor="middle" dominant-baseline="central">面積 ${Nstr}</text>`;
+    g += `<text x="${ox + S / 2}" y="${oy + S + 22}" font-size="15" fill="#2e7d32" text-anchor="middle">1辺 = √${Nstr}</text>`;
+    if(last !== null){
+      const dd = Math.min(d, MAXD), c = last / Math.pow(10, dd), side = S * c / root, r = cmp(last, dd);
+      const col = r < 0 ? '#1D6FB8' : r > 0 ? '#C74700' : '#1b5e20';
+      if(side < 260){
+        g += `<rect x="${ox}" y="${oy + S - side}" width="${side}" height="${side}" fill="none" stroke="${col}" stroke-width="2.5" stroke-dasharray="7 4"/>`;
+      }
+      const tx = 330;
+      g += `<text x="${tx}" y="${oy + 40}" font-size="15" fill="#475569">いま試した1辺</text>`;
+      g += `<text x="${tx}" y="${oy + 72}" font-size="24" font-weight="700" fill="${col}">${fmt(last, dd)} m</text>`;
+      g += `<text x="${tx}" y="${oy + 104}" font-size="17" fill="${col}">面積 ${fmt(last, dd)}² = ${fmtSq(last, dd)}</text>`;
+      g += `<text x="${tx}" y="${oy + 134}" font-size="16" font-weight="700" fill="${col}">${r < 0 ? Nstr + ' より小さい（足りない）' : r > 0 ? Nstr + ' より大きい（はみ出す）' : 'ぴったり ' + Nstr + '！'}</text>`;
+      if(dd >= 2) g += `<text x="${tx}" y="${oy + 162}" font-size="13" fill="#94a3b8">※ここまで来ると、図では違いが見えない</text>`;
+    }else if(d <= MAXD){
+      g += `<text x="330" y="${oy + 70}" font-size="15" fill="#94a3b8">下のボタンで1辺の長さを</text>`;
+      g += `<text x="330" y="${oy + 94}" font-size="15" fill="#94a3b8">予想して、2乗してみよう</text>`;
+    }
+
+    // 下：数直線
+    if(d <= MAXD){
+      const h = hist[d], ks = ticksOf(d);
+      const x0 = 40, x1 = 560, yL = 290;
+      const px = i => x0 + (x1 - x0) * i / (ks.length - 1);
+      g += `<text x="${x0}" y="${yL - 58}" font-size="14" font-weight="700" fill="#475569">${d === 0 ? '数直線（整数ごと）' : '数直線を拡大（' + fmt(ks[0], d - 1) + ' 〜 ' + fmt(ks[ks.length - 1], d - 1) + ' を10等分）'}</text>`;
+      if(h.found !== null){
+        const i = ks.indexOf(h.found);
+        g += `<rect x="${px(i)}" y="${yL - 14}" width="${px(i + 1) - px(i)}" height="28" fill="rgba(46,125,50,0.18)"/>`;
+        g += `<text x="${(px(i) + px(i + 1)) / 2}" y="${yL - 22}" font-size="15" font-weight="700" fill="#1b5e20" text-anchor="middle">√${Nstr} はここ</text>`;
+      }
+      g += `<line x1="${x0 - 20}" y1="${yL}" x2="${x1 + 20}" y2="${yL}" stroke="#334155" stroke-width="2"/>`;
+      ks.forEach((k, i) => {
+        const r = h.tests[k];
+        const col = r === -1 ? '#1D6FB8' : r === 1 ? '#C74700' : r === 0 ? '#1b5e20' : '#94a3b8';
+        g += `<line x1="${px(i)}" y1="${yL - 8}" x2="${px(i)}" y2="${yL + 8}" stroke="#334155" stroke-width="1.5"/>`;
+        g += `<circle cx="${px(i)}" cy="${yL}" r="${r === undefined ? 4 : 7}" fill="${col}"/>`;
+        g += `<text x="${px(i)}" y="${yL + 30}" font-size="${d >= 3 ? 11 : 13}" fill="${col}" text-anchor="middle" font-weight="${r === undefined ? 400 : 700}">${fmt(k, d)}</text>`;
+      });
+      g += `<text x="${x0}" y="${yL + 64}" font-size="13" fill="#1D6FB8">● 2乗が ${Nstr} より小さい</text>`;
+      g += `<text x="${x0 + 200}" y="${yL + 64}" font-size="13" fill="#C74700">● 2乗が ${Nstr} より大きい</text>`;
+    }else{
+      g += `<text x="40" y="280" font-size="16" font-weight="700" fill="#1b5e20">しぼりこみ完了。右の記録を見てみよう。</text>`;
+    }
+    $('figure').innerHTML = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="正方形と数直線の図">${g}</svg>`;
+  }
+
+  // ---- 候補ボタン ----
+  function renderTry(){
+    const box = $('tryrow');
+    if(d > MAXD){ box.innerHTML = ''; return; }
+    const h = hist[d], ks = ticksOf(d);
+    let html = `<div class="q">${PLACE[d]}：1辺を何 m と予想する？ タップして2乗してみよう</div><div class="ticks">`;
+    ks.forEach(k => {
+      const r = h.tests[k];
+      html += `<button type="button" data-k="${k}" class="${r === -1 ? 'lt' : r === 1 ? 'gt' : r === 0 ? 'eq' : ''}">${fmt(k, d)}</button>`;
+    });
+    html += '</div>';
+    html += `<div style="margin-top:8px;"><button class="btn" id="allBtn">この桁を全部2乗してみる</button></div>`;
+    if(last !== null && hist[d].tests[last] !== undefined && ks.indexOf(last) >= 0){
+      const r = h.tests[last];
+      html += `<div class="result">${fmt(last, d)}² = ${fmtSq(last, d)} → <b class="${r < 0 ? 'lt' : r > 0 ? 'gt' : 'eq'}">${r < 0 ? Nstr + ' より小さい' : r > 0 ? Nstr + ' より大きい' : 'ぴったり ' + Nstr}</b></div>`;
+    }
+    if(h.exact !== null){
+      html += `<div class="found">ぴったり！ ${fmt(h.exact, d)}² = ${Nstr} なので √${Nstr} = ${fmt(h.exact, d)}。ここで終わり。「次の桁へ」でまとめへ。</div>`;
+    }else if(h.found !== null){
+      html += `<div class="found">しぼりこめた！ ${fmt(h.found, d)} &lt; √${Nstr} &lt; ${fmt(h.found + 1, d)}　${d < MAXD ? '→「次の桁へ」で拡大しよう' : '→「次の桁へ」でまとめへ'}</div>`;
+    }
+    box.innerHTML = html;
+    box.querySelectorAll('.ticks button').forEach(btn => btn.addEventListener('click', () => tryK(+btn.dataset.k)));
+    $('allBtn').addEventListener('click', () => { ks.forEach(k => { h.tests[k] = cmp(k, d); }); last = null; checkFound(d); renderAll(); });
+  }
+
+  function tryK(k){
+    hist[d].tests[k] = cmp(k, d);
+    last = k;
+    checkFound(d);
+    renderAll();
+  }
+
+  // ---- 記録（ステップ） ----
+  function renderSteps(){
+    const rows = [];
+    for(let i = 0; i <= MAXD; i++){
+      const h = hist[i];
+      let body = `<b>${PLACE[i]}</b>まで：`;
+      if(h && h.exact !== null) body += `<span class="mono">√${Nstr} = ${fmt(h.exact, i)}</span>（ぴったり）`;
+      else if(h && h.found !== null) body += `<span class="mono">${fmt(h.found, i)} &lt; √${Nstr} &lt; ${fmt(h.found + 1, i)}</span><br><span style="color:var(--sub)">${fmt(h.found, i)}² = ${fmtSq(h.found, i)}、${fmt(h.found + 1, i)}² = ${fmtSq(h.found + 1, i)}</span>`;
+      else body += '□ &lt; √' + Nstr + ' &lt; □';
+      rows.push({ lv: i, body, dim: !h || i > d });
+    }
+    rows.push({ lv: MAXD + 1, body: '<b>まとめ</b>：追いつめた結果からわかること', dim: d <= MAXD });
+    $('steps').innerHTML = rows.map((r, i) =>
+      `<div class="step${r.dim ? ' dim' : ''}${r.lv === d ? ' now' : ''}" data-lv="${r.lv}"><div class="step-num">${i + 1}</div><div class="step-body">${r.body}</div></div>`).join('');
+    $('steps').querySelectorAll('.step').forEach(el => el.addEventListener('click', () => {
+      const lv = +el.dataset.lv;
+      if(lv <= MAXD ? (hist[lv] && lv <= maxReach()) : canFinish()) { d = lv; last = null; renderAll(); }
+    }));
+    $('progress').textContent = d <= MAXD ? PLACE[d] + ' を調べる' : 'まとめ';
+    $('prevBtn').disabled = d <= 0;
+    const h = hist[Math.min(d, MAXD)];
+    $('nextBtn').disabled = d > MAXD || (h.found === null && h.exact === null);
+    $('nextBtn').textContent = (d >= MAXD || (h && h.exact !== null)) ? 'まとめへ ▶' : '次の桁へ ▶';
+  }
+  // すでに調べ終えた最も深い桁
+  function maxReach(){ let m = 0; hist.forEach((h, i) => { if(h) m = i; }); return m; }
+  function canFinish(){ const h = hist[maxReach()]; return h && (h.exact !== null || (maxReach() === MAXD && h.found !== null)); }
+
+  function renderAnswer(){
+    const ans = $('answer');
+    if(d <= MAXD){ ans.classList.add('pending'); $('answerValue').textContent = 'しぼりこみを最後まで進めると表示されます'; $('answerMore').innerHTML = ''; return; }
+    ans.classList.remove('pending');
+    const ex = hist.find(h => h && h.exact !== null);
+    if(ex){
+      const i = hist.indexOf(ex), v = fmt(ex.exact, i);
+      $('answerValue').innerHTML = `√${Nstr} = ${v}（ぴったり終わる）`;
+      const den = Math.pow(10, i), g0 = gcd(ex.exact, den);
+      $('answerMore').innerHTML = `終わりのある小数なので、${den === 1 ? '整数' : '分数 ' + fracHTML(ex.exact / g0, den / g0) + ' で表せる'}。つまり <b>有理数</b>。<br>√2・√3 と比べてみよう。`;
+    }else{
+      const h = hist[MAXD];
+      $('answerValue').innerHTML = `${fmt(h.found, MAXD)} &lt; √${Nstr} &lt; ${fmt(h.found + 1, MAXD)}`;
+      $('answerMore').innerHTML = `電卓で計算すると √${Nstr} = ${Math.sqrt(Nn / 100).toFixed(8)}… 。どこまで追いつめても<b>終わらず</b>、同じ並びの<b>くり返しにもならない</b>ことが知られています（循環小数ではない）。<br>このように分数で表せない数を <b>無理数</b> といいます。畑の1辺は「約 ${fmt(h.found, 2)} m」のように近い値で測ることになります。`;
+    }
+  }
+  const gcd = (x, y) => { while(y){ [x, y] = [y, x % y]; } return x; };
+
+  function renderAll(){ drawFigure(); renderTry(); renderSteps(); renderAnswer(); }
+
+  function goNext(){
+    const h = hist[d];
+    if(h.exact !== null || d === MAXD){ d = MAXD + 1; last = null; renderAll(); return; }
+    d++;
+    if(!hist[d] || hist[d].base !== h.found){ hist[d] = newDigit(d, h.found); hist.length = d + 1; }
+    last = null;
+    renderAll();
+  }
+
+  // ---- 入力 ----
+  function setN(v){
+    const n = Math.round(Number(v) * 100);
+    if(!isFinite(n) || n <= 0 || n > 9900 || Math.abs(Number(v) * 100 - n) > 1e-6){
+      $('inputNote').innerHTML = '<div class="warn">面積は 0 より大きく 99 以下、小数第2位までの数を入れてください。</div>';
+      return;
+    }
+    $('inputNote').innerHTML = '';
+    Nn = n; Nstr = String(n / 100);
+    hist = [newDigit(0, 0)]; d = 0; last = null;
+    $('target').innerHTML = `面積 <b>${Nstr} m²</b> の正方形の1辺 <b>√${Nstr} m</b> を追いつめます。まずは整数の目もりで、2乗が ${Nstr} をこえるところを探そう。`;
+    renderAll();
+  }
+
+  document.querySelectorAll('.presets button').forEach(btn => btn.addEventListener('click', () => { $('N').value = btn.dataset.n; setN(btn.dataset.n); }));
+  $('N').addEventListener('change', () => setN($('N').value));
+  $('prevBtn').addEventListener('click', () => { if(d > 0){ d = Math.min(d, MAXD + 1) - 1; if(!hist[d]) d = maxReach(); last = null; renderAll(); } });
+  $('nextBtn').addEventListener('click', goNext);
+
+  setN(2);
+})();
+</script>
+</body>
+</html>
