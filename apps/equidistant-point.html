@@ -59,6 +59,12 @@
   .step-num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;}
   .step.dim .step-num{background:#cbd5e1;}
   .step-body{font-size:14px;line-height:1.7;}
+  .masked{color:var(--sub);}
+  /* 「次へ」がまだ押せない理由を、ボタンのすぐ下に出す */
+  .gate{background:var(--orange-50);border:1px solid var(--orange-100);border-radius:var(--radius-md);
+        padding:8px 12px;margin-bottom:var(--sp-2);font-size:14px;color:var(--orange-900);}
+  .gate strong{font-size:16px;}
+  .gate.ready{background:#EAF7EE;border-color:#BFE3C9;color:#14532D;}
   .mono{font-family:Consolas,monospace;background:#f1f5f9;padding:1px 6px;border-radius:5px;}
   .tagA{color:var(--colA);font-weight:700;} .tagB{color:var(--colB);font-weight:700;} .tagC{color:var(--colC);font-weight:700;}
 
@@ -116,6 +122,7 @@
           <span class="progress" id="progress"></span>
           <button class="btn primary" id="nextBtn">次へ ▶</button>
         </div>
+        <div id="gate"></div>
         <div class="steps" id="steps"></div>
         <div class="panel" id="panel"></div>
       </div>
@@ -330,9 +337,16 @@
     </g>`);
 
     $('figure').innerHTML = `<svg id="map" class="${level >= 3 ? 'draggable' : ''}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${s.join('')}</svg>`;
-    $('figHint').textContent = level === 0
-      ? '地図をタップ（クリック）すると、そこに点が打てます。'
-      : (level >= 3 ? '家をドラッグすると動かせます。' : '');
+    // 地図のすぐ下に、直前に打った点の判定を出す（目を離さずに位置を直せるように）
+    if(level === 0 && lastTap){
+      const dA = dist(lastTap, A), dB = dist(lastTap, B), diff = Math.abs(dA - dB), ok = diff <= TOL;
+      $('figHint').innerHTML = `<span class="tagA">Aまで 約${meters(dA)} m</span>　<span class="tagB">Bまで 約${meters(dB)} m</span>　→
+        ちがい 約${meters(diff)} m <strong style="color:${ok ? 'var(--ok)' : 'var(--miss)'}">${ok ? '等しいとみなせます' : 'まだそろっていません'}</strong>`;
+    } else {
+      $('figHint').textContent = level === 0
+        ? '地図をタップ（クリック）すると、そこに点が打てます。'
+        : (level >= 3 ? '家をドラッグすると動かせます。' : '');
+    }
   }
 
   // ---- 思考のステップ ----
@@ -349,14 +363,34 @@
 
   function renderSteps(){
     const steps = buildSteps();
+    // まだ到達していない段階は、中身を伏せておく（先に結論が読めてしまわないように）
     $('steps').innerHTML = steps.map((s, i) =>
       `<div class="step${s.level > level ? ' dim' : ''}" data-level="${s.level}">
-         <div class="step-num">${i + 1}</div><div class="step-body">${s.body}</div>
+         <div class="step-num">${i + 1}</div>
+         <div class="step-body">${s.level > level ? '<span class="masked">ここまで進むと表示されます</span>' : s.body}</div>
        </div>`).join('');
     $('steps').querySelectorAll('.step').forEach(el => el.addEventListener('click', () => goTo(+el.dataset.level)));
     $('progress').textContent = LEVEL_LABELS[level];
     $('prevBtn').disabled = level <= 0;
     $('nextBtn').disabled = level >= MAX_LEVEL || (level === 0 && okCount() < NEED_DOTS);
+
+    // 「次へ」が押せない理由（点をさがす段階）を、ボタンのすぐ下に出す
+    const gate = $('gate');
+    if(level === 0){
+      const rest = NEED_DOTS - okCount();
+      if(rest > 0){
+        gate.className = 'gate';
+        gate.innerHTML = dots.length === 0
+          ? `地図をタップして、<span class="tagA">A</span>・<span class="tagB">B</span> から等しい距離だと思う場所に点を打ってみましょう。`
+          : `等しい距離の点（緑）が <strong>あと ${rest} つ</strong> で「次へ ▶」が押せます。うまくいかないときは、地図のすぐ下に出る「ちがい ○ m」を見ながら位置をずらしてみましょう。`;
+      } else {
+        gate.className = 'gate ready';
+        gate.innerHTML = `緑の点が ${NEED_DOTS} つそろいました。「次へ ▶」が押せます。`;
+      }
+      gate.style.display = '';
+    } else {
+      gate.style.display = 'none';
+    }
 
     const ans = $('answer');
     if(level >= MAX_LEVEL){
