@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>公平な待ち合わせ場所｜数学学習サイト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
+<style>
+  :root{
+    --orange-50:#FFEEE2; --orange-100:#FFDFCA; --orange-400:#FF8D44;
+    --orange-700:#E25100; --orange-800:#C74700; --orange-900:#AC3E00;
+    --ink:#1E293B; --sub:#475569; --line:#D9DEE6; --line-strong:#B9C2CF;
+    --bg:#FBFBFA; --card:#FFFFFF; --focus:#FFD866;
+    --colA:#C74700; --colB:#1D4ED8; --colC:#15803D;
+    --ok:#15803D; --miss:#DC2626;
+    --sp-1:8px; --sp-2:16px; --sp-3:24px; --sp-4:32px; --sp-6:48px;
+    --radius-sm:4px; --radius-md:8px; --radius-pill:999px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.7;}
+  a{color:var(--orange-800);}
+  a:focus-visible, button:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+  .brand-bar{height:6px;background:var(--orange-700);}
+  .site-header{background:var(--card);border-bottom:1px solid var(--line);padding:var(--sp-2);}
+  .site-header .inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;}
+  .site-title{margin:0;font-size:18px;font-weight:700;}
+  .site-title a{color:var(--ink);text-decoration:none;}
+  .back-link{font-size:14px;font-weight:700;}
+  .wrap{max-width:1100px;margin:0 auto;padding:var(--sp-3) var(--sp-2) var(--sp-6);}
+  h1{margin:0 0 4px;font-size:26px;line-height:1.4;}
+  .lead{margin:0 0 var(--sp-3);color:var(--sub);font-size:15px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--sp-2) var(--sp-3);}
+  .card + .card{margin-top:var(--sp-2);}
+  .section-title{font-size:13px;font-weight:700;color:var(--sub);margin:0 0 var(--sp-1);}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;}
+  .presets button, .btn{border:1px solid var(--line);background:#f8fafc;color:var(--ink);padding:8px 14px;border-radius:var(--radius-pill);font-size:14px;cursor:pointer;font-family:inherit;line-height:1.5;}
+  .presets button:hover, .btn:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .btn:disabled{opacity:.35;cursor:default;}
+  .btn.primary{background:var(--orange-800);color:#fff;border-color:var(--orange-800);font-weight:700;}
+  .btn.primary:hover{background:var(--orange-900);border-color:var(--orange-900);color:#fff;}
+  .btn.primary:disabled{background:#cbd5e1;border-color:#cbd5e1;color:#fff;}
+
+  .main-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:var(--sp-2);align-items:start;margin-top:var(--sp-2);}
+  @media (max-width:900px){ .main-grid{grid-template-columns:1fr;} }
+  /* 家をドラッグする段階だけ touch-action を切る（それ以外は指で画面をスクロールできるように） */
+  .figure svg{width:100%;height:auto;display:block;touch-action:manipulation;border-radius:var(--radius-sm);}
+  .figure svg.draggable{touch-action:none;}
+  .figure .hint{font-size:13px;color:var(--sub);margin:var(--sp-1) 0 0;}
+
+  .stepper{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:var(--sp-2);padding-bottom:12px;border-bottom:1px dashed var(--line);}
+  .stepper .progress{font-size:12px;font-weight:700;color:var(--sub);text-align:center;flex:1;}
+  .steps{display:flex;flex-direction:column;gap:10px;}
+  .step{display:flex;gap:10px;padding:6px 8px;margin:0 -8px;border-radius:var(--radius-md);cursor:pointer;}
+  .step:hover{background:#f8fafc;}
+  .step.dim{opacity:.4;}
+  .step-num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .step.dim .step-num{background:#cbd5e1;}
+  .step-body{font-size:14px;line-height:1.7;}
+  .mono{font-family:Consolas,monospace;background:#f1f5f9;padding:1px 6px;border-radius:5px;}
+  .tagA{color:var(--colA);font-weight:700;} .tagB{color:var(--colB);font-weight:700;} .tagC{color:var(--colC);font-weight:700;}
+
+  .panel{margin-top:var(--sp-2);border-top:1px dashed var(--line);padding-top:var(--sp-2);}
+  .feedback{font-size:14px;}
+  .feedback .verdict{font-weight:700;}
+  .feedback .verdict.ok{color:var(--ok);}
+  .feedback .verdict.miss{color:var(--miss);}
+  .count{font-size:13px;color:var(--sub);}
+  .bars{display:flex;flex-direction:column;gap:6px;margin-top:var(--sp-1);}
+  .bar-row{display:flex;align-items:center;gap:8px;font-size:13px;}
+  .bar-row .name{width:34px;font-weight:700;flex:none;}
+  .bar-row .track{flex:1;background:#eef2f7;border-radius:var(--radius-pill);height:14px;overflow:hidden;}
+  .bar-row .fill{height:100%;border-radius:var(--radius-pill);}
+  .bar-row .len{width:74px;text-align:right;flex:none;font-variant-numeric:tabular-nums;}
+
+  .answer{margin-top:var(--sp-2);padding:14px 16px;border:1.5px solid var(--orange-800);border-radius:var(--radius-md);background:linear-gradient(135deg,#fff3ea,#fff);}
+  .answer .label{font-size:12px;font-weight:700;color:var(--orange-800);}
+  .answer .value{font-size:16px;font-weight:700;line-height:1.8;}
+  .answer .value .big{font-size:20px;font-weight:800;}
+  .answer.pending{opacity:.6;}
+  .answer.pending .value{font-size:15px;font-weight:400;color:var(--sub);}
+  .warn{background:#fff3cd;border:1px solid #ffe08a;color:#7a5b00;padding:10px 14px;border-radius:var(--radius-md);font-size:14px;margin-top:var(--sp-1);}
+  .try{margin:var(--sp-2) 0 0;padding-left:1.2em;font-size:14px;color:var(--sub);}
+  .try li{margin-bottom:4px;}
+</style>
+</head>
+<body>
+
+<div class="brand-bar"></div>
+<header class="site-header">
+  <div class="inner">
+    <p class="site-title"><a href="../index.html">数学学習サイト</a></p>
+    <a class="back-link" href="../unit.html?s=mathA&u=zukei-seishitsu">← 単元ページに戻る</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <h1>公平な待ち合わせ場所</h1>
+  <p class="lead">Aさん・Bさん・Cさんが待ち合わせをします。3人の家から距離が等しい、公平な場所はどこでしょう。地図をタップして自分で探すところから始めます。</p>
+
+  <div class="main-grid">
+    <div>
+      <div class="card figure">
+        <div id="figure"></div>
+        <p class="hint" id="figHint"></p>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <p class="section-title">思考のステップ</p>
+        <div class="stepper">
+          <button class="btn" id="prevBtn">◀ 前へ</button>
+          <span class="progress" id="progress"></span>
+          <button class="btn primary" id="nextBtn">次へ ▶</button>
+        </div>
+        <div class="steps" id="steps"></div>
+        <div class="panel" id="panel"></div>
+      </div>
+
+      <div class="answer pending" id="answer">
+        <div class="label">わかったこと</div>
+        <div class="value" id="answerValue">ステップを最後まで進めると表示されます</div>
+      </div>
+
+      <div class="card" id="exploreCard" style="display:none">
+        <p class="section-title">形を変えて確かめる</p>
+        <div class="presets">
+          <button data-preset="0">① ふつうの三角形</button>
+          <button data-preset="1">② にぶい角のある三角形</button>
+          <button data-preset="2">③ 直角三角形</button>
+          <button data-preset="3">④ 正三角形に近い形</button>
+        </div>
+        <ul class="try">
+          <li>家をドラッグしても動かせます。待ち合わせ場所はどう動きますか。</li>
+          <li>待ち合わせ場所が3軒を結んだ三角形の<strong>外に出る</strong>のは、どんな形のときですか。</li>
+          <li>直角三角形にすると、待ち合わせ場所はどこに来ますか。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  // ---- 図の座標（1マス = 100 m、縦横の縮尺は同じにする）----
+  const SCALE = 50, PAD = 16, X_MAX = 12, Y_MAX = 9.6;
+  const W = PAD * 2 + X_MAX * SCALE, H = PAD * 2 + Y_MAX * SCALE;
+  const M_PER_CELL = 100;
+  const TOL = 0.35;           // 距離の差がこれ以下（＝約35 m 以内）なら「等しい」とみなす
+  const NEED_DOTS = 3;        // 次へ進むのに必要な、当たりの点の数
+
+  const px = x => PAD + x * SCALE;
+  const py = y => PAD + (Y_MAX - y) * SCALE;
+
+  // ---- 状態 ----
+  const MAX_LEVEL = 6;
+  const LEVEL_LABELS = [
+    '① 等しい距離の場所をさがす',
+    '② 点をつないで直線にする',
+    '③ 垂直二等分線とわかる',
+    '④ Cさんの家が加わる',
+    '⑤ 2本目を引いて交点をとる',
+    '⑥ 3軒までの距離をくらべる',
+    '⑦ 円をかく（外接円・外心）'
+  ];
+  const PRESETS = [
+    { name:'ふつう',   A:{x:2,   y:2.5}, B:{x:10,  y:3.5}, C:{x:5,   y:8.5} },
+    { name:'にぶい角', A:{x:2.5, y:4},   B:{x:9.5, y:4},   C:{x:8,   y:6.5} },
+    { name:'直角',     A:{x:2.5, y:2.5}, B:{x:9.5, y:2.5}, C:{x:2.5, y:7.5} },
+    { name:'正三角形', A:{x:3,   y:2.2}, B:{x:9,   y:2.2}, C:{x:6,   y:7.4} }
+  ];
+
+  let level = 0;
+  let houses = null;          // {A:{x,y}, B:{x,y}, C:{x,y}}
+  let dots = [];              // 生徒が打った点 {x, y, ok}
+  let lastTap = null;         // 直前に打った点（フィードバック用）
+  let missCount = 0;
+  let drag = null;            // ドラッグ中の家のキー
+
+  const $ = id => document.getElementById(id);
+  const dist = (p, q) => Math.hypot(p.x - q.x, p.y - q.y);
+  const meters = d => Math.round(d * M_PER_CELL / 10) * 10;   // 10 m 単位に丸める
+
+  function setHouses(p){
+    houses = { A:{x:p.A.x, y:p.A.y}, B:{x:p.B.x, y:p.B.y}, C:{x:p.C.x, y:p.C.y} };
+  }
+  setHouses(PRESETS[0]);
+
+  // ---- 数学 ----
+  // 線分PQの垂直二等分線を、地図の枠内に収まる線分として返す
+  function bisector(p, q){
+    const mid = { x:(p.x + q.x) / 2, y:(p.y + q.y) / 2 };
+    const len = dist(p, q);
+    if(len < 1e-6) return null;
+    const dx = -(q.y - p.y) / len, dy = (q.x - p.x) / len;   // PQ に垂直な向き
+    const seg = clip(mid, dx, dy);
+    return seg ? { mid, dx, dy, ux:(q.x - p.x) / len, uy:(q.y - p.y) / len, seg } : null;
+  }
+  // 点(p)から向き(dx,dy)にのびる直線を、地図の枠で切り取る
+  function clip(p, dx, dy){
+    let t0 = -1e9, t1 = 1e9, ok = true;
+    const cut = (a, b) => {   // a*t <= b
+      if(Math.abs(a) < 1e-12){ if(b < 0) ok = false; return; }
+      const r = b / a;
+      if(a < 0){ if(r > t1) ok = false; else if(r > t0) t0 = r; }
+      else     { if(r < t0) ok = false; else if(r < t1) t1 = r; }
+    };
+    cut(-dx, p.x - 0);      cut(dx, X_MAX - p.x);
+    cut(-dy, p.y - 0);      cut(dy, Y_MAX - p.y);
+    if(!ok) return null;
+    return [{ x:p.x + dx * t0, y:p.y + dy * t0 }, { x:p.x + dx * t1, y:p.y + dy * t1 }];
+  }
+  // 3軒から等しい距離にある点（外心）
+  function circumcenter(a, b, c){
+    const d = 2 * (a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y));
+    if(Math.abs(d) < 1e-9) return null;   // 3点が一直線上
+    const a2 = a.x * a.x + a.y * a.y, b2 = b.x * b.x + b.y * b.y, c2 = c.x * c.x + c.y * c.y;
+    return {
+      x: (a2 * (b.y - c.y) + b2 * (c.y - a.y) + c2 * (a.y - b.y)) / d,
+      y: (a2 * (c.x - b.x) + b2 * (a.x - c.x) + c2 * (b.x - a.x)) / d
+    };
+  }
+
+  // ---- 図 ----
+  function houseSVG(p, color, label, opacity){
+    const x = px(p.x), y = py(p.y);
+    return `<g opacity="${opacity}">
+      <polygon points="${x - 15},${y - 3} ${x},${y - 17} ${x + 15},${y - 3}" fill="${color}"/>
+      <rect x="${x - 11}" y="${y - 3}" width="22" height="17" rx="2" fill="${color}" opacity="0.85"/>
+      <circle cx="${x}" cy="${y}" r="3.6" fill="#fff" stroke="${color}" stroke-width="2"/>
+      <text x="${x}" y="${y + 32}" text-anchor="middle" font-size="14" font-weight="700" fill="${color}">${label}さんの家</text>
+    </g>`;
+  }
+  function lineSVG(seg, color, width, dash){
+    return `<line x1="${px(seg[0].x)}" y1="${py(seg[0].y)}" x2="${px(seg[1].x)}" y2="${py(seg[1].y)}"
+      stroke="${color}" stroke-width="${width}" ${dash ? `stroke-dasharray="${dash}"` : ''} stroke-linecap="round"/>`;
+  }
+  // 垂直の印（直角マーク）
+  function rightAngleSVG(b, color){
+    const s = 0.3;
+    const p0 = { x:b.mid.x + b.ux * s,           y:b.mid.y + b.uy * s };
+    const p1 = { x:p0.x + b.dx * s,              y:p0.y + b.dy * s };
+    const p2 = { x:b.mid.x + b.dx * s,           y:b.mid.y + b.dy * s };
+    return `<polyline points="${px(p0.x)},${py(p0.y)} ${px(p1.x)},${py(p1.y)} ${px(p2.x)},${py(p2.y)}"
+      fill="none" stroke="${color}" stroke-width="2"/>`;
+  }
+
+  function drawFigure(){
+    const s = [];
+    s.push(`<defs><clipPath id="mapclip"><rect x="${PAD}" y="${PAD}" width="${X_MAX * SCALE}" height="${Y_MAX * SCALE}"/></clipPath></defs>`);
+    s.push(`<rect x="${PAD}" y="${PAD}" width="${X_MAX * SCALE}" height="${Y_MAX * SCALE}" fill="#F7FAF7" stroke="var(--line-strong)"/>`);
+    for(let i = 1; i < X_MAX; i++) s.push(`<line x1="${px(i)}" y1="${PAD}" x2="${px(i)}" y2="${H - PAD}" stroke="#E3EAE3" stroke-width="1"/>`);
+    for(let j = 1; j * 1 < Y_MAX; j++) s.push(`<line x1="${PAD}" y1="${py(j)}" x2="${W - PAD}" y2="${py(j)}" stroke="#E3EAE3" stroke-width="1"/>`);
+
+    const g = [];   // 地図の枠で切り取る図形
+    const A = houses.A, B = houses.B, C = houses.C;
+    const bAB = bisector(A, B), bBC = bisector(B, C), bCA = bisector(C, A);
+    const O = circumcenter(A, B, C);
+
+    // level 3 以降：3軒を結んだ三角形
+    if(level >= 3){
+      g.push(`<polygon points="${px(A.x)},${py(A.y)} ${px(B.x)},${py(B.y)} ${px(C.x)},${py(C.y)}"
+        fill="#C74700" fill-opacity="0.05" stroke="#B9C2CF" stroke-width="1.5" stroke-dasharray="4 4"/>`);
+    }
+
+    // level 0〜2：生徒が打った点
+    if(level <= 2){
+      dots.forEach(d => {
+        g.push(`<circle cx="${px(d.x)}" cy="${py(d.y)}" r="6" fill="${d.ok ? 'var(--ok)' : 'var(--miss)'}"
+          stroke="#fff" stroke-width="2" opacity="${level === 0 ? 1 : 0.55}"/>`);
+      });
+      // 直前に打った点から2軒への距離
+      if(level === 0 && lastTap){
+        g.push(`<line x1="${px(lastTap.x)}" y1="${py(lastTap.y)}" x2="${px(A.x)}" y2="${py(A.y)}" stroke="var(--colA)" stroke-width="2" stroke-dasharray="5 4"/>`);
+        g.push(`<line x1="${px(lastTap.x)}" y1="${py(lastTap.y)}" x2="${px(B.x)}" y2="${py(B.y)}" stroke="var(--colB)" stroke-width="2" stroke-dasharray="5 4"/>`);
+      }
+    }
+
+    // level 1 以降：ABの垂直二等分線
+    if(level >= 1 && bAB) g.push(lineSVG(bAB.seg, '#0F172A', 2.5));
+    // level 2〜3：中点と直角の印（線が増える段階では消して見やすくする）
+    if(level >= 2 && level <= 3 && bAB){
+      g.push(`<line x1="${px(A.x)}" y1="${py(A.y)}" x2="${px(B.x)}" y2="${py(B.y)}" stroke="#94A3B8" stroke-width="2"/>`);
+      g.push(rightAngleSVG(bAB, '#0F172A'));
+      g.push(`<circle cx="${px(bAB.mid.x)}" cy="${py(bAB.mid.y)}" r="4.5" fill="#0F172A"/>`);
+      g.push(`<text x="${px(bAB.mid.x) + 8}" y="${py(bAB.mid.y) - 8}" font-size="13" font-weight="700" fill="#0F172A">中点</text>`);
+    }
+    // level 4 以降：BCの垂直二等分線と交点O
+    if(level >= 4 && bBC) g.push(lineSVG(bBC.seg, '#0F172A', 2.5));
+    // level 5 以降：3本目（CA）も同じ点を通る
+    if(level >= 5 && bCA) g.push(lineSVG(bCA.seg, '#64748B', 2, '7 5'));
+    // level 5 以降：Oから3軒への距離
+    if(level >= 5 && O){
+      [[A, 'var(--colA)'], [B, 'var(--colB)'], [C, 'var(--colC)']].forEach(([p, col]) => {
+        g.push(`<line x1="${px(O.x)}" y1="${py(O.y)}" x2="${px(p.x)}" y2="${py(p.y)}" stroke="${col}" stroke-width="2.5"/>`);
+      });
+    }
+    // level 6：外接円
+    if(level >= 6 && O){
+      const R = dist(O, A);
+      g.push(`<circle cx="${px(O.x)}" cy="${py(O.y)}" r="${R * SCALE}" fill="none" stroke="var(--orange-700)" stroke-width="3"/>`);
+      const ty = Math.max(PAD + 18, py(O.y + R) - 8);
+      g.push(`<text x="${Math.min(W - PAD - 40, px(O.x) + 10)}" y="${ty}" font-size="14" font-weight="700" fill="var(--orange-700)">外接円</text>`);
+    }
+    // level 4 以降：交点O
+    if(level >= 4 && O){
+      g.push(`<circle cx="${px(O.x)}" cy="${py(O.y)}" r="8" fill="var(--orange-800)" stroke="#fff" stroke-width="2.5"/>`);
+      g.push(`<text x="${px(O.x) + 14}" y="${py(O.y) - 10}" font-size="15" font-weight="700" fill="var(--orange-800)">${level >= 6 ? 'O（外心）' : 'O'}</text>`);
+    }
+
+    // 家
+    g.push(houseSVG(A, 'var(--colA)', 'A', 1));
+    g.push(houseSVG(B, 'var(--colB)', 'B', 1));
+    if(level >= 3) g.push(houseSVG(C, 'var(--colC)', 'C', 1));
+
+    s.push(`<g clip-path="url(#mapclip)">${g.join('')}</g>`);
+
+    // 縮尺（1マス = 100 m）
+    const sx = PAD + 12, sy = H - PAD - 14;
+    s.push(`<g opacity="0.8">
+      <line x1="${sx}" y1="${sy}" x2="${sx + SCALE}" y2="${sy}" stroke="#475569" stroke-width="2"/>
+      <line x1="${sx}" y1="${sy - 4}" x2="${sx}" y2="${sy + 4}" stroke="#475569" stroke-width="2"/>
+      <line x1="${sx + SCALE}" y1="${sy - 4}" x2="${sx + SCALE}" y2="${sy + 4}" stroke="#475569" stroke-width="2"/>
+      <text x="${sx + SCALE + 8}" y="${sy + 5}" font-size="12" fill="#475569">1マス＝100 m</text>
+    </g>`);
+
+    $('figure').innerHTML = `<svg id="map" class="${level >= 3 ? 'draggable' : ''}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${s.join('')}</svg>`;
+    $('figHint').textContent = level === 0
+      ? '地図をタップ（クリック）すると、そこに点が打てます。'
+      : (level >= 3 ? '家をドラッグすると動かせます。' : '');
+  }
+
+  // ---- 思考のステップ ----
+  function buildSteps(){
+    return [
+      { level:1, body:`打った点をよく見ると、<strong>まっすぐ一列に並んでいます</strong>。その並びに沿って直線を引いてみます。` },
+      { level:2, body:`この直線は、線分ABの<strong>中点</strong>を通り、ABと<strong>垂直</strong>に交わっています。これを線分ABの<strong>垂直二等分線</strong>といいます。<br>→ 垂直二等分線上の点は、<span class="tagA">A</span>、<span class="tagB">B</span> から等しい距離にある。` },
+      { level:3, body:`<span class="tagC">Cさん</span>の家が加わりました。3軒から等しい距離にある場所は、<span class="tagA">A</span>と<span class="tagB">B</span>からも等しいので、<strong>この直線の上のどこか</strong>にあるはずです。` },
+      { level:4, body:`同じように、<span class="tagB">B</span>と<span class="tagC">C</span>から等しい距離の場所＝線分BCの垂直二等分線を引きます。2本の交点を <span class="mono">O</span> とします。` },
+      { level:5, body:`<span class="mono">O</span> は ABの垂直二等分線上だから <span class="mono">OA＝OB</span>。BCの垂直二等分線上だから <span class="mono">OB＝OC</span>。<br>よって <strong>OA＝OB＝OC</strong>。3本目（CA）の垂直二等分線も、必ずこの <span class="mono">O</span> を通ります。` },
+      { level:6, body:`<span class="mono">O</span> を中心に半径 <span class="mono">OA</span> の円をかくと、<strong>3軒すべてを通ります</strong>。この円を三角形の<strong>外接円</strong>、中心 <span class="mono">O</span> を<strong>外心</strong>といいます。` }
+    ];
+  }
+
+  function renderSteps(){
+    const steps = buildSteps();
+    $('steps').innerHTML = steps.map((s, i) =>
+      `<div class="step${s.level > level ? ' dim' : ''}" data-level="${s.level}">
+         <div class="step-num">${i + 1}</div><div class="step-body">${s.body}</div>
+       </div>`).join('');
+    $('steps').querySelectorAll('.step').forEach(el => el.addEventListener('click', () => goTo(+el.dataset.level)));
+    $('progress').textContent = LEVEL_LABELS[level];
+    $('prevBtn').disabled = level <= 0;
+    $('nextBtn').disabled = level >= MAX_LEVEL || (level === 0 && okCount() < NEED_DOTS);
+
+    const ans = $('answer');
+    if(level >= MAX_LEVEL){
+      ans.classList.remove('pending');
+      $('answerValue').innerHTML = `3軒の家から等しい距離にある場所は、<span class="big">2辺の垂直二等分線の交点</span>。<br>
+        この点を三角形の<span class="big">外心</span>といい、外心を中心にすると3軒すべてを通る円（<span class="big">外接円</span>）がかけます。`;
+    } else {
+      ans.classList.add('pending');
+      $('answerValue').textContent = 'ステップを最後まで進めると表示されます';
+    }
+    $('exploreCard').style.display = level >= 3 ? '' : 'none';
+  }
+
+  function okCount(){ return dots.filter(d => d.ok).length; }
+
+  // ---- 下のパネル（タップの判定／距離くらべ）----
+  function renderPanel(){
+    const p = $('panel');
+    if(level === 0){
+      let html = '';
+      if(lastTap){
+        const dA = dist(lastTap, houses.A), dB = dist(lastTap, houses.B), diff = Math.abs(dA - dB);
+        const ok = diff <= TOL;
+        html += `<div class="feedback">
+          <span class="tagA">Aまで 約${meters(dA)} m</span>　/　<span class="tagB">Bまで 約${meters(dB)} m</span><br>
+          ちがい 約${meters(diff)} m　<span class="verdict ${ok ? 'ok' : 'miss'}">${ok ? '→ 等しいとみなせます' : '→ まだそろっていません'}</span>
+        </div>`;
+      } else {
+        html += `<div class="feedback">地図の上で、<strong>Aさん・Bさんの家から同じ距離</strong>だと思うところをタップしてください。</div>`;
+      }
+      html += `<p class="count">等しいとみなせた点：<strong>${okCount()} 個</strong>（${NEED_DOTS} 個そろうと次へ進めます）
+        　<button class="btn" id="clearBtn" style="padding:4px 10px;font-size:13px">打った点を消す</button></p>`;
+      if(missCount >= 5 && okCount() === 0){
+        html += `<div class="warn">ヒント：まず、2軒の<strong>ちょうど真ん中</strong>をねらってみましょう。そのあと、そこから上や下に離れたところも試してみてください。</div>`;
+      }
+      p.innerHTML = html;
+      const c = $('clearBtn');
+      if(c) c.addEventListener('click', () => { dots = []; lastTap = null; missCount = 0; render(); });
+      return;
+    }
+
+    if(level >= 5){
+      const O = circumcenter(houses.A, houses.B, houses.C);
+      if(!O){ p.innerHTML = `<div class="warn">3軒が一直線に並んでいると、等しい距離の場所は見つかりません。家を動かしてみましょう。</div>`; return; }
+      const ds = [
+        { name:'OA', d:dist(O, houses.A), col:'var(--colA)' },
+        { name:'OB', d:dist(O, houses.B), col:'var(--colB)' },
+        { name:'OC', d:dist(O, houses.C), col:'var(--colC)' }
+      ];
+      const max = Math.max.apply(null, ds.map(v => v.d)) || 1;
+      p.innerHTML = `<p class="section-title">Oから3軒までの距離</p>
+        <div class="bars">${ds.map(v => `
+          <div class="bar-row"><span class="name" style="color:${v.col}">${v.name}</span>
+            <span class="track"><span class="fill" style="width:${v.d / max * 100}%;background:${v.col}"></span></span>
+            <span class="len">約${meters(v.d)} m</span></div>`).join('')}
+        </div>
+        <p class="count">3本ともぴったり同じ長さです。家を動かしても、そろったままかどうか確かめてみましょう。</p>`;
+      return;
+    }
+
+    if(level >= 1 && level <= 2){
+      p.innerHTML = `<p class="count">打った点：${dots.length} 個（うち等しいとみなせた点 ${okCount()} 個）。点は直線の上に並んでいますか。</p>`;
+      return;
+    }
+    p.innerHTML = `<p class="count">3軒から等しい距離にある場所は、どこにあるでしょう。</p>`;
+  }
+
+  // ---- 操作 ----
+  function goTo(n){
+    level = Math.max(0, Math.min(MAX_LEVEL, n));
+    if(level === 0 && okCount() < NEED_DOTS) { /* 点を打ち直す段階に戻る */ }
+    render();
+  }
+  function render(){ drawFigure(); renderSteps(); renderPanel(); }
+
+  // 画面の座標 → 地図の座標
+  function toMath(evt){
+    const svg = $('map');
+    const r = svg.getBoundingClientRect();
+    const sx = (evt.clientX - r.left) * (W / r.width);
+    const sy = (evt.clientY - r.top) * (H / r.height);
+    return { x:(sx - PAD) / SCALE, y:Y_MAX - (sy - PAD) / SCALE };
+  }
+  function nearHouse(m){
+    const keys = level >= 3 ? ['A', 'B', 'C'] : ['A', 'B'];
+    for(const k of keys) if(dist(m, houses[k]) < 0.45) return k;
+    return null;
+  }
+
+  const fig = $('figure');
+  // 点を打つのは click（マウスでもタッチでも確実に起きる）
+  fig.addEventListener('click', evt => {
+    if(level !== 0 || !$('map')) return;
+    const m = toMath(evt);
+    if(m.x < 0 || m.x > X_MAX || m.y < 0 || m.y > Y_MAX) return;
+    if(nearHouse(m)) return;                   // 家の上は点を打たない
+    const diff = Math.abs(dist(m, houses.A) - dist(m, houses.B));
+    const ok = diff <= TOL;
+    if(!ok) missCount++;
+    dots.push({ x:m.x, y:m.y, ok });
+    if(dots.length > 12) dots.shift();
+    lastTap = { x:m.x, y:m.y };
+    render();
+  });
+  // 家を動かすのは pointer（指でもマウスでも同じように扱える）
+  fig.addEventListener('pointerdown', evt => {
+    if(level < 3 || !$('map')) return;
+    const m = toMath(evt);
+    const k = nearHouse(m);
+    if(k){
+      drag = k;
+      try { $('map').setPointerCapture(evt.pointerId); } catch(e){ /* 対応していない環境は無視 */ }
+      evt.preventDefault();
+    }
+  });
+  fig.addEventListener('pointermove', evt => {
+    if(!drag || !$('map')) return;
+    const m = toMath(evt);
+    houses[drag] = {
+      x: Math.min(X_MAX - 0.4, Math.max(0.4, m.x)),
+      y: Math.min(Y_MAX - 0.4, Math.max(0.5, m.y))
+    };
+    render();
+    evt.preventDefault();
+  });
+  ['pointerup', 'pointercancel'].forEach(ev => fig.addEventListener(ev, () => { drag = null; }));
+
+  document.querySelectorAll('.presets button').forEach(btn => btn.addEventListener('click', () => {
+    setHouses(PRESETS[+btn.dataset.preset]);
+    dots = []; lastTap = null; missCount = 0;
+    render();
+  }));
+  $('prevBtn').addEventListener('click', () => goTo(level - 1));
+  $('nextBtn').addEventListener('click', () => goTo(level + 1));
+
+  render();
+})();
+</script>
+</body>
+</html>

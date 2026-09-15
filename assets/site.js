@@ -45,8 +45,9 @@
     })
     .map(e => e.x);
   const itemsFor = (list, subject, unit) => byOrder(list.filter(x => !x.common && belongs(x, subject, unit)));
-  // どの単元でも使える振り返りGEM（common: true）
-  const commonGems = () => byOrder(D.gems.filter(g => g.common));
+  // どの単元でも使えるGEM（common: true）。kind:"hint" はヒント用、それ以外はふり返り用
+  const commonGems = kind => byOrder(D.gems.filter(g => g.common && (kind === 'hint' ? g.kind === 'hint' : g.kind !== 'hint')));
+  const hasCommonGem = () => D.gems.some(g => g.common);
   function counts(subject, unit){
     return {
       apps:   itemsFor(D.apps,   subject, unit).length,
@@ -94,7 +95,7 @@
   function gemCard(g){
     const label = `${g.title}（Geminiが新しいタブで開きます）`;
     return `<a class="card" href="${esc(g.url)}" target="_blank" rel="noopener" aria-label="${esc(label)}">
-      <span class="tag">GEM</span>
+      <span class="tag">${g.kind === 'hint' ? 'ヒント' : 'GEM'}</span>
       <h3>${esc(g.title)}</h3>
       ${g.description ? `<p>${esc(g.description)}</p>` : ''}
     </a>`;
@@ -155,12 +156,19 @@
         url: (g.s && g.u) ? unitUrl(g.s, g.u) : (g.s ? subjectUrl(g.s) : '')
       });
     });
+    // どの単元でも使えるGEMは、追加日と種類（ヒント／振り返り）ごとにまとめる
     const commonByDate = new Map();
-    commonGems().forEach(g => { if(g.added) commonByDate.set(g.added, (commonByDate.get(g.added) || 0) + 1); });
-    commonByDate.forEach((n, date) => list.push({
-      date, kind: '教材追加', notice: false,
-      text: `どの単元でも使える「振り返りGEM」を${n}件追加しました`, url: 'furikaeri.html'
-    }));
+    D.gems.filter(g => g.common && g.added).forEach(g => {
+      const key = `${g.added}|${g.kind === 'hint' ? 'ヒントGEM' : '振り返りGEM'}`;
+      commonByDate.set(key, (commonByDate.get(key) || 0) + 1);
+    });
+    commonByDate.forEach((n, key) => {
+      const [date, label] = key.split('|');
+      list.push({
+        date, kind: '教材追加', notice: false,
+        text: `どの単元でも使える「${label}」を${n}件追加しました`, url: 'furikaeri.html'
+      });
+    });
     D.topics.forEach((t, i) => {
       if(!t.added) return;
       list.push({ date: t.added, kind: '数学いろいろ', notice: false, text: `「${t.title}」を追加しました`, url: 'iroiro.html#' + topicId(i) });
@@ -210,10 +218,10 @@
         <span class="chev" aria-hidden="true">›</span>
       </a>`;
     });
-    if(commonGems().length) subjects.push(`<a class="hero-btn iroiro" href="furikaeri.html">
+    if(hasCommonGem()) subjects.push(`<a class="hero-btn iroiro" href="furikaeri.html">
       <span class="label">
-        <span class="name">振り返りGEM</span>
-        <span class="meta">どの単元でも使える・AIとふり返る</span>
+        <span class="name">学習サポートGEM</span>
+        <span class="meta">どの単元でも使える・AIがヒントとふり返りを手伝う</span>
       </span>
       <span class="chev" aria-hidden="true">›</span>
     </a>`);
@@ -330,16 +338,21 @@
       document.getElementById('gemSection').innerHTML = gems.length ? gridOr(gems, gemCard, '') : '';
     }
     const furikaeriLink = document.getElementById('furikaeriLink');
-    if(furikaeriLink) furikaeriLink.hidden = !commonGems().length;
+    if(furikaeriLink) furikaeriLink.hidden = !hasCommonGem();
     const i = s.units.indexOf(u);
     const prev = s.units[i - 1], next = s.units[i + 1];
     nav.innerHTML = `<span>${prev ? `<a href="${unitUrl(s, prev)}">← ${esc(prev.name)}</a>` : ''}</span>
       <span>${next ? `<a href="${unitUrl(s, next)}">${esc(next.name)} →</a>` : ''}</span>`;
   }
 
-  // ---- 振り返りGEMページ ----
-  function renderFurikaeriPage(commonId, unitWrapId, unitId){
-    document.getElementById(commonId).innerHTML = gridOr(commonGems(), gemCard, '振り返りGEMは準備中です。');
+  // ---- 学習サポートGEMページ ----
+  function renderFurikaeriPage(){
+    // 問題を解いているときに使うGEM（無ければ欄ごと非表示）
+    const hints = commonGems('hint');
+    document.getElementById('hintWrap').hidden = !hints.length;
+    document.getElementById('hintGems').innerHTML = hints.length ? `<div class="grid">${hints.map(gemCard).join('')}</div>` : '';
+    // 学習をふり返るときに使うGEM
+    document.getElementById('commonGems').innerHTML = gridOr(commonGems(), gemCard, '振り返りGEMは準備中です。');
     // 単元専用のGEMがある単元へのリンク（カリキュラムの順）
     const cards = [];
     D.curriculum.forEach(s => s.units.forEach(u => {
@@ -350,8 +363,8 @@
         <span class="meta">振り返りGEM ${n}件</span>
       </a>`);
     }));
-    document.getElementById(unitWrapId).hidden = !cards.length;
-    document.getElementById(unitId).innerHTML = cards.length ? `<div class="grid">${cards.join('')}</div>` : '';
+    document.getElementById('unitGemWrap').hidden = !cards.length;
+    document.getElementById('unitGems').innerHTML = cards.length ? `<div class="grid">${cards.join('')}</div>` : '';
   }
 
   // データの科目名・単元名がカリキュラムに無い場合は console に警告（表示はされない）

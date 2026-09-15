@@ -3,11 +3,23 @@
 // order・added の使い方はアプリ・プリントと同じです。
 //
 // ・どの単元でも使えるGEM … common: true と書く（subject・unit は不要）。
-//   「振り返りGEM」ページ（furikaeri.html）に表示されます。
+//   「学習サポートGEM」ページ（furikaeri.html）に表示されます。
+//   kind: "hint" と書くと「問題を解いているとき」の欄に、書かなければ「ふり返るとき」の欄に入ります。
 // ・単元専用のGEM … subject・unit を書く。その単元ページの「振り返りGEM」欄に表示されます
 //   （GEMが無い単元では欄ごと表示されません）。
 const GEM_DATA = [
-  // ---- どの単元でも使えるGEM ----
+  // ---- 問題を解いているときに使うGEM（どの単元でも使える） ----
+  {
+    common: true,
+    kind: "hint",
+    order: 10,
+    title: "ヒントGEM",
+    description: "問題を解いていて行きづまったときに。答えは教えずに、次の一歩のヒントを出してくれます。ノートや問題の写真をアップロードして聞くこともできます。",
+    url: "https://gemini.google.com/gem/1mzbQvtVaxJ_QrBRrkXaEp8gBYQe9gqB-?usp=sharing",
+    added: "2026-09-14"
+  },
+
+  // ---- 学習をふり返るときに使うGEM（どの単元でも使える） ----
   {
     common: true,
     order: 10,

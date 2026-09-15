@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>振り返りGEM｜数学学習サイト</title>
+<title>学習サポートGEM｜数学学習サイト</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
@@ -17,7 +17,7 @@
     <p class="site-title"><a href="index.html">数学学習サイト</a></p>
     <nav class="site-nav" aria-label="サイト内">
       <a href="index.html#subjects">科目から探す</a>
-      <a href="furikaeri.html" aria-current="page">振り返りGEM</a>
+      <a href="furikaeri.html" aria-current="page">学習サポートGEM</a>
       <a href="iroiro.html">数学いろいろ</a>
     </nav>
   </div>
@@ -25,16 +25,24 @@
 
 <div class="wrap">
 
-  <nav class="breadcrumb" aria-label="パンくずナビゲーション"><a href="index.html">トップ</a><span class="sep" aria-hidden="true">›</span><span aria-current="page">振り返りGEM</span></nav>
+  <nav class="breadcrumb" aria-label="パンくずナビゲーション"><a href="index.html">トップ</a><span class="sep" aria-hidden="true">›</span><span aria-current="page">学習サポートGEM</span></nav>
 
   <p class="eyebrow">どの単元でも使える</p>
-  <h1 class="page-title">振り返りGEM</h1>
-  <p class="page-lead">学習をふり返るときに使う、AI（Gemini）のGEMです。どの単元の学習にも使えます。「何ができるようになったか」「どこでつまずいたか」を自分の言葉にしていくことで、自分の学び方を見つめ直す力（メタ認知）を鍛えます。</p>
+  <h1 class="page-title">学習サポートGEM</h1>
+  <p class="page-lead">AI（Gemini）に勉強を手伝ってもらうためのGEMです。どの単元の学習にも使えます。問題を解いていて行きづまったときは「ヒントGEM」、学習が一区切りついたときは「振り返りGEM」を使いましょう。</p>
+
+  <div class="section" id="hintWrap" hidden>
+    <div class="section-head">
+      <h2>問題を解いているとき</h2>
+      <span>答えではなく、次の一歩のヒントをくれます</span>
+    </div>
+    <div id="hintGems"></div>
+  </div>
 
   <div class="section">
     <div class="section-head">
-      <h2>コースを選ぶ</h2>
-      <span>Geminiが新しいタブで開きます。Googleアカウントでのログインが必要です</span>
+      <h2>学習をふり返るとき</h2>
+      <span>コースを選んでください</span>
     </div>
     <div id="commonGems"></div>
   </div>
@@ -45,8 +53,9 @@
     </div>
     <div class="topic">
       <ol class="howto">
-        <li>単元の学習が一区切りついたときや、授業の終わりに開きます。</li>
-        <li>自分に合うコースを選びます。迷ったら Lv.1 から始めて、慣れてきたら上のレベルに挑戦しましょう。</li>
+        <li>ヒントGEMは、問題を解いていて手が止まったときに開きます。分からない問題の写真をアップロードして聞くこともできます。</li>
+        <li>答えだけをもらっても力にはなりません。ヒントをもらったら、もう一度自分で解いてみましょう。</li>
+        <li>振り返りGEMは、単元の学習が一区切りついたときや、授業の終わりに開きます。迷ったら Lv.1 から始めて、慣れてきたら上のレベルに挑戦しましょう。</li>
         <li>AIの質問には、自分の言葉で答えましょう。うまく言えなくても大丈夫です。</li>
         <li>名前や住所など、自分や友だちが特定できることは入力しないでください。</li>
       </ol>
@@ -71,7 +80,7 @@
 <script src="data/gems.js?v=20260911b"></script>
 <script src="assets/site.js?v=20260911b"></script>
 <script>
-  Site.renderFurikaeriPage('commonGems', 'unitGemWrap', 'unitGems');
+  Site.renderFurikaeriPage();
 </script>
 
 </body>
