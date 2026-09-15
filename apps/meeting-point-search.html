@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>どこに集合する？｜数学学習サイト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
+<style>
+  :root{
+    --orange-50:#FFEEE2; --orange-100:#FFDFCA; --orange-400:#FF8D44;
+    --orange-700:#E25100; --orange-800:#C74700; --orange-900:#AC3E00;
+    --ink:#1E293B; --sub:#475569; --line:#D9DEE6; --line-strong:#B9C2CF;
+    --bg:#FBFBFA; --card:#FFFFFF; --focus:#FFD866;
+    --colA:#C74700; --colB:#1D4ED8; --colC:#15803D;
+    --ok:#15803D; --near:#B45309; --far:#64748B;
+    --sp-1:8px; --sp-2:16px; --sp-3:24px; --sp-4:32px; --sp-6:48px;
+    --radius-sm:4px; --radius-md:8px; --radius-pill:999px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.7;}
+  a{color:var(--orange-800);}
+  a:focus-visible, button:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+  .brand-bar{height:6px;background:var(--orange-700);}
+  .site-header{background:var(--card);border-bottom:1px solid var(--line);padding:var(--sp-2);}
+  .site-header .inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;}
+  .site-title{margin:0;font-size:18px;font-weight:700;}
+  .site-title a{color:var(--ink);text-decoration:none;}
+  .back-link{font-size:14px;font-weight:700;}
+  .wrap{max-width:1100px;margin:0 auto;padding:var(--sp-3) var(--sp-2) var(--sp-6);}
+  h1{margin:0 0 4px;font-size:26px;line-height:1.4;}
+  .lead{margin:0 0 var(--sp-3);color:var(--sub);font-size:15px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--sp-2) var(--sp-3);}
+  .card + .card{margin-top:var(--sp-2);}
+  .section-title{font-size:13px;font-weight:700;color:var(--sub);margin:0 0 var(--sp-1);}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;}
+  .presets button, .btn{border:1px solid var(--line);background:#f8fafc;color:var(--ink);padding:8px 14px;border-radius:var(--radius-pill);font-size:14px;cursor:pointer;font-family:inherit;line-height:1.5;}
+  .presets button:hover, .btn:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .presets button.on{background:var(--orange-800);border-color:var(--orange-800);color:#fff;font-weight:700;}
+  .btn.on{background:var(--orange-800);border-color:var(--orange-800);color:#fff;font-weight:700;}
+  .btn:disabled{opacity:.35;cursor:default;}
+
+  .main-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:var(--sp-2);align-items:start;}
+  @media (max-width:900px){ .main-grid{grid-template-columns:1fr;} }
+  .figure svg{width:100%;height:auto;display:block;touch-action:none;border-radius:var(--radius-sm);}
+  .figure .hint{font-size:13px;color:var(--sub);margin:var(--sp-1) 0 0;}
+
+  /* 3人の距離 */
+  .dists{display:flex;flex-direction:column;gap:10px;margin-top:var(--sp-1);}
+  .drow{display:flex;align-items:center;gap:8px;font-size:14px;}
+  .drow .who{width:74px;font-weight:700;flex:none;}
+  .drow .track{flex:1;background:#eef2f7;border-radius:var(--radius-pill);height:18px;overflow:hidden;}
+  .drow .fill{height:100%;border-radius:var(--radius-pill);transition:width .15s;}
+  .drow .len{width:78px;text-align:right;flex:none;font-variant-numeric:tabular-nums;font-weight:700;}
+  .drow.farthest .who::after{content:" ← 遠い";font-size:11px;font-weight:400;color:var(--sub);}
+
+  .verdict{margin-top:var(--sp-2);padding:14px 16px;border-radius:var(--radius-md);border:1.5px solid var(--line);background:#f8fafc;}
+  .verdict .diff{font-size:14px;color:var(--sub);}
+  .verdict .diff strong{font-size:22px;color:var(--ink);}
+  .verdict .msg{font-size:17px;font-weight:700;margin-top:2px;}
+  .verdict.ok{border-color:var(--ok);background:#EAF7EE;}
+  .verdict.ok .msg{color:var(--ok);}
+  .verdict.near{border-color:var(--orange-400);background:var(--orange-50);}
+  .verdict.near .msg{color:var(--near);}
+  .verdict.far .msg{color:var(--far);}
+  .verdict.empty{opacity:.7;}
+
+  .best{margin-top:var(--sp-1);font-size:14px;color:var(--sub);}
+  .best strong{color:var(--ink);}
+  .tagA{color:var(--colA);font-weight:700;} .tagB{color:var(--colB);font-weight:700;} .tagC{color:var(--colC);font-weight:700;}
+  .memo textarea{width:100%;font-family:inherit;font-size:15px;line-height:1.7;padding:10px;border:1px solid var(--line);border-radius:var(--radius-md);resize:vertical;}
+  .memo .out{margin-top:var(--sp-1);font-size:13px;color:var(--sub);white-space:pre-wrap;background:#f8fafc;border:1px solid var(--line);border-radius:var(--radius-md);padding:10px;display:none;}
+  .q{font-size:14px;color:var(--sub);margin:0 0 6px;}
+</style>
+</head>
+<body>
+
+<div class="brand-bar"></div>
+<header class="site-header">
+  <div class="inner">
+    <p class="site-title"><a href="../index.html">数学学習サイト</a></p>
+    <a class="back-link" href="../unit.html?s=mathA&u=zukei-seishitsu">← 単元ページに戻る</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <h1>どこに集合する？</h1>
+  <p class="lead">Aさん・Bさん・Cさんが待ち合わせをします。3人にとって公平な集合場所は、どこでしょう。地図をタップすると、そこから3人の家までの距離が出ます。何度でも動かして、自分が納得できる場所をさがしてください。</p>
+
+  <div class="main-grid">
+    <div>
+      <div class="card figure">
+        <div id="figure"></div>
+        <p class="hint" id="figHint">地図をタップ（クリック）すると、そこが集合場所になります。</p>
+      </div>
+      <div class="card">
+        <p class="section-title">町を変える</p>
+        <div class="presets" id="towns"></div>
+        <p class="section-title" style="margin-top:var(--sp-2)">そのほか</p>
+        <div class="presets">
+          <button class="btn" id="moveHouses">家を動かせるようにする</button>
+          <button class="btn" id="clearTrail">試した跡を消す</button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <p class="section-title">集合場所から3人の家まで</p>
+        <div class="dists" id="dists"></div>
+        <div class="verdict empty" id="verdict">
+          <div class="msg">まだ集合場所が決まっていません</div>
+          <div class="diff">地図をタップして決めてみましょう。</div>
+        </div>
+        <p class="best" id="best"></p>
+      </div>
+
+      <div class="card memo">
+        <p class="section-title">ふりかえり</p>
+        <p class="q">どうやってその場所を見つけましたか。うまくいかなかった場所は、なぜだめでしたか。</p>
+        <textarea id="memo" rows="4" placeholder="例：はじめはまん中あたりにしたけれど、Cさんだけ遠かったので…"></textarea>
+        <div class="presets" style="margin-top:var(--sp-1)">
+          <button class="btn" id="makeText">提出用のテキストをつくる</button>
+          <button class="btn" id="copyText" disabled>コピーする</button>
+        </div>
+        <div class="out" id="out"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  const SCALE = 50, PAD = 16, X_MAX = 12, Y_MAX = 9.6;
+  const W = PAD * 2 + X_MAX * SCALE, H = PAD * 2 + Y_MAX * SCALE;
+  const M_PER_CELL = 100;
+  const OK_DIFF = 0.3;      // 差がこれ以下（約30 m）なら「3人とも同じ」とみなす
+  const NEAR_DIFF = 1.0;    // 差がこれ以下（約100 m）なら「おしい」
+
+  const px = x => PAD + x * SCALE;
+  const py = y => PAD + (Y_MAX - y) * SCALE;
+
+  const TOWNS = [
+    { name:'町①', A:{x:2,   y:2.5}, B:{x:10,  y:3.5}, C:{x:5,   y:8.5} },
+    { name:'町②', A:{x:2.5, y:2.5}, B:{x:9.5, y:2.5}, C:{x:2.5, y:7.5} },
+    { name:'町③', A:{x:2.5, y:4},   B:{x:9.5, y:4},   C:{x:8,   y:6.5} },
+    { name:'町④', A:{x:3,   y:2.2}, B:{x:9,   y:2.2}, C:{x:6,   y:7.4} }
+  ];
+
+  let townIndex = 0;
+  let houses = null;
+  let spot = null;            // 生徒が決めた集合場所
+  let trail = [];             // 試した跡 {x, y, diff}
+  let best = null;            // いちばん差が小さかった記録 {x, y, diff}
+  let houseMode = false;      // 家を動かすモード
+  let drag = null;            // 'spot' または 'A'/'B'/'C'
+
+  const $ = id => document.getElementById(id);
+  const dist = (p, q) => Math.hypot(p.x - q.x, p.y - q.y);
+  const meters = d => Math.round(d * M_PER_CELL / 10) * 10;
+  const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  function loadTown(i){
+    townIndex = i;
+    const t = TOWNS[i];
+    houses = { A:{x:t.A.x, y:t.A.y}, B:{x:t.B.x, y:t.B.y}, C:{x:t.C.x, y:t.C.y} };
+    spot = null; trail = []; best = null;
+    render();
+  }
+
+  function distances(p){
+    return [
+      { key:'A', name:'Aさん', d:dist(p, houses.A), col:'var(--colA)' },
+      { key:'B', name:'Bさん', d:dist(p, houses.B), col:'var(--colB)' },
+      { key:'C', name:'Cさん', d:dist(p, houses.C), col:'var(--colC)' }
+    ];
+  }
+  function diffOf(p){
+    const ds = distances(p).map(v => v.d);
+    return Math.max.apply(null, ds) - Math.min.apply(null, ds);
+  }
+  function colorOfDiff(diff){
+    return diff <= OK_DIFF ? 'var(--ok)' : (diff <= NEAR_DIFF ? 'var(--orange-400)' : '#94A3B8');
+  }
+
+  // ---- 図 ----
+  function houseSVG(p, color, label){
+    const x = px(p.x), y = py(p.y);
+    return `<g>
+      <polygon points="${x - 15},${y - 3} ${x},${y - 17} ${x + 15},${y - 3}" fill="${color}"/>
+      <rect x="${x - 11}" y="${y - 3}" width="22" height="17" rx="2" fill="${color}" opacity="0.85"/>
+      <circle cx="${x}" cy="${y}" r="3.6" fill="#fff" stroke="${color}" stroke-width="2"/>
+      <text x="${x}" y="${y + 32}" text-anchor="middle" font-size="14" font-weight="700" fill="${color}">${label}さんの家</text>
+    </g>`;
+  }
+  function flagSVG(p){
+    const x = px(p.x), y = py(p.y);
+    return `<g>
+      <line x1="${x}" y1="${y}" x2="${x}" y2="${y - 30}" stroke="#0F172A" stroke-width="2.5"/>
+      <polygon points="${x},${y - 30} ${x + 22},${y - 24} ${x},${y - 18}" fill="var(--orange-700)"/>
+      <circle cx="${x}" cy="${y}" r="6" fill="var(--orange-800)" stroke="#fff" stroke-width="2.5"/>
+      <text x="${x}" y="${y + 24}" text-anchor="middle" font-size="13" font-weight="700" fill="var(--orange-800)">集合場所</text>
+    </g>`;
+  }
+
+  function drawFigure(){
+    const s = [];
+    s.push(`<defs><clipPath id="mapclip"><rect x="${PAD}" y="${PAD}" width="${X_MAX * SCALE}" height="${Y_MAX * SCALE}"/></clipPath></defs>`);
+    s.push(`<rect x="${PAD}" y="${PAD}" width="${X_MAX * SCALE}" height="${Y_MAX * SCALE}" fill="#F7FAF7" stroke="var(--line-strong)"/>`);
+    for(let i = 1; i < X_MAX; i++) s.push(`<line x1="${px(i)}" y1="${PAD}" x2="${px(i)}" y2="${H - PAD}" stroke="#E3EAE3" stroke-width="1"/>`);
+    for(let j = 1; j < Y_MAX; j++) s.push(`<line x1="${PAD}" y1="${py(j)}" x2="${W - PAD}" y2="${py(j)}" stroke="#E3EAE3" stroke-width="1"/>`);
+
+    const g = [];
+    // 試した跡（差が小さいほど濃い色）
+    trail.forEach(t => {
+      g.push(`<circle cx="${px(t.x)}" cy="${py(t.y)}" r="4.5" fill="${colorOfDiff(t.diff)}" opacity="0.45"/>`);
+    });
+    // いちばん公平だった場所
+    if(best){
+      g.push(`<path d="M ${px(best.x)} ${py(best.y) - 9} L ${px(best.x) + 2.6} ${py(best.y) - 2.8} L ${px(best.x) + 9} ${py(best.y) - 2.8}
+        L ${px(best.x) + 3.8} ${py(best.y) + 1.4} L ${px(best.x) + 5.8} ${py(best.y) + 8} L ${px(best.x)} ${py(best.y) + 4}
+        L ${px(best.x) - 5.8} ${py(best.y) + 8} L ${px(best.x) - 3.8} ${py(best.y) + 1.4} L ${px(best.x) - 9} ${py(best.y) - 2.8}
+        L ${px(best.x) - 2.6} ${py(best.y) - 2.8} Z" fill="#F59E0B" opacity="0.9"/>`);
+    }
+    // 集合場所から3人の家への線と距離
+    if(spot){
+      distances(spot).forEach(v => {
+        const hp = houses[v.key];
+        g.push(`<line x1="${px(spot.x)}" y1="${py(spot.y)}" x2="${px(hp.x)}" y2="${py(hp.y)}" stroke="${v.col}" stroke-width="2.5"/>`);
+        const mx = (px(spot.x) + px(hp.x)) / 2, my = (py(spot.y) + py(hp.y)) / 2;
+        g.push(`<rect x="${mx - 30}" y="${my - 12}" width="60" height="19" rx="9" fill="#fff" opacity="0.88"/>`);
+        g.push(`<text x="${mx}" y="${my + 2}" text-anchor="middle" font-size="13" font-weight="700" fill="${v.col}">約${meters(v.d)} m</text>`);
+      });
+    }
+    g.push(houseSVG(houses.A, 'var(--colA)', 'A'));
+    g.push(houseSVG(houses.B, 'var(--colB)', 'B'));
+    g.push(houseSVG(houses.C, 'var(--colC)', 'C'));
+    if(spot) g.push(flagSVG(spot));
+
+    s.push(`<g clip-path="url(#mapclip)">${g.join('')}</g>`);
+
+    const sx = PAD + 12, sy = H - PAD - 14;
+    s.push(`<g opacity="0.8">
+      <line x1="${sx}" y1="${sy}" x2="${sx + SCALE}" y2="${sy}" stroke="#475569" stroke-width="2"/>
+      <line x1="${sx}" y1="${sy - 4}" x2="${sx}" y2="${sy + 4}" stroke="#475569" stroke-width="2"/>
+      <line x1="${sx + SCALE}" y1="${sy - 4}" x2="${sx + SCALE}" y2="${sy + 4}" stroke="#475569" stroke-width="2"/>
+      <text x="${sx + SCALE + 8}" y="${sy + 5}" font-size="12" fill="#475569">1マス＝100 m</text>
+    </g>`);
+
+    $('figure').innerHTML = `<svg id="map" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${s.join('')}</svg>`;
+    $('figHint').textContent = houseMode
+      ? '家をドラッグして動かせます。集合場所を決めるときは、もう一度ボタンを押してもどします。'
+      : (spot ? '集合場所の旗をドラッグしても動かせます。ほかの場所もタップして試してみましょう。'
+              : '地図をタップ（クリック）すると、そこが集合場所になります。');
+  }
+
+  // ---- 右の表示 ----
+  function renderPanel(){
+    if(!spot){
+      $('dists').innerHTML = `<p class="best">Aさん・Bさん・Cさんの家までの距離が、ここに出ます。</p>`;
+      $('verdict').className = 'verdict empty';
+      $('verdict').innerHTML = `<div class="msg">まだ集合場所が決まっていません</div>
+        <div class="diff">地図をタップして決めてみましょう。</div>`;
+      $('best').innerHTML = '';
+      return;
+    }
+    const ds = distances(spot);
+    const max = Math.max.apply(null, ds.map(v => v.d)) || 1;
+    const far = ds.reduce((a, b) => a.d >= b.d ? a : b);
+    $('dists').innerHTML = ds.map(v => `
+      <div class="drow${v.key === far.key ? ' farthest' : ''}">
+        <span class="who" style="color:${v.col}">${v.name}</span>
+        <span class="track"><span class="fill" style="width:${v.d / max * 100}%;background:${v.col}"></span></span>
+        <span class="len">約${meters(v.d)} m</span>
+      </div>`).join('');
+
+    const diff = diffOf(spot);
+    const cls = diff <= OK_DIFF ? 'ok' : (diff <= NEAR_DIFF ? 'near' : 'far');
+    const msg = diff <= OK_DIFF ? '3人とも同じ距離になりました'
+              : (diff <= NEAR_DIFF ? 'おしい！あと少しです' : `${far.name}だけ遠くなっています`);
+    $('verdict').className = 'verdict ' + cls;
+    $('verdict').innerHTML = `<div class="msg">${msg}</div>
+      <div class="diff">いちばん遠い人と近い人の差：<strong>約${meters(diff)} m</strong></div>`;
+
+    $('best').innerHTML = best
+      ? `これまででいちばん公平だったのは、差 <strong>約${meters(best.diff)} m</strong>（地図の★の場所）。試した回数：${trail.length} 回`
+      : '';
+  }
+
+  function render(){ drawFigure(); renderPanel(); renderTowns(); }
+
+  function renderTowns(){
+    $('towns').innerHTML = TOWNS.map((t, i) =>
+      `<button data-town="${i}" class="${i === townIndex ? 'on' : ''}">${t.name}</button>`).join('');
+    $('towns').querySelectorAll('button').forEach(b =>
+      b.addEventListener('click', () => loadTown(+b.dataset.town)));
+    $('moveHouses').className = 'btn' + (houseMode ? ' on' : '');
+    $('moveHouses').textContent = houseMode ? '家を動かすのをやめる' : '家を動かせるようにする';
+  }
+
+  function placeSpot(m){
+    spot = { x:m.x, y:m.y };
+    const d = diffOf(spot);
+    trail.push({ x:m.x, y:m.y, diff:d });
+    if(trail.length > 40) trail.shift();
+    if(!best || d < best.diff) best = { x:m.x, y:m.y, diff:d };
+    render();
+  }
+
+  // ---- 操作 ----
+  function toMath(evt){
+    const svg = $('map'), r = svg.getBoundingClientRect();
+    return {
+      x: ((evt.clientX - r.left) * (W / r.width) - PAD) / SCALE,
+      y: Y_MAX - ((evt.clientY - r.top) * (H / r.height) - PAD) / SCALE
+    };
+  }
+  function inMap(m){ return m.x >= 0 && m.x <= X_MAX && m.y >= 0 && m.y <= Y_MAX; }
+  function nearHouse(m){
+    for(const k of ['A', 'B', 'C']) if(dist(m, houses[k]) < 0.45) return k;
+    return null;
+  }
+
+  const fig = $('figure');
+  fig.addEventListener('click', evt => {
+    if(drag || houseMode || !$('map')) return;
+    const m = toMath(evt);
+    if(!inMap(m) || nearHouse(m)) return;
+    placeSpot(m);
+  });
+  fig.addEventListener('pointerdown', evt => {
+    if(!$('map')) return;
+    const m = toMath(evt);
+    if(!inMap(m)) return;
+    if(houseMode){
+      const k = nearHouse(m);
+      if(k){ drag = k; evt.preventDefault(); }
+      return;
+    }
+    if(spot && dist(m, spot) < 0.5){ drag = 'spot'; evt.preventDefault(); }
+  });
+  fig.addEventListener('pointermove', evt => {
+    if(!drag || !$('map')) return;
+    const m = toMath(evt);
+    const p = { x:Math.min(X_MAX - 0.3, Math.max(0.3, m.x)), y:Math.min(Y_MAX - 0.3, Math.max(0.4, m.y)) };
+    if(drag === 'spot'){ spot = p; }
+    else { houses[drag] = p; best = null; trail = []; }   // 家が動いたら、それまでの記録は無効にする
+    render();
+    evt.preventDefault();
+  });
+  ['pointerup', 'pointercancel'].forEach(ev => fig.addEventListener(ev, () => {
+    if(drag === 'spot' && spot){                 // ドラッグで止めた場所も1回の試行として記録
+      const d = diffOf(spot);
+      trail.push({ x:spot.x, y:spot.y, diff:d });
+      if(trail.length > 40) trail.shift();
+      if(!best || d < best.diff) best = { x:spot.x, y:spot.y, diff:d };
+      renderPanel();
+    }
+    drag = null;
+  }));
+
+  $('moveHouses').addEventListener('click', () => { houseMode = !houseMode; render(); });
+  $('clearTrail').addEventListener('click', () => { trail = []; best = null; render(); });
+
+  // ---- ふりかえりの提出用テキスト ----
+  $('makeText').addEventListener('click', () => {
+    const memo = $('memo').value.trim();
+    const text = [
+      '【どこに集合する？】',
+      TOWNS[townIndex].name + '　試した回数：' + trail.length + ' 回',
+      best ? 'いちばん公平だった差：約' + meters(best.diff) + ' m' : 'いちばん公平だった差：まだ記録なし',
+      '見つけ方：' + (memo || '（記入なし）')
+    ].join('\n');
+    $('out').textContent = text;
+    $('out').style.display = 'block';
+    $('copyText').disabled = false;
+  });
+  $('copyText').addEventListener('click', () => {
+    const text = $('out').textContent;
+    const done = () => { $('copyText').textContent = 'コピーしました'; setTimeout(() => { $('copyText').textContent = 'コピーする'; }, 1800); };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else fallback();
+    function fallback(){
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch(e){ alert('コピーできませんでした。文字を選んでコピーしてください。'); }
+      document.body.removeChild(ta);
+    }
+  });
+
+  loadTown(0);
+})();
+</script>
+</body>
+</html>
