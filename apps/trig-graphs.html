@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>三角関数のグラフ（sin・cos・tan）｜数学学習サイト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
+<style>
+  :root{
+    --orange-50:#FFEEE2; --orange-100:#FFDFCA; --orange-400:#FF8D44;
+    --orange-700:#E25100; --orange-800:#C74700; --orange-900:#AC3E00;
+    --ink:#1E293B; --sub:#475569; --line:#D9DEE6; --line-strong:#B9C2CF;
+    --bg:#FBFBFA; --card:#FFFFFF; --focus:#FFD866;
+    --accent:#e63946; --neutral:#94a3b8;
+    --cos:#C74700;      /* 横（cos） */
+    --sin:#1D6FB8;      /* 縦（sin） */
+    --tan:#6D28D9;      /* 傾き（tan） */
+    --sp-1:8px; --sp-2:16px; --sp-3:24px; --sp-4:32px; --sp-6:48px;
+    --radius-sm:4px; --radius-md:8px; --radius-pill:999px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.7;}
+  a{color:var(--orange-800);}
+  a:focus-visible, button:focus-visible, input:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+  .brand-bar{height:6px;background:var(--orange-700);}
+  .site-header{background:var(--card);border-bottom:1px solid var(--line);padding:var(--sp-2);}
+  .site-header .inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;}
+  .site-title{margin:0;font-size:18px;font-weight:700;}
+  .site-title a{color:var(--ink);text-decoration:none;}
+  .back-link{font-size:14px;font-weight:700;}
+  .wrap{max-width:1100px;margin:0 auto;padding:var(--sp-3) var(--sp-2) var(--sp-6);}
+  h1{margin:0 0 4px;font-size:26px;line-height:1.4;}
+  .lead{margin:0 0 var(--sp-3);color:var(--sub);font-size:15px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--sp-2) var(--sp-3);}
+  .card + .card{margin-top:var(--sp-2);}
+  .section-title{font-size:13px;font-weight:700;color:var(--sub);margin:0 0 var(--sp-1);}
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+  .row + .row{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);}
+  .row-label{font-size:13px;font-weight:700;color:var(--sub);flex:none;min-width:104px;}
+
+  .btn{border:1px solid var(--line);background:#f8fafc;color:var(--ink);padding:8px 14px;border-radius:var(--radius-pill);font-size:14px;cursor:pointer;font-family:inherit;line-height:1.4;}
+  .btn:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .btn:disabled{opacity:.35;cursor:default;}
+  .btn.small{padding:6px 12px;font-size:13px;}
+
+  /* 表示する関数の切り替え（押すたびに ON / OFF） */
+  .fnchip{display:inline-flex;align-items:center;gap:8px;border:2px solid var(--line);background:#fff;color:var(--sub);
+          padding:9px 18px;border-radius:var(--radius-pill);font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .fnchip .dot{width:14px;height:14px;border-radius:50%;background:var(--line-strong);flex:none;}
+  .fnchip .mark{font-size:12px;font-weight:700;}
+  .fnchip[data-on="1"]{color:#fff;}
+  .fnchip[data-fn="sin"][data-on="1"]{background:var(--sin);border-color:var(--sin);}
+  .fnchip[data-fn="cos"][data-on="1"]{background:var(--cos);border-color:var(--cos);}
+  .fnchip[data-fn="tan"][data-on="1"]{background:var(--tan);border-color:var(--tan);}
+  .fnchip[data-on="1"] .dot{background:#fff;}
+
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--radius-pill);overflow:hidden;}
+  .seg button{border:0;background:#fff;color:var(--sub);padding:7px 16px;font-size:14px;font-family:inherit;cursor:pointer;}
+  .seg button[aria-pressed="true"]{background:var(--orange-800);color:#fff;font-weight:700;}
+
+  .slider-wrap{flex:1 1 320px;min-width:240px;display:flex;align-items:center;gap:12px;}
+  input[type=range]{flex:1;accent-color:var(--orange-800);height:32px;}
+  .theta-read{font-size:18px;font-weight:800;min-width:88px;text-align:right;font-variant-numeric:tabular-nums;}
+
+  .main-grid{display:grid;grid-template-columns:1.45fr 1fr;gap:var(--sp-2);align-items:start;margin-top:var(--sp-2);}
+  @media (max-width:900px){ .main-grid{grid-template-columns:1fr;} }
+  .figure svg{width:100%;height:auto;display:block;touch-action:none;}
+
+  .stepper{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:var(--sp-2);padding-bottom:12px;border-bottom:1px dashed var(--line);}
+  .stepper .progress{font-size:12px;font-weight:700;color:var(--sub);text-align:center;}
+  .steps{display:flex;flex-direction:column;gap:10px;}
+  .step{display:flex;gap:10px;padding:6px 8px;margin:0 -8px;border-radius:var(--radius-md);cursor:pointer;}
+  .step:hover{background:#f8fafc;}
+  .step.dim{opacity:.4;}
+  .step-num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .step.dim .step-num{background:#cbd5e1;}
+  .step-body{font-size:14px;line-height:1.75;}
+  .mono{font-family:Consolas,monospace;background:#f1f5f9;padding:1px 6px;border-radius:5px;}
+  .c-sin{color:var(--sin);font-weight:700;}
+  .c-cos{color:var(--cos);font-weight:700;}
+  .c-tan{color:var(--tan);font-weight:700;}
+
+  /* 分数は必ず横線の縦組みで表示する */
+  .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25;margin:0 2px;}
+  .frac .num, .frac .den{padding:0 4px;white-space:nowrap;}
+  .frac .bar{display:block;width:100%;height:2px;background:currentColor;margin:2px 0;}
+  .neg{display:inline-flex;align-items:center;gap:3px;vertical-align:middle;}
+
+  .values{display:flex;flex-direction:column;gap:8px;margin-top:var(--sp-2);}
+  .vrow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-left-width:6px;border-radius:var(--radius-md);padding:8px 12px;background:#fff;}
+  .vrow[data-fn="sin"]{border-left-color:var(--sin);}
+  .vrow[data-fn="cos"]{border-left-color:var(--cos);}
+  .vrow[data-fn="tan"]{border-left-color:var(--tan);}
+  .vrow .name{font-weight:700;font-size:15px;min-width:92px;}
+  .vrow .exact{font-size:17px;font-weight:700;}
+  .vrow .approx{margin-left:auto;font-size:13px;color:var(--sub);font-variant-numeric:tabular-nums;}
+
+  .answer{margin-top:var(--sp-2);padding:14px 16px;border:1.5px solid var(--orange-800);border-radius:var(--radius-md);background:linear-gradient(135deg,#fff3ea,#fff);}
+  .answer .label{font-size:12px;font-weight:700;color:var(--orange-800);}
+  .answer.pending{opacity:.6;}
+  .answer ul{margin:6px 0 0;padding-left:1.2em;}
+  .answer li{margin-bottom:4px;font-size:15px;}
+  .note{font-size:13px;color:var(--sub);margin-top:10px;}
+  .warn{background:#fff3cd;border:1px solid #ffe08a;color:#7a5b00;padding:10px 14px;border-radius:var(--radius-md);font-size:14px;margin-top:var(--sp-1);}
+
+  .quiz{margin-top:var(--sp-3);}
+  .q{border-top:1px dashed var(--line);padding-top:14px;margin-top:14px;}
+  .q:first-of-type{border-top:0;padding-top:0;margin-top:0;}
+  .q .qtext{font-size:15px;font-weight:700;margin:0 0 8px;}
+  .opts{display:flex;flex-wrap:wrap;gap:8px;}
+  .opts button{border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 14px;border-radius:var(--radius-md);font-size:15px;cursor:pointer;font-family:inherit;}
+  .opts button:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .opts button.ok{border-color:#15803d;background:#dcfce7;font-weight:700;}
+  .opts button.ng{border-color:#b91c1c;background:#fee2e2;}
+  .fb{font-size:14px;margin-top:8px;}
+  .fb.ok{color:#15803d;font-weight:700;}
+  .fb.ng{color:#b91c1c;font-weight:700;}
+</style>
+</head>
+<body>
+
+<div class="brand-bar"></div>
+<header class="site-header">
+  <div class="inner">
+    <p class="site-title"><a href="../index.html">数学学習サイト</a></p>
+    <a class="back-link" href="../unit.html?s=math2&u=sankaku-kansu">← 単元ページに戻る</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <h1>三角関数のグラフ（sin・cos・tan）</h1>
+  <p class="lead">単位円の上の点 P を自分で動かすと、その値がそのままの高さで右へ運ばれてグラフになります。sin・cos・tan を 1 つずつ見ることも、3 つ同時に重ねて見ることもできます。</p>
+
+  <div class="card">
+    <div class="row">
+      <span class="row-label">表示する関数</span>
+      <button class="fnchip" data-fn="sin" data-on="1"><span class="dot"></span>y ＝ sin θ</button>
+      <button class="fnchip" data-fn="cos" data-on="0"><span class="dot"></span>y ＝ cos θ</button>
+      <button class="fnchip" data-fn="tan" data-on="0"><span class="dot"></span>y ＝ tan θ</button>
+      <button class="btn small" id="allBtn">3 つ同時に見る</button>
+      <button class="btn small" id="oneBtn">sin だけに戻す</button>
+    </div>
+    <div class="row">
+      <span class="row-label">角 θ を動かす</span>
+      <div class="slider-wrap">
+        <input type="range" id="thetaRange" min="0" max="720" step="1" value="30" aria-label="角θ">
+        <span class="theta-read" id="thetaRead">30°</span>
+      </div>
+      <button class="btn small" data-jump="0">0°</button>
+      <button class="btn small" data-jump="30">30°</button>
+      <button class="btn small" data-jump="45">45°</button>
+      <button class="btn small" data-jump="60">60°</button>
+      <button class="btn small" data-jump="90">90°</button>
+      <button class="btn small" data-jump="180">180°</button>
+      <button class="btn small" data-jump="270">270°</button>
+      <button class="btn small" data-jump="360">360°</button>
+    </div>
+    <div class="row">
+      <span class="row-label">角の表し方</span>
+      <div class="seg" id="unitSeg">
+        <button type="button" data-unit="deg" aria-pressed="true">度数法（°）</button>
+        <button type="button" data-unit="rad" aria-pressed="false">弧度法（π）</button>
+      </div>
+      <button class="btn small" id="playBtn">▶ ゆっくり自動でなぞる</button>
+      <button class="btn small" id="resetBtn">θ ＝ 0° に戻す</button>
+    </div>
+    <div id="inputNote"></div>
+  </div>
+
+  <div class="main-grid">
+    <div class="card figure">
+      <p class="section-title">単位円（左）と グラフ（右）</p>
+      <div id="figure"></div>
+      <p class="note">左の円の上の点 P を指やマウスでドラッグしても θ を変えられます。</p>
+    </div>
+
+    <div>
+      <div class="card">
+        <p class="section-title">思考のステップ</p>
+        <div class="stepper">
+          <button class="btn" id="prevBtn">◀ 前へ</button>
+          <span class="progress" id="progress"></span>
+          <button class="btn" id="nextBtn">次へ ▶</button>
+        </div>
+        <div class="steps" id="steps"></div>
+        <div class="values" id="values"></div>
+      </div>
+
+      <div class="answer pending" id="summary">
+        <div class="label">わかったこと</div>
+        <div id="summaryBody">ステップを最後まで進めると表示されます</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card quiz">
+    <p class="section-title">たしかめ（4 問）</p>
+    <div id="quiz"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  const $ = id => document.getElementById(id);
+  const fracHTML = (n, d) => '<span class="frac"><span class="num">' + n + '</span><span class="bar"></span><span class="den">' + d + '</span></span>';
+  // '{分子|分母}' を横線の分数に。'−{分子|分母}' はマイナスを分数の中央にそろえる
+  const mathHTML = s => String(s)
+      .replace(/−\{([^|{}]+)\|([^|{}]+)\}/g, (_, n, d) => '<span class="neg">−' + fracHTML(n, d) + '</span>')
+      .replace(/\{([^|{}]+)\|([^|{}]+)\}/g, (_, n, d) => fracHTML(n, d));
+
+  // ---- 状態 ----
+  const TMAX = 720;                 // θ は 0°〜720°（2 周）まで動かせる
+  const MAX_LEVEL = 4;
+  const LEVEL_LABELS = ['① 単位円と点 P', '② 値を読み取る', '③ 右のグラフへ運ぶ', '④ θ を動かしてなぞる', '⑤ 周期と値域'];
+  let level = 0;
+  let theta = 30;                   // 度
+  let unit = 'deg';                 // 'deg' | 'rad'
+  const on = { sin: true, cos: false, tan: false };
+  let playing = false, playRAF = 0, playPrev = 0;
+
+  const FN = {
+    sin: { label: 'sin', color: 'var(--sin)', raw: '#1D6FB8', f: d => Math.sin(d * Math.PI / 180) },
+    cos: { label: 'cos', color: 'var(--cos)', raw: '#C74700', f: d => Math.cos(d * Math.PI / 180) },
+    tan: { label: 'tan', color: 'var(--tan)', raw: '#6D28D9', f: d => Math.tan(d * Math.PI / 180) }
+  };
+  const activeList = () => ['sin', 'cos', 'tan'].filter(k => on[k]);
+
+  // ---- 角の表示 ----
+  const RAD_LABEL = { 0:'0', 90:'{π|2}', 180:'π', 270:'{3π|2}', 360:'2π', 450:'{5π|2}', 540:'3π', 630:'{7π|2}', 720:'4π' };
+  function thetaText(d){
+    if(unit === 'deg') return d + '°';
+    if(RAD_LABEL[d] !== undefined) return RAD_LABEL[d];
+    // π の分数で表せるものは、約分した形で返す（分母の小さい順に試す）
+    for(const q of [1, 2, 3, 4, 6]){
+      const k = d * q / 180;
+      if(Math.abs(k - Math.round(k)) < 1e-9){
+        const n = Math.round(k);
+        if(n === 0) return '0';
+        const pi = (n === 1 ? 'π' : n + 'π');
+        return q === 1 ? pi : '{' + pi + '|' + q + '}';
+      }
+    }
+    return (d * Math.PI / 180).toFixed(2);
+  }
+  const thetaHTML = d => mathHTML(thetaText(d));
+
+  // ---- 特別な角のちょうどの値 ----
+  const EXACT = {
+    sin:{0:'0',30:'{1|2}',45:'{√2|2}',60:'{√3|2}',90:'1',120:'{√3|2}',135:'{√2|2}',150:'{1|2}',180:'0',
+         210:'−{1|2}',225:'−{√2|2}',240:'−{√3|2}',270:'−1',300:'−{√3|2}',315:'−{√2|2}',330:'−{1|2}'},
+    cos:{0:'1',30:'{√3|2}',45:'{√2|2}',60:'{1|2}',90:'0',120:'−{1|2}',135:'−{√2|2}',150:'−{√3|2}',180:'−1',
+         210:'−{√3|2}',225:'−{√2|2}',240:'−{1|2}',270:'0',300:'{1|2}',315:'{√2|2}',330:'{√3|2}'},
+    tan:{0:'0',30:'{1|√3}',45:'1',60:'√3',90:'なし',120:'−√3',135:'−1',150:'−{1|√3}',180:'0',
+         210:'{1|√3}',225:'1',240:'√3',270:'なし',300:'−√3',315:'−1',330:'−{1|√3}'}
+  };
+  function valueHTML(kind){
+    const d = ((theta % 360) + 360) % 360;
+    const ex = EXACT[kind][d];
+    if(ex !== undefined) return mathHTML(ex);
+    return num(FN[kind].f(theta));
+  }
+  function num(v){
+    if(!isFinite(v)) return 'なし';
+    if(Math.abs(v) > 1000) return (v > 0 ? 'とても大きい' : 'とても小さい');
+    const s = v.toFixed(3);
+    return (s === '-0.000' ? '0.000' : s).replace('-', '−');
+  }
+  const isUndefinedTan = () => (((theta % 180) + 180) % 180) === 90;
+  const undefAngles = () => unit === 'deg' ? '90°、270°…' : mathHTML('{π|2}') + '、' + mathHTML('{3π|2}') + '…';
+
+  // ---- 図の寸法（画面の幅で 2 通り）----
+  let LY = null;
+  function layout(){
+    const w = $('figure').clientWidth || 640;
+    return w < 560
+      ? { W:560, H:310, CX:92, CY:156, R:60, GX0:206, GX1:548, PADT:16, fs:15, fsS:13, dot:5, lw:2.2, labelEvery:180 }
+      : { W:980, H:440, CX:148, CY:218, R:96, GX0:336, GX1:958, PADT:20, fs:17, fsS:14, dot:6, lw:2.6, labelEvery:90 };
+  }
+
+  // SVG の中の分数（π/2 など）
+  function svgFrac(x, y, n, d, size, color){
+    const w = Math.max(String(n).length, String(d).length) * size * 0.34 + 2;
+    return '<text x="' + x + '" y="' + (y - size * 0.28) + '" text-anchor="middle" font-size="' + size + '" fill="' + color + '">' + n + '</text>'
+         + '<line x1="' + (x - w) + '" y1="' + y + '" x2="' + (x + w) + '" y2="' + y + '" stroke="' + color + '" stroke-width="1.2"/>'
+         + '<text x="' + x + '" y="' + (y + size * 1.02) + '" text-anchor="middle" font-size="' + size + '" fill="' + color + '">' + d + '</text>';
+  }
+
+  function drawFigure(){
+    const L = LY = layout();
+    const yMax = Math.min(2.1, (L.CY - L.PADT) / L.R);
+    const cx = u => L.CX + u * L.R;
+    const cy = v => L.CY - v * L.R;
+    const gx = t => L.GX0 + (t / TMAX) * (L.GX1 - L.GX0);
+    const gy = v => L.CY - v * L.R;          // 円と同じ縦の目盛り（だから高さがそのまま運べる）
+
+    const rad = theta * Math.PI / 180;
+    const s = Math.sin(rad), c = Math.cos(rad), t = Math.tan(rad);
+    const px = cx(c), py = cy(s);
+    const g = [];
+
+    g.push('<defs><clipPath id="gclip"><rect x="' + (L.GX0 - 16) + '" y="' + (L.CY - yMax * L.R) + '" width="' + (L.GX1 - L.GX0 + 20) + '" height="' + (2 * yMax * L.R) + '"/></clipPath>'
+          + '<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>');
+    g.push('<rect x="0" y="0" width="' + L.W + '" height="' + L.H + '" fill="#fbfcfe"/>');
+
+    // ===== 左：単位円 =====
+    const cLeft = L.CX - L.R - 26, cRight = L.CX + L.R + 46;
+    g.push('<line x1="' + cLeft + '" y1="' + L.CY + '" x2="' + cRight + '" y2="' + L.CY + '" stroke="#334155" stroke-width="1.4"/>');
+    g.push('<line x1="' + L.CX + '" y1="' + (L.CY - yMax * L.R) + '" x2="' + L.CX + '" y2="' + (L.CY + yMax * L.R) + '" stroke="#334155" stroke-width="1.4"/>');
+    g.push('<circle cx="' + L.CX + '" cy="' + L.CY + '" r="' + L.R + '" fill="none" stroke="#94a3b8" stroke-width="1.6"/>');
+    g.push('<text x="' + (L.CX + L.R) + '" y="' + (L.CY + L.fs + 6) + '" text-anchor="middle" font-size="' + L.fsS + '" fill="#64748b">1</text>');
+    g.push('<text x="' + (L.CX - 8) + '" y="' + (L.CY - L.R + 4) + '" text-anchor="end" font-size="' + L.fsS + '" fill="#64748b">1</text>');
+    g.push('<text x="' + (L.CX - 8) + '" y="' + (L.CY + L.R + 4) + '" text-anchor="end" font-size="' + L.fsS + '" fill="#64748b">−1</text>');
+
+    // θ のうずまき（1 周を超えても分かるように、少しずつ外へ）
+    const spiral = [];
+    for(let a = 0; a <= theta; a += 3){
+      const r0 = L.R * 0.24 + (a / TMAX) * L.R * 0.2;
+      const ar = a * Math.PI / 180;
+      spiral.push((L.CX + r0 * Math.cos(ar)).toFixed(1) + ',' + (L.CY - r0 * Math.sin(ar)).toFixed(1));
+    }
+    if(spiral.length > 1) g.push('<polyline points="' + spiral.join(' ') + '" fill="none" stroke="var(--orange-700)" stroke-width="' + L.lw + '"/>');
+    {
+      const ar = (theta * 0.5) * Math.PI / 180, rr = L.R * 0.40;
+      g.push('<text x="' + (L.CX + rr * Math.cos(ar)).toFixed(1) + '" y="' + (L.CY - rr * Math.sin(ar)).toFixed(1) + '" text-anchor="middle" font-size="' + L.fs + '" font-weight="700" fill="var(--orange-800)">θ</text>');
+    }
+
+    // tan：x ＝ 1 の直線と、OP をのばして交わる点 T
+    const tanVisible = on.tan && level >= 1;
+    if(tanVisible){
+      g.push('<line x1="' + cx(1) + '" y1="' + (L.CY - yMax * L.R) + '" x2="' + cx(1) + '" y2="' + (L.CY + yMax * L.R) + '" stroke="var(--tan)" stroke-width="1.2" stroke-dasharray="4 4" opacity=".75"/>');
+      g.push('<text x="' + (cx(1) + 6) + '" y="' + (L.CY - yMax * L.R + L.fsS + 2) + '" font-size="' + L.fsS + '" fill="var(--tan)">x ＝ 1</text>');
+      if(isFinite(t) && Math.abs(t) <= yMax && Math.abs(c) > 1e-9){
+        const dir = c > 0 ? 1 : -1;
+        g.push('<line x1="' + L.CX + '" y1="' + L.CY + '" x2="' + cx(dir) + '" y2="' + cy(dir * t) + '" stroke="var(--tan)" stroke-width="1.2" stroke-dasharray="3 5" opacity=".8"/>');
+        g.push('<line x1="' + cx(1) + '" y1="' + L.CY + '" x2="' + cx(1) + '" y2="' + cy(t) + '" stroke="var(--tan)" stroke-width="' + (L.lw + 1) + '" stroke-linecap="round"/>');
+        g.push('<circle cx="' + cx(1) + '" cy="' + cy(t) + '" r="' + (L.dot - 1) + '" fill="var(--tan)"/>');
+        g.push('<text x="' + (cx(1) + 8) + '" y="' + (cy(t) - 6) + '" font-size="' + L.fsS + '" font-weight="700" fill="var(--tan)">T</text>');
+      }
+    }
+
+    // 半径 OP と点 P
+    g.push('<line x1="' + L.CX + '" y1="' + L.CY + '" x2="' + px + '" y2="' + py + '" stroke="var(--ink)" stroke-width="' + L.lw + '"/>');
+
+    // 値の読み取り（level 1 以降）
+    if(level >= 1 && on.sin){
+      g.push('<line x1="' + px + '" y1="' + L.CY + '" x2="' + px + '" y2="' + py + '" stroke="var(--sin)" stroke-width="' + (L.lw + 1.4) + '" stroke-linecap="round"/>');
+    }
+    if(level >= 1 && on.cos){
+      g.push('<line x1="' + L.CX + '" y1="' + L.CY + '" x2="' + px + '" y2="' + L.CY + '" stroke="var(--cos)" stroke-width="' + (L.lw + 1.4) + '" stroke-linecap="round"/>');
+    }
+    g.push('<circle cx="' + px + '" cy="' + py + '" r="' + (L.dot + 2) + '" fill="#fff" stroke="var(--ink)" stroke-width="2"/>');
+    g.push('<circle cx="' + px + '" cy="' + py + '" r="' + (L.dot - 1) + '" fill="var(--orange-700)"/>');
+    g.push('<text x="' + (px + 10) + '" y="' + (py - 9) + '" font-size="' + L.fs + '" font-weight="700" fill="var(--ink)">P</text>');
+
+    // cos を「立ち上げる」（横の長さを、そのまま高さに直す）
+    if(level >= 2 && on.cos){
+      const r0 = Math.abs(c) * L.R;
+      if(r0 > 2){
+        const sgn = c >= 0 ? 1 : -1;
+        const sweep = sgn > 0 ? 0 : 1;
+        g.push('<path d="M ' + px + ' ' + L.CY + ' A ' + r0 + ' ' + r0 + ' 0 0 ' + sweep + ' ' + L.CX + ' ' + cy(c) + '" fill="none" stroke="var(--cos)" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#ar)" opacity=".85"/>');
+      }
+      g.push('<line x1="' + L.CX + '" y1="' + L.CY + '" x2="' + L.CX + '" y2="' + cy(c) + '" stroke="var(--cos)" stroke-width="' + (L.lw + 1.4) + '" stroke-linecap="round" opacity=".95"/>');
+    }
+
+    // 仕切り
+    g.push('<line x1="' + (L.GX0 - 46) + '" y1="' + L.PADT + '" x2="' + (L.GX0 - 46) + '" y2="' + (L.H - 6) + '" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="6 6"/>');
+
+    // ===== 右：グラフ =====
+    g.push('<line x1="' + (L.GX0 - 16) + '" y1="' + L.CY + '" x2="' + (L.GX1 + 8) + '" y2="' + L.CY + '" stroke="#334155" stroke-width="1.4" marker-end="url(#ar)"/>');
+    g.push('<line x1="' + L.GX0 + '" y1="' + (L.CY - yMax * L.R) + '" x2="' + L.GX0 + '" y2="' + (L.CY + yMax * L.R) + '" stroke="#334155" stroke-width="1.4"/>');
+    g.push('<text x="' + (L.GX1 + 4) + '" y="' + (L.CY + L.fs + 8) + '" text-anchor="end" font-size="' + L.fsS + '" fill="#64748b">θ</text>');
+    for(const v of [1, -1]){
+      g.push('<line x1="' + (L.GX0 - 5) + '" y1="' + gy(v) + '" x2="' + (L.GX1) + '" y2="' + gy(v) + '" stroke="#e2e8f0" stroke-width="1"/>');
+      g.push('<text x="' + (L.GX0 - 9) + '" y="' + (gy(v) + 5) + '" text-anchor="end" font-size="' + L.fsS + '" fill="#64748b">' + (v > 0 ? '1' : '−1') + '</text>');
+    }
+    for(let a = 0; a <= TMAX; a += 90){
+      const strong = (a % 360 === 0);
+      if(a > 0) g.push('<line x1="' + gx(a) + '" y1="' + (L.CY - yMax * L.R) + '" x2="' + gx(a) + '" y2="' + (L.CY + yMax * L.R) + '" stroke="' + (strong ? '#cbd5e1' : '#eef2f7') + '" stroke-width="1"/>');
+      if(a === 0 || a % L.labelEvery !== 0) continue;
+      const ly = L.CY + yMax * L.R * 0 + 0;
+      const baseY = L.CY + L.fs + 10;
+      if(unit === 'deg'){
+        g.push('<text x="' + gx(a) + '" y="' + baseY + '" text-anchor="middle" font-size="' + L.fsS + '" fill="#64748b">' + a + '°</text>');
+      }else{
+        const lab = RAD_LABEL[a];
+        const m = /^\{([^|]+)\|([^|]+)\}$/.exec(lab);
+        if(m) g.push(svgFrac(gx(a), baseY, m[1], m[2], L.fsS, '#64748b'));
+        else g.push('<text x="' + gx(a) + '" y="' + (baseY + 4) + '" text-anchor="middle" font-size="' + L.fsS + '" fill="#64748b">' + lab + '</text>');
+      }
+    }
+
+    // level 4：値域の帯と周期の矢印
+    if(level >= 4){
+      if(on.sin || on.cos){
+        g.push('<rect x="' + L.GX0 + '" y="' + gy(1) + '" width="' + (L.GX1 - L.GX0) + '" height="' + (2 * L.R) + '" fill="var(--orange-400)" opacity=".10"/>');
+        g.push('<text x="' + (L.GX0 + 8) + '" y="' + (gy(1) - 6) + '" font-size="' + L.fsS + '" font-weight="700" fill="var(--orange-800)">−1 ≦ y ≦ 1</text>');
+        const ay = gy(yMax * 0.86);
+        g.push('<line x1="' + gx(0) + '" y1="' + ay + '" x2="' + gx(360) + '" y2="' + ay + '" stroke="var(--orange-800)" stroke-width="1.6" marker-start="url(#ar)" marker-end="url(#ar)"/>');
+        g.push('<text x="' + gx(180) + '" y="' + (ay - 6) + '" text-anchor="middle" font-size="' + L.fsS + '" font-weight="700" fill="var(--orange-800)">周期 ' + (unit === 'deg' ? '360°' : '2π') + '</text>');
+      }
+      if(on.tan){
+        const ay2 = gy(-yMax * 0.86);
+        g.push('<line x1="' + gx(0) + '" y1="' + ay2 + '" x2="' + gx(180) + '" y2="' + ay2 + '" stroke="var(--tan)" stroke-width="1.6" marker-start="url(#ar)" marker-end="url(#ar)"/>');
+        g.push('<text x="' + gx(90) + '" y="' + (ay2 + L.fsS + 6) + '" text-anchor="middle" font-size="' + L.fsS + '" font-weight="700" fill="var(--tan)">周期 ' + (unit === 'deg' ? '180°' : 'π') + '</text>');
+      }
+    }
+
+    // tan の漸近線（値がないところ）
+    if(on.tan && level >= 2){
+      for(let a = 90; a <= Math.min(theta, TMAX); a += 180){
+        g.push('<line x1="' + gx(a) + '" y1="' + (L.CY - yMax * L.R) + '" x2="' + gx(a) + '" y2="' + (L.CY + yMax * L.R) + '" stroke="var(--tan)" stroke-width="1.2" stroke-dasharray="5 5" opacity=".6"/>');
+      }
+    }
+
+    // なぞった跡（level 3 以降）
+    const curves = [];
+    if(level >= 3){
+      for(const k of activeList()){
+        const pts = [];
+        let run = [];
+        for(let a = 0; a <= theta + 0.001; a += 1){
+          const v = FN[k].f(a);
+          if(!isFinite(v) || Math.abs(v) > yMax){ if(run.length > 1) pts.push(run); run = []; continue; }
+          run.push(gx(a).toFixed(1) + ',' + gy(v).toFixed(1));
+        }
+        if(run.length > 1) pts.push(run);
+        for(const seg of pts) curves.push('<polyline points="' + seg.join(' ') + '" fill="none" stroke="' + FN[k].raw + '" stroke-width="' + (L.lw + 0.6) + '" stroke-linecap="round" stroke-linejoin="round"/>');
+      }
+    }
+    if(curves.length) g.push('<g clip-path="url(#gclip)">' + curves.join('') + '</g>');
+
+    // 運ぶ点線と、いまの点（level 2 以降）
+    if(level >= 2){
+      const carry = [];
+      if(on.sin) carry.push({ from: [px, py], v: s, col: '#1D6FB8' });
+      if(on.cos) carry.push({ from: [L.CX, cy(c)], v: c, col: '#C74700' });
+      if(on.tan && isFinite(t) && Math.abs(t) <= yMax && Math.abs(c) > 1e-9) carry.push({ from: [cx(1), cy(t)], v: t, col: '#6D28D9' });
+      for(const q of carry){
+        g.push('<line x1="' + q.from[0] + '" y1="' + q.from[1] + '" x2="' + gx(theta) + '" y2="' + gy(q.v) + '" stroke="' + q.col + '" stroke-width="1.4" stroke-dasharray="5 5" opacity=".75"/>');
+        g.push('<circle cx="' + gx(theta) + '" cy="' + gy(q.v) + '" r="' + L.dot + '" fill="' + q.col + '" stroke="#fff" stroke-width="1.6"/>');
+      }
+      g.push('<line x1="' + gx(theta) + '" y1="' + (L.CY - yMax * L.R) + '" x2="' + gx(theta) + '" y2="' + (L.CY + yMax * L.R) + '" stroke="var(--orange-700)" stroke-width="1.2" opacity=".55"/>');
+    }
+
+    $('figure').innerHTML = '<svg viewBox="0 0 ' + L.W + ' ' + L.H + '" xmlns="http://www.w3.org/2000/svg" id="svg">' + g.join('') + '</svg>';
+    bindDrag();
+  }
+
+  // ---- 思考のステップ ----
+  function stepBodies(){
+    const list = activeList();
+    const tag = { sin: 'c-sin', cos: 'c-cos', tan: 'c-tan' };
+    const readLine = {
+      sin: '点 P の<b>高さ（y 座標）</b>が <span class="c-sin">sin θ</span> ＝ ' + valueHTML('sin'),
+      cos: '点 P の<b>横の位置（x 座標）</b>が <span class="c-cos">cos θ</span> ＝ ' + valueHTML('cos'),
+      tan: 'OP をのばして <span class="mono">x ＝ 1</span> の直線と交わる点 T の高さが <span class="c-tan">tan θ</span> ＝ ' + valueHTML('tan')
+    };
+    const carryLine = {
+      sin: '<span class="c-sin">sin</span> は P の高さをそのまま右へ',
+      cos: '<span class="c-cos">cos</span> は横の長さを 90° 立ち上げてから右へ',
+      tan: '<span class="c-tan">tan</span> は T の高さをそのまま右へ'
+    };
+    const s2 = list.length
+      ? list.map(k => '<div>' + readLine[k] + '</div>').join('')
+      : '上の「表示する関数」で sin・cos・tan のどれかを選んでください。';
+    const s3 = list.length
+      ? '読み取った値を、<b>同じ高さのまま</b>右のグラフへ運ぶ（' + list.map(k => carryLine[k]).join('／') + '）。<br>横の位置は θ ＝ ' + thetaHTML(theta) + ' のところ。これでグラフの点が 1 つ決まる。'
+      : '関数を選ぶと、値を右のグラフへ運べます。';
+    return [
+      { level: 1, body: '単位円の上に点 P をとる。半直線 OP と x 軸の正の向きがつくる角が θ。いまは θ ＝ ' + thetaHTML(theta) + '。' },
+      { level: 2, body: s2 },
+      { level: 3, body: s3 },
+      { level: 4, body: 'θ を 0° から動かすと、点が動いた跡が線になる。いまは <b>0° 〜 ' + thetaHTML(theta) + '</b> まで描けた。スライダーをいちばん右まで動かして、2 周分を見てみよう。' }
+    ];
+  }
+
+  function renderSteps(){
+    const steps = stepBodies();
+    $('steps').innerHTML = steps.map((s, i) =>
+      '<div class="step' + (s.level > level ? ' dim' : '') + '" data-level="' + s.level + '">'
+      + '<div class="step-num">' + (i + 1) + '</div><div class="step-body">' + s.body + '</div></div>').join('');
+    $('steps').querySelectorAll('.step').forEach(el => el.addEventListener('click', () => goTo(+el.dataset.level)));
+    $('progress').innerHTML = LEVEL_LABELS[level];
+    $('prevBtn').disabled = level <= 0;
+    $('nextBtn').disabled = level >= MAX_LEVEL;
+  }
+
+  function renderValues(){
+    const list = activeList();
+    $('values').innerHTML = list.map(k => {
+      const v = FN[k].f(theta);
+      const undef = (k === 'tan' && isUndefinedTan());
+      return '<div class="vrow" data-fn="' + k + '"><span class="name">' + FN[k].label + ' θ ＝</span>'
+        + '<span class="exact">' + (undef ? '値がない' : valueHTML(k)) + '</span>'
+        + '<span class="approx">' + (undef ? '（θ ＝ ' + undefAngles() + ' では tan は定義されない）' : 'およそ ' + num(v)) + '</span></div>';
+    }).join('');
+  }
+
+  function renderSummary(){
+    const box = $('summary'), list = activeList();
+    if(level < MAX_LEVEL || !list.length){
+      box.classList.add('pending');
+      $('summaryBody').textContent = 'ステップを最後まで進めると表示されます';
+      return;
+    }
+    box.classList.remove('pending');
+    const li = [];
+    if(on.sin) li.push('<b class="c-sin">y ＝ sin θ</b>：値域は −1 ≦ y ≦ 1、周期は ' + (unit === 'deg' ? '360°' : '2π') + '。θ ＝ 0 のとき 0 から始まり、なめらかな波になる。');
+    if(on.cos) li.push('<b class="c-cos">y ＝ cos θ</b>：値域は −1 ≦ y ≦ 1、周期は ' + (unit === 'deg' ? '360°' : '2π') + '。θ ＝ 0 のとき 1 から始まる。');
+    if(on.tan) li.push('<b class="c-tan">y ＝ tan θ</b>：値域はすべての実数、周期は ' + (unit === 'deg' ? '180°' : 'π') + '。θ ＝ ' + (unit === 'deg' ? '90°、270°…' : mathHTML('{π|2}') + '、' + mathHTML('{3π|2}') + '…') + ' では値がなく、グラフは切れて縦の点線（漸近線）に近づく。');
+    if(on.sin && on.cos) li.push('<b>sin と cos の形は同じ</b>。cos のグラフは、sin のグラフを θ 軸の向きに ' + (unit === 'deg' ? '90°' : mathHTML('{π|2}')) + ' だけ左へずらしたもの。');
+    $('summaryBody').innerHTML = '<ul>' + li.map(x => '<li>' + x + '</li>').join('') + '</ul>'
+      + '<p class="note">1 周まわると同じ位置に戻る ＝ グラフが同じ形をくりかえす、ということ。気温や日照時間のように 1 年でくりかえす変化も、三角関数で表すことができる。</p>';
+  }
+
+  function renderAll(){ drawFigure(); renderSteps(); renderValues(); renderSummary(); }
+
+  function goTo(n){
+    level = Math.max(0, Math.min(MAX_LEVEL, n));
+    renderAll();
+  }
+  function setTheta(d, keepLevel){
+    theta = Math.max(0, Math.min(TMAX, Math.round(d)));
+    $('thetaRange').value = theta;
+    $('thetaRead').innerHTML = thetaHTML(theta);
+    renderAll();
+  }
+
+  // ---- 円の上のドラッグで θ を変える ----
+  function bindDrag(){
+    const svg = $('svg');
+    if(!svg) return;
+    let dragging = false;
+    const toUser = e => {
+      const r = svg.getBoundingClientRect();
+      const p = (e.touches && e.touches[0]) || e;
+      return { x: (p.clientX - r.left) / r.width * LY.W, y: (p.clientY - r.top) / r.height * LY.H };
+    };
+    const near = u => Math.hypot(u.x - LY.CX, u.y - LY.CY) < LY.R * 1.6 && u.x < LY.GX0 - 46;
+    const apply = u => {
+      const dx = u.x - LY.CX, dy = LY.CY - u.y;
+      if(Math.hypot(dx, dy) < 6) return;
+      let a = Math.atan2(dy, dx) * 180 / Math.PI;
+      if(a < 0) a += 360;
+      const base = Math.floor(theta / 360) * 360;
+      let best = base + a;
+      for(const cand of [base + a - 360, base + a, base + a + 360]){
+        if(cand >= 0 && cand <= TMAX && Math.abs(cand - theta) < Math.abs(best - theta)) best = cand;
+      }
+      setTheta(best);
+    };
+    const down = e => { const u = toUser(e); if(!near(u)) return; dragging = true; stopPlay(); apply(u); e.preventDefault(); };
+    const move = e => { if(!dragging) return; apply(toUser(e)); e.preventDefault(); };
+    const up = () => { dragging = false; };
+    svg.addEventListener('mousedown', down);
+    svg.addEventListener('touchstart', down, { passive: false });
+    window.addEventListener('mousemove', move);
+    window.addEventListener('touchmove', move, { passive: false });
+    window.addEventListener('mouseup', up);
+    window.addEventListener('touchend', up);
+  }
+
+  // ---- 自動でなぞる（先生のデモ用。ふだんは自分でボタン・スライダーを動かす）----
+  function stopPlay(){
+    playing = false;
+    clearInterval(playRAF);
+    $('playBtn').textContent = '▶ ゆっくり自動でなぞる';
+  }
+  function startPlay(){
+    if(level < 3) goTo(3);
+    if(theta >= TMAX) setTheta(0);
+    playing = true;
+    $('playBtn').textContent = '■ 止める';
+    playPrev = Date.now();
+    playRAF = setInterval(() => {
+      if(!playing){ stopPlay(); return; }
+      const now = Date.now(), dt = now - playPrev;
+      playPrev = now;
+      const next = theta + dt * 0.12;          // 約 6 秒で 2 周
+      if(next >= TMAX){ setTheta(TMAX); stopPlay(); return; }
+      setTheta(next);
+    }, 33);
+  }
+
+  // ---- 表示する関数の切り替え ----
+  function syncChips(){
+    document.querySelectorAll('.fnchip').forEach(b => b.dataset.on = on[b.dataset.fn] ? '1' : '0');
+    $('inputNote').innerHTML = activeList().length ? '' : '<div class="warn">表示する関数を 1 つ以上選んでください。</div>';
+  }
+  document.querySelectorAll('.fnchip').forEach(b => b.addEventListener('click', () => {
+    on[b.dataset.fn] = !on[b.dataset.fn];
+    syncChips(); renderAll();
+  }));
+  $('allBtn').addEventListener('click', () => { on.sin = on.cos = on.tan = true; syncChips(); renderAll(); });
+  $('oneBtn').addEventListener('click', () => { on.sin = true; on.cos = on.tan = false; syncChips(); renderAll(); });
+
+  document.querySelectorAll('[data-jump]').forEach(b => b.addEventListener('click', () => { stopPlay(); setTheta(+b.dataset.jump); }));
+  $('thetaRange').addEventListener('input', e => { stopPlay(); setTheta(+e.target.value); });
+  $('resetBtn').addEventListener('click', () => { stopPlay(); setTheta(0); });
+  $('playBtn').addEventListener('click', () => { playing ? stopPlay() : startPlay(); });
+  $('prevBtn').addEventListener('click', () => goTo(level - 1));
+  $('nextBtn').addEventListener('click', () => goTo(level + 1));
+  $('unitSeg').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    unit = b.dataset.unit;
+    $('unitSeg').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+    $('thetaRead').innerHTML = thetaHTML(theta);
+    syncJumpLabels();
+    renderAll(); renderQuiz();
+  }));
+
+  // クイックボタンの文字も、度数法／弧度法にそろえる
+  function syncJumpLabels(){
+    document.querySelectorAll('[data-jump]').forEach(b => { b.innerHTML = thetaHTML(+b.dataset.jump); });
+  }
+
+  let resizeTimer = 0;
+  window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(drawFigure, 150); });
+
+  // ---- たしかめ ----
+  const QUIZ = [
+    { q: 'y ＝ cos θ のグラフは、θ ＝ 0 のときどの高さから始まりますか。',
+      opts: ['1', '0', '−1'], ans: 0,
+      exp: 'θ ＝ 0 のとき点 P は (1, 0)。その x 座標が cos なので、cos 0 ＝ 1 から始まります。' },
+    { q: 'y ＝ sin θ の値域（y のとりうる範囲）はどれですか。',
+      opts: ['−1 ≦ y ≦ 1', '0 ≦ y ≦ 1', 'すべての実数'], ans: 0,
+      exp: '点 P は半径 1 の円の上にあるので、高さは −1 から 1 までしか動きません。' },
+    { q: 'y ＝ tan θ のグラフが切れている（値がない）のは θ がいくつのときですか。',
+      opts: [() => unit === 'deg' ? '90°、270°、…' : mathHTML('{π|2}') + '、' + mathHTML('{3π|2}') + '、…',
+             () => unit === 'deg' ? '0°、180°、…' : '0、π、…',
+             () => unit === 'deg' ? '45°、135°、…' : mathHTML('{π|4}') + '、' + mathHTML('{3π|4}') + '、…'], ans: 0,
+      exp: 'そのとき OP は縦向きになり、x ＝ 1 の直線と交わりません（cos θ ＝ 0 で割れない）。' },
+    { q: 'y ＝ cos θ のグラフは、y ＝ sin θ のグラフをどうしたものと同じ形ですか。',
+      opts: [() => 'θ 軸の向きに ' + (unit === 'deg' ? '90°' : mathHTML('{π|2}')) + ' 左へずらす',
+             () => 'θ 軸の向きに ' + (unit === 'deg' ? '90°' : mathHTML('{π|2}')) + ' 右へずらす',
+             () => '上下にひっくり返す'], ans: 0,
+      exp: '2 つを同時に表示して見くらべると、同じ波が横にずれているだけだと分かります。' }
+  ];
+  const quizState = QUIZ.map(() => -1);
+  function renderQuiz(){
+    $('quiz').innerHTML = QUIZ.map((q, i) => {
+      const picked = quizState[i];
+      const opts = q.opts.map((o, j) => {
+        const text = (typeof o === 'function') ? o() : o;
+        let cls = '';
+        if(picked >= 0 && j === q.ans) cls = ' class="ok"';
+        else if(picked === j) cls = ' class="ng"';
+        return '<button type="button" data-q="' + i + '" data-o="' + j + '"' + cls + '>' + text + '</button>';
+      }).join('');
+      const fb = picked < 0 ? ''
+        : '<div class="fb ' + (picked === q.ans ? 'ok' : 'ng') + '">' + (picked === q.ans ? '○ 正解！' : '× おしい') + '</div><div class="fb">' + q.exp + '</div>';
+      return '<div class="q"><p class="qtext">問' + (i + 1) + '　' + q.q + '</p><div class="opts">' + opts + '</div>' + fb + '</div>';
+    }).join('');
+    $('quiz').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      quizState[+b.dataset.q] = +b.dataset.o;
+      renderQuiz();
+    }));
+  }
+
+  // ---- 初期表示 ----
+  syncChips();
+  syncJumpLabels();
+  $('thetaRead').innerHTML = thetaHTML(theta);
+  renderAll();
+  renderQuiz();
+})();
+</script>
+</body>
+</html>

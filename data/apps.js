@@ -157,5 +157,14 @@ const APP_DATA = [
     description: "自分で集合場所をさがしたあとに使います。「2軒から同じ距離」と思う点を打っていくところから始めて、公平な場所が決まるしくみを1段階ずつ確かめます。",
     file: "apps/equidistant-point.html",
     added: "2026-09-15"
+  },
+  {
+    subject: "数学Ⅱ",
+    unit: "三角関数",
+    order: 20,
+    title: "三角関数のグラフ（sin・cos・tan）",
+    description: "単位円の上の点を自分で動かし、その値をそのままの高さで右へ運んでグラフをなぞります。sin・cos・tan を1つずつ見ることも、3つ同時に重ねて見ることもでき、周期・値域・tan の切れ目を確かめられます。",
+    file: "apps/trig-graphs.html",
+    added: "2026-09-18"
   }
 ];
