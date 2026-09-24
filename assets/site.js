@@ -1,6 +1,6 @@
 // 数学学習サイト 共通スクリプト
 // data/*.js を読み込んだあとに読み込むこと。
-// 科目・単元の一覧（CURRICULUM）と、教材データ（APP_DATA / PRINT_DATA / VIDEO_DATA）、
+// 科目・単元の一覧（CURRICULUM）と、教材データ（APP_DATA / PRINT_DATA / VIDEO_DATA / SLIDE_DATA）、
 // お知らせ（NEWS_DATA）、勉強のヒント（TIPS_DATA）、数学いろいろ（TOPIC_DATA）から各ページを組み立てる。
 (function(){
   'use strict';
@@ -16,6 +16,7 @@
     apps:       typeof APP_DATA   !== 'undefined' ? APP_DATA   : [],
     prints:     typeof PRINT_DATA !== 'undefined' ? PRINT_DATA : [],
     videos:     typeof VIDEO_DATA !== 'undefined' ? VIDEO_DATA : [],
+    slides:     typeof SLIDE_DATA !== 'undefined' ? SLIDE_DATA : [],
     gems:       typeof GEM_DATA   !== 'undefined' ? GEM_DATA   : [],
     news:       typeof NEWS_DATA  !== 'undefined' ? NEWS_DATA  : [],
     tips:       typeof TIPS_DATA  !== 'undefined' ? TIPS_DATA  : [],
@@ -50,13 +51,14 @@
   const hasCommonGem = () => D.gems.some(g => g.common);
   function counts(subject, unit){
     return {
+      slides: itemsFor(D.slides, subject, unit).length,
       apps:   itemsFor(D.apps,   subject, unit).length,
       prints: itemsFor(D.prints, subject, unit).length,
       videos: itemsFor(D.videos, subject, unit).length,
       gems:   itemsFor(D.gems,   subject, unit).length
     };
   }
-  const total = c => c.apps + c.prints + c.videos + c.gems;
+  const total = c => c.slides + c.apps + c.prints + c.videos + c.gems;
   const subjectUrl = s => 'subject.html?s=' + encodeURIComponent(s.id);
   const unitUrl = (s, u) => 'unit.html?s=' + encodeURIComponent(s.id) + '&u=' + encodeURIComponent(u.id);
   const topicId = i => 't' + (i + 1);
@@ -68,6 +70,7 @@
   }
   function countText(c){
     const parts = [];
+    if(c.slides) parts.push(`スライド ${c.slides}`);
     if(c.apps)   parts.push(`アプリ ${c.apps}`);
     if(c.prints) parts.push(`プリント ${c.prints}`);
     if(c.videos) parts.push(`動画 ${c.videos}`);
@@ -110,8 +113,40 @@
       ${v.note ? `<p>${esc(v.note)}</p>` : ''}
     </div>`;
   }
+  // Googleスライドの共有リンクから、ページ内に埋め込む用のURLと、全画面で開く用のURLを作る
+  function slideUrls(url){
+    const m = /\/presentation\/d\/([\w-]+)/.exec(url || '');
+    if(!m) return { embed: '', open: url || '' };
+    const base = 'https://docs.google.com/presentation/d/' + m[1];
+    return { embed: base + '/embed?start=false&loop=false', open: base + '/present' };
+  }
+  // 授業スライド（表紙 → クリックでページ内に埋め込み表示）
+  function slideCard(sl){
+    const u = slideUrls(sl.url);
+    return `<div class="video-card slide-card">
+      <div class="video-thumb slide-thumb" data-embed="${esc(u.embed)}" data-title="${esc(sl.title)}" role="button" tabindex="0" aria-label="スライドを表示：${esc(sl.title)}">
+        <span class="slide-cover" aria-hidden="true"><span class="slide-kicker">授業スライド</span><span class="slide-title">${esc(sl.title)}</span></span>
+        <span class="play-badge" aria-hidden="true"><span>▶</span></span>
+      </div>
+      <h3>${esc(sl.title)}</h3>
+      ${sl.description ? `<p>${esc(sl.description)}</p>` : ''}
+      <p class="slide-open"><a href="${esc(u.open)}" target="_blank" rel="noopener">全画面で見る（新しいタブで開きます）</a></p>
+    </div>`;
+  }
+  function bindSlideThumbs(root){
+    root.querySelectorAll('.slide-thumb').forEach(el => {
+      const show = () => {
+        if(!el.dataset.embed || el.classList.contains('is-open')) return;
+        el.classList.add('is-open');
+        el.removeAttribute('role'); el.removeAttribute('tabindex'); el.removeAttribute('aria-label');
+        el.innerHTML = `<iframe src="${esc(el.dataset.embed)}" title="${esc(el.dataset.title)}" allowfullscreen></iframe>`;
+      };
+      el.addEventListener('click', show);
+      el.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); show(); } });
+    });
+  }
   function bindVideoThumbs(root){
-    root.querySelectorAll('.video-thumb').forEach(el => {
+    root.querySelectorAll('.video-thumb:not(.slide-thumb)').forEach(el => {
       const play = () => {
         el.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(el.dataset.yid)}?autoplay=1" title="${esc(el.dataset.title)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
       };
@@ -143,7 +178,7 @@
       const g = groups.get(key);
       g.kinds.set(label, (g.kinds.get(label) || 0) + 1);
     });
-    add(D.apps, 'アプリ'); add(D.prints, 'プリント'); add(D.videos, '動画'); add(D.gems, '振り返りGEM');
+    add(D.slides, 'スライド'); add(D.apps, 'アプリ'); add(D.prints, 'プリント'); add(D.videos, '動画'); add(D.gems, '振り返りGEM');
 
     const list = [];
     groups.forEach(g => {
@@ -330,6 +365,15 @@
     secP.innerHTML = gridOr(itemsFor(D.prints, s, u), printCard, 'この単元のプリントは準備中です。');
     secV.innerHTML = gridOr(itemsFor(D.videos, s, u), videoCard, 'この単元の参考動画は準備中です。');
     bindVideoThumbs(secV);
+    // 授業スライドは、スライドがある単元だけ欄ごと表示する
+    const slideWrap = document.getElementById('slideWrap');
+    const slides = itemsFor(D.slides, s, u);
+    if(slideWrap){
+      slideWrap.hidden = !slides.length;
+      const secS = document.getElementById('slideSection');
+      secS.innerHTML = slides.length ? gridOr(slides, slideCard, '') : '';
+      bindSlideThumbs(secS);
+    }
     // 振り返りGEMは、GEMがある単元だけ欄ごと表示する
     const gemWrap = document.getElementById('gemWrap');
     const gems = itemsFor(D.gems, s, u);
@@ -368,7 +412,7 @@
   }
 
   // データの科目名・単元名がカリキュラムに無い場合は console に警告（表示はされない）
-  [['apps', D.apps], ['prints', D.prints], ['videos', D.videos], ['gems', D.gems]].forEach(([name, arr]) => {
+  [['slides', D.slides], ['apps', D.apps], ['prints', D.prints], ['videos', D.videos], ['gems', D.gems]].forEach(([name, arr]) => {
     arr.forEach(x => {
       if(x.common) return;
       const s = findSubject(x.subject);

@@ -440,6 +440,29 @@ a.card h3::after{content:" →";}
 .video-card h3{margin:2px 0 0;font-size:17px;font-weight:700;line-height:1.6;color:var(--ink);}
 .video-card p{margin:0;font-size:14px;color:var(--sub);line-height:1.6;}
 
+/* 授業スライド（表紙 → クリックでGoogleスライドを埋め込み表示）。
+   文字を読むものなので、動画より大きく1列で表示する */
+#slideSection .grid{grid-template-columns:1fr;max-width:880px;}
+.slide-thumb{background:var(--orange-50);border:1px solid var(--orange-100);}
+.slide-thumb.is-open{background:#000;cursor:auto;}
+.slide-cover{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:var(--sp-1);
+  padding:var(--sp-3) 88px var(--sp-3) var(--sp-4); /* 右下の ▶ と重ならないよう右をあける */
+}
+.slide-kicker{font-size:14px;font-weight:700;color:var(--orange-800);letter-spacing:0.08em;}
+.slide-title{font-size:clamp(20px, 4vw, 32px);font-weight:700;line-height:1.4;color:var(--ink);}
+.slide-thumb .play-badge{background:transparent;justify-content:flex-end;align-items:flex-end;padding:var(--sp-2);}
+.slide-thumb .play-badge::before{right:var(--sp-2);bottom:var(--sp-2);}
+.slide-thumb .play-badge span{width:56px;height:56px;display:flex;align-items:center;justify-content:center;}
+.slide-thumb:hover .play-badge, .slide-thumb:focus-visible .play-badge{background:rgba(199,71,0,0.08);}
+.slide-open{font-size:15px;}
+.slide-open a{color:var(--orange-800);}
+
 /* お知らせ・更新情報 */
 .news-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line);}
 .news-list li{
