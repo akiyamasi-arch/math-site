@@ -9,5 +9,13 @@ const VIDEO_DATA = [
     youtubeId: "cLZZmxxSLFg",
     note: "",
     added: "2026-09-08"
+  },
+  {
+    subject: "数学Ⅰ",
+    unit: "数と式",
+    title: "たすき掛けで「斜め」に掛ける本当の理由",
+    youtubeId: "DHRpKKKHah4",
+    note: "ショート動画",
+    added: "2026-09-24"
   }
 ];
