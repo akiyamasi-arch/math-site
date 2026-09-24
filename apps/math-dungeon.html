@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>数学ダンジョン｜数学学習サイト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
+<style>
+:root{
+  /* サイト共通（assets/style.css）のトークン。ヘッダー部分で使う */
+  --orange-700:#E25100; --orange-800:#C74700; --orange-50:#FFEEE2;
+  --site-ink:#1E293B; --site-line:#D9DEE6; --site-card:#FFFFFF; --focus:#FFD866;
+  /* ここから下はダンジョン画面用 */
+  --orange:#e8590c; --orange-l:#ff7a2f;
+  --bg:#07080c; --panel:#141821; --panel2:#1c2230; --line:#2f3850;
+  --ink:#e9ecf3; --muted:#9aa4bb;
+  --gold:#ffd166; --cyan:#6fd8ff; --good:#37b24d; --bad:#f03e3e;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;overscroll-behavior:none}
+body{background:var(--bg);color:var(--ink);
+  font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN",Meiryo,system-ui,sans-serif;
+  font-size:16px;line-height:1.7;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer}
+
+#page{display:flex;flex-direction:column;height:100vh;height:100dvh}
+/* サイト共通のヘッダー（白地・戻るリンク付き） */
+.brand-bar{height:6px;background:var(--orange-700);flex:0 0 auto}
+.site-header{background:var(--site-card);border-bottom:1px solid var(--site-line);
+  padding:8px 16px;flex:0 0 auto}
+.site-header .inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;
+  gap:10px;flex-wrap:wrap}
+.site-title{margin:0;font-size:18px;font-weight:700;color:var(--site-ink);white-space:nowrap}
+.site-title a{color:var(--site-ink);text-decoration:none}
+.site-header .sp{flex:1}
+.back-link{font-size:14px;font-weight:700;color:var(--orange-800);white-space:nowrap}
+.site-header button{background:#f8fafc;border:1px solid var(--site-line);color:var(--site-ink);
+  border-radius:999px;padding:6px 14px;font-size:14px;font-weight:700;white-space:nowrap}
+.site-header button:hover{border-color:var(--orange-800);background:var(--orange-50)}
+a:focus-visible, button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+@media(max-width:560px){
+  .site-header{padding:7px 10px}
+  .site-header .inner{gap:7px}
+  .site-title{font-size:15px}
+  .site-header button{padding:5px 10px;font-size:12px}
+  .back-link{font-size:12px}
+  #mini{width:92px;height:92px}
+  .qbox{font-size:18px;padding:12px 13px}
+  .choices button{font-size:18px}
+}
+
+#stage{position:relative;flex:1 1 auto;overflow:hidden;background:#000;touch-action:none}
+#view{display:block;width:100%;height:100%;image-rendering:pixelated;background:#000}
+
+#hud{position:absolute;inset:0;pointer-events:none}
+.hudbar{position:absolute;top:10px;left:10px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.chip{background:rgba(10,12,18,.72);border:1px solid var(--line);border-radius:999px;
+  padding:4px 13px;font-weight:700;letter-spacing:.03em;white-space:nowrap;font-size:14px}
+.chip .s{color:var(--muted);font-weight:500;font-size:12px}
+#hp{color:var(--bad);letter-spacing:.14em}
+#gemc{color:var(--cyan)}
+#mini{position:absolute;top:10px;right:10px;border:1px solid var(--line);border-radius:8px;
+  background:rgba(8,10,16,.72)}
+#prompt{position:absolute;left:50%;transform:translateX(-50%);bottom:24px;max-width:calc(100% - 24px);
+  background:rgba(10,12,18,.88);border:1px solid var(--gold);color:var(--gold);
+  border-radius:10px;padding:8px 16px;font-weight:700;font-size:15px;display:none;text-align:center}
+body:not(.nopad) #prompt{bottom:152px}
+#toast{position:absolute;left:50%;transform:translateX(-50%);top:62px;
+  background:rgba(10,12,18,.92);border:1px solid var(--line);border-radius:10px;
+  padding:9px 16px;font-weight:700;opacity:0;transition:opacity .3s;max-width:86%;text-align:center;font-size:15px}
+
+#touch{position:absolute;inset:0;pointer-events:none}
+#stick{position:absolute;left:16px;bottom:16px;width:116px;height:116px;border-radius:50%;
+  background:rgba(20,24,34,.5);border:2px solid rgba(120,135,170,.4);pointer-events:auto;touch-action:none}
+#knob{position:absolute;left:50%;top:50%;width:48px;height:48px;margin:-24px 0 0 -24px;border-radius:50%;
+  background:rgba(232,89,12,.85);border:2px solid #ffb37a}
+.btns{position:absolute;right:14px;bottom:16px;display:flex;flex-direction:column;gap:10px;align-items:center}
+.btns button{pointer-events:auto;background:rgba(20,24,34,.82);border:2px solid var(--line);
+  border-radius:50%;width:64px;height:64px;font-size:13px;font-weight:700;line-height:1.2}
+.btns button.main{width:84px;height:84px;border-color:var(--gold);color:var(--gold);font-size:15px}
+body.nopad #touch{display:none}
+
+#ov{position:absolute;inset:0;background:rgba(4,6,10,.88);display:none;
+  align-items:center;justify-content:center;padding:12px;overflow:auto;z-index:20}
+#ov.on{display:flex}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  width:min(720px,100%);max-height:100%;overflow:auto;padding:20px 20px 22px}
+.card h2{margin:0 0 4px;font-size:21px;letter-spacing:.03em}
+.card h3{margin:18px 0 8px;font-size:16px;color:var(--gold);letter-spacing:.04em}
+.card p{margin:8px 0}
+.lead{color:var(--muted);font-size:14px;margin:0 0 14px;line-height:1.6}
+.qbox{background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--orange);
+  border-radius:10px;padding:14px 16px;font-size:20px;font-weight:700;margin:6px 0 16px;line-height:2.1}
+.choices{display:grid;gap:10px;grid-template-columns:1fr 1fr}
+@media(max-width:560px){.choices{grid-template-columns:1fr}}
+.choices button{background:var(--panel2);border:2px solid var(--line);border-radius:10px;
+  padding:13px 12px;font-size:19px;font-weight:700;text-align:center;min-height:58px;line-height:1.9}
+.choices button:hover:not(:disabled){border-color:var(--orange);background:#252c3d}
+.choices button:disabled{cursor:default;opacity:.45}
+.choices button.ok{border-color:var(--good);background:#16351f;opacity:1}
+.choices button.ng{border-color:var(--bad);background:#3a1717;opacity:1}
+.verdict{font-size:19px;font-weight:700;margin:18px 0 2px}
+.verdict.ok{color:var(--good)} .verdict.ng{color:var(--bad)}
+ol.steps{list-style:none;margin:6px 0 0;padding:0;counter-reset:st}
+ol.steps li{counter-increment:st;position:relative;padding:11px 12px 11px 46px;margin-bottom:8px;
+  border:1px solid var(--line);border-radius:10px;background:#11151d;color:#48516a;font-size:16px;line-height:2}
+ol.steps li::before{content:counter(st);position:absolute;left:12px;top:11px;width:24px;height:24px;
+  border-radius:50%;background:#222a3a;color:#6b7590;display:grid;place-items:center;font-size:13px;font-weight:700;line-height:1}
+ol.steps li.on{color:var(--ink);background:var(--panel2);border-color:#3c4767}
+ol.steps li.on::before{background:var(--orange);color:#fff}
+ol.steps li.ans{border-style:dashed}
+ol.steps li.ans.on{border-color:var(--gold);border-style:solid;background:#2a2412}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+.btn{background:var(--orange);border:none;border-radius:10px;padding:13px 22px;
+  font-size:16px;font-weight:700;color:#fff;min-height:50px}
+.btn:hover{background:var(--orange-l)}
+.btn.sub{background:var(--panel2);border:1px solid var(--line);color:var(--ink)}
+.btn.sub:hover{border-color:var(--orange);background:#252c3d}
+.btn:disabled{opacity:.35;cursor:default;background:var(--panel2);color:var(--muted)}
+.note{background:#11151d;border:1px dashed #3c4767;border-radius:10px;padding:12px 14px;
+  font-size:15px;color:#cfd6e6;margin-top:14px;line-height:1.9}
+.note b{color:var(--gold)}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font-size:15px;margin:6px 0}
+.keys span:nth-child(odd){color:var(--gold);font-weight:700;white-space:nowrap}
+.fl{display:flex;gap:12px;align-items:baseline;background:#11151d;border:1px solid var(--line);
+  border-radius:10px;padding:9px 13px;font-size:15px;margin-bottom:7px}
+.fl b{color:var(--cyan);white-space:nowrap}
+.fl em{color:var(--muted);font-style:normal;font-size:13px}
+.kb{display:inline-block;background:#222a3a;border:1px solid #3c4767;border-bottom-width:2px;
+  border-radius:6px;padding:0 8px;font-size:13px;font-weight:700;margin:0 1px}
+.notelist{display:grid;gap:8px;margin-top:6px}
+.nitem{background:#11151d;border:1px solid var(--line);border-left:3px solid var(--gold);
+  border-radius:8px;padding:10px 13px;font-size:17px;line-height:2.1}
+.nitem small{display:block;color:var(--muted);font-size:12px;line-height:1.5;margin-bottom:1px}
+.empty{color:var(--muted);font-size:15px}
+textarea{width:100%;height:150px;background:#0d1016;color:var(--ink);border:1px solid var(--line);
+  border-radius:8px;padding:11px;font-size:14px;font-family:ui-monospace,Menlo,Consolas,monospace;line-height:1.8}
+input[type=text]{background:#0d1016;color:var(--ink);border:1px solid var(--line);border-radius:8px;
+  padding:10px 12px;font-size:16px;min-height:46px;width:220px}
+.stat{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.stat div{background:#11151d;border:1px solid var(--line);border-radius:10px;padding:9px 15px;min-width:100px}
+.stat b{display:block;font-size:25px;color:var(--gold);line-height:1.35}
+.stat small{color:var(--muted);font-size:12px}
+
+/* 分数は横線の縦組み */
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;
+  margin:0 .2em;line-height:1.22;font-size:.94em}
+.frac .nu{padding:0 .3em}
+.frac .de{padding:0 .3em;border-top:2px solid currentColor}
+</style>
+</head>
+<body>
+<div id="page">
+  <div class="brand-bar"></div>
+  <header class="site-header">
+    <div class="inner">
+      <p class="site-title"><a href="../index.html">数学学習サイト</a></p>
+      <span class="sp"></span>
+      <button id="bNote">📖 公式ノート</button>
+      <button id="bHelp">？ あそび方</button>
+      <a class="back-link" href="../unit.html?s=math1&u=kazu-shiki">← 単元ページに戻る</a>
+    </div>
+  </header>
+  <div id="stage">
+    <canvas id="view"></canvas>
+    <div id="hud">
+      <div class="hudbar">
+        <div class="chip" id="floorName">－</div>
+        <div class="chip"><span class="s">体力</span> <span id="hp">♥♥♥</span></div>
+        <div class="chip"><span class="s">結晶</span> <span id="gemc">0 / 5</span></div>
+      </div>
+      <canvas id="mini" width="116" height="116"></canvas>
+      <div id="prompt"></div>
+      <div id="toast"></div>
+    </div>
+    <div id="touch">
+      <div id="stick"><div id="knob"></div></div>
+      <div class="btns">
+        <button id="tAct" class="main">調べる</button>
+        <button id="tNote">ノート</button>
+      </div>
+    </div>
+    <div id="ov"><div class="card" id="ovCard"></div></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ==================================================================
+   数学ダンジョン
+   ・1ファイル完結／外部ライブラリなし（素のJavaScript＋canvas）
+   ・3D描画はレイキャスティング（Wolfenstein方式）を自前実装
+   ================================================================== */
+
+/* ---------- 小道具 ---------- */
+var $ = function(s){ return document.querySelector(s); };
+/* {分子|分母} を横線の分数にする（斜線の分数は使わない） */
+function mathHTML(s){
+  return String(s).replace(/\{([^|{}]*)\|([^|{}]*)\}/g, function(m,n,d){
+    return '<span class="frac"><span class="nu">'+n+'</span><span class="de">'+d+'</span></span>';
+  });
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function mulberry32(a){
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    var t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function shuffle(arr, rnd){
+  var a = arr.slice();
+  for(var i=a.length-1;i>0;i--){ var j=(rnd()*(i+1))|0; var t=a[i]; a[i]=a[j]; a[j]=t; }
+  return a;
+}
+
+/* ==================================================================
+   1. 学習内容（階層ごとの問題）
+   ================================================================== */
+var FLOORS = [
+{
+  name:'B1F　数と式の迷宮', sub:'数学Ⅰ｜式の展開・因数分解・実数',
+  cw:7, ch:6, gems:4, seed:1011,
+  theme:{ wall:'#4a5568', mortar:'#252b36', accent:'#ffd166',
+          ceilTop:'#05060a', ceilBot:'#181d29', flrTop:'#20242e', flrBot:'#080a0e', range:9 },
+  tips:['この階の鍵は「かけて定数項・たして1次の係数」。','√ の中は「平方数 × 残り」に分けてから外に出す。'],
+  pool:[
+   {q:'(x + 3)(x − 5) を展開すると？',
+    c:['x² − 2x − 15','x² + 2x − 15','x² − 8x − 15','x² − 2x + 15'], a:0,
+    s:['4つの組をすべてかける。x·x = x²、x·(−5) = −5x、3·x = 3x、3·(−5) = −15。',
+       'x の項をまとめる。−5x + 3x = −2x。',
+       '形で見ると (x + p)(x + q) = x² + (p + q)x + pq。p = 3、q = −5 だから和は −2、積は −15。',
+       '答えは x² − 2x − 15。'],
+    k:'(x + p)(x + q) = x² + (p + q)x + pq'},
+   {q:'x² − 7x + 12 を因数分解すると？',
+    c:['(x − 3)(x − 4)','(x + 3)(x + 4)','(x − 2)(x − 6)','(x − 1)(x − 12)'], a:0,
+    s:['「かけて 12、たして −7」になる2つの数をさがす。',
+       '和が負で積が正なので、2数はどちらも負。候補は (−1, −12)、(−2, −6)、(−3, −4)。',
+       'たして −7 になるのは −3 と −4。',
+       'よって x² − 7x + 12 = (x − 3)(x − 4)。'],
+    k:'x² + (p+q)x + pq = (x + p)(x + q)（かけて定数項・たして1次の係数）'},
+   {q:'2x² − 7x + 6 を因数分解すると？',
+    c:['(2x − 3)(x − 2)','(2x − 1)(x − 6)','(2x + 3)(x + 2)','(x − 3)(2x − 2)'], a:0,
+    s:['たすき掛けで考える。x² の係数 2 は 2 × 1、定数項 6 は 2つの負の数の積。',
+       '左に 2 と 1、右に −3 と −2 を並べてたすきにかける。2 × (−2) + 1 × (−3) = −7。',
+       '1次の係数 −7 と一致したので、この組でよい。',
+       '2x² − 7x + 6 = (2x − 3)(x − 2)。展開すると 2x² − 4x − 3x + 6 で確かめられる。'],
+    k:'ax² + bx + c はたすき掛け。2x² − 7x + 6 = (2x − 3)(x − 2)'},
+   {q:'√12 + √27 を簡単にすると？',
+    c:['5√3','√39','6√3','5√6'], a:0,
+    s:['根号の中を「平方数 × 残り」に分ける。12 = 4 × 3、27 = 9 × 3。',
+       '√12 = √4 · √3 = 2√3、√27 = √9 · √3 = 3√3。',
+       '√3 が共通なので、文字式と同じようにまとめられる。2√3 + 3√3 = 5√3。',
+       '答えは 5√3。（√12 + √27 = √39 とはならない）'],
+    k:'√(a²b) = a√b。根号の中が同じものどうしは足し算できる'},
+   {q:'{1|√5 − √2} の分母を有理化すると？',
+    c:['{√5 + √2|3}','{√5 − √2|3}','{√5 + √2|7}','√5 + √2'], a:0,
+    s:['分母と分子に、分母の符号を変えた √5 + √2 をかける。',
+       '分母は (√5 − √2)(√5 + √2) = (√5)² − (√2)² = 5 − 2 = 3。',
+       '分子は 1 × (√5 + √2) = √5 + √2。',
+       'よって {√5 + √2|3}。'],
+    k:'(a + b)(a − b) = a² − b² を使って分母の √ を消す'},
+   {q:'|2x − 6| = 4 を解くと？',
+    c:['x = 1, 5','x = 5 のみ','x = −1, 5','x = 2, 3'], a:0,
+    s:['絶対値がついた式は「中身が 4」か「中身が −4」の2通り。',
+       '2x − 6 = 4 のとき 2x = 10、x = 5。',
+       '2x − 6 = −4 のとき 2x = 2、x = 1。',
+       'よって x = 1, 5。'],
+    k:'|A| = k （k > 0）⇔ A = k または A = −k'},
+   {q:'x = 2 + √3 のとき、x + {1|x} の値は？',
+    c:['4','2√3','4 + 2√3','1'], a:0,
+    s:['{1|x} = {1|2 + √3}。まず分母を有理化する。',
+       '分母・分子に 2 − √3 をかけると、分母は 2² − (√3)² = 4 − 3 = 1。よって {1|x} = 2 − √3。',
+       'x + {1|x} = (2 + √3) + (2 − √3)。',
+       '√3 どうしが消えて 4。'],
+    k:'(2 + √3)(2 − √3) = 1。有理化すると √ が消えることがある'}
+  ]
+},
+{
+  name:'B2F　2次関数の回廊', sub:'数学Ⅰ｜平方完成・最大最小・2次不等式',
+  cw:8, ch:6, gems:5, seed:2022,
+  theme:{ wall:'#3f5a46', mortar:'#1e2a22', accent:'#7bdcb5',
+          ceilTop:'#040706', ceilBot:'#152019', flrTop:'#1d271f', flrBot:'#070a08', range:9.5 },
+  tips:['頂点を出したいときは平方完成。y = a(x − p)² + q の (p, q)。','2次方程式はまず因数分解を試し、だめなら解の公式へ。'],
+  pool:[
+   {q:'y = x² − 4x + 1 のグラフの頂点は？',
+    c:['(2, −3)','(−2, −3)','(2, 3)','(4, 1)'], a:0,
+    s:['平方完成する。まず x² − 4x の部分に注目。',
+       'x² − 4x = (x − 2)² − 4。（−4 の半分 −2 を2乗した 4 を、あとで引いておく）',
+       'y = (x − 2)² − 4 + 1 = (x − 2)² − 3。',
+       'y = a(x − p)² + q の頂点は (p, q) なので、頂点は (2, −3)。'],
+    k:'y = a(x − p)² + q の頂点は (p, q)'},
+   {q:'y = −2x² + 8x − 3 の最大値は？',
+    c:['5','3','−3','最大値はない'], a:0,
+    s:['x² の係数が負なので上に凸。いちばん高いところ＝頂点が最大値になる。',
+       'y = −2(x² − 4x) − 3。かっこの中を平方完成して x² − 4x = (x − 2)² − 4。',
+       'y = −2{(x − 2)² − 4} − 3 = −2(x − 2)² + 8 − 3 = −2(x − 2)² + 5。',
+       'x = 2 のとき最大値 5。'],
+    k:'上に凸（a < 0）なら頂点が最大値、下に凸（a > 0）なら頂点が最小値'},
+   {q:'x² − 5x + 6 > 0 の解は？',
+    c:['x < 2, 3 < x','2 < x < 3','x ≦ 2, 3 ≦ x','すべての実数'], a:0,
+    s:['まず因数分解する。かけて 6、たして −5 は −2 と −3。x² − 5x + 6 = (x − 2)(x − 3)。',
+       'y = (x − 2)(x − 3) のグラフは下に凸で、x 軸と x = 2, 3 で交わる。',
+       '「> 0」はグラフが x 軸より上の部分。下に凸なので、それは2つの交点の外側。',
+       'よって x < 2, 3 < x。等号がないので、境界の 2 と 3 は含まない（白丸）。'],
+    k:'2次不等式は「因数分解 → グラフ → x 軸の上か下か」で読む'},
+   {q:'x² − 2x − 3 ≦ 0 の解は？',
+    c:['−1 ≦ x ≦ 3','x ≦ −1, 3 ≦ x','−3 ≦ x ≦ 1','1 ≦ x ≦ 3'], a:0,
+    s:['因数分解する。かけて −3、たして −2 は 1 と −3。x² − 2x − 3 = (x + 1)(x − 3)。',
+       'グラフは下に凸で、x 軸との交点は x = −1 と x = 3。',
+       '「≦ 0」は x 軸より下（と交点）。下に凸なので、それは2交点の間。',
+       'よって −1 ≦ x ≦ 3。等号があるので両端を含む（塗り丸）。'],
+    k:'下に凸で「≦ 0」は2解の間、「≧ 0」は2解の外側'},
+   {q:'2次方程式 x² + 2x + 3 = 0 の実数解の個数は？',
+    c:['0個','1個','2個','3個'], a:0,
+    s:['まず因数分解を試す。かけて 3、たして 2 になる整数の組はない。',
+       '因数分解できないので解の公式にうつる。そこで根号の中身（判別式 D = b² − 4ac）を確認する。',
+       'D = 2² − 4 · 1 · 3 = 4 − 12 = −8。',
+       'D < 0 なので実数解は 0個。グラフは x 軸と交わらない。'],
+    k:'D = b² − 4ac。D > 0 で2個、D = 0 で1個（重解）、D < 0 で0個'},
+   {q:'x² − 3x + 1 = 0 を解くと？',
+    c:['x = {3 ± √5|2}','x = {3 ± √13|2}','x = {−3 ± √5|2}','x = 3 ± √5'], a:0,
+    s:['因数分解を試す。かけて 1、たして −3 になる整数の組はない。だから解の公式を使う。',
+       'x = {−b ± √(b² − 4ac)|2a} に a = 1、b = −3、c = 1 を入れる。',
+       '根号の中は (−3)² − 4 · 1 · 1 = 9 − 4 = 5。',
+       'x = {3 ± √5|2}。（1.38… のような小数にせず、根号のまま答える）'],
+    k:'解の公式 x = {−b ± √(b² − 4ac)|2a}'},
+   {q:'0 ≦ x ≦ 3 における y = x² − 2x の最小値は？',
+    c:['−1','0','−3','3'], a:0,
+    s:['平方完成する。y = (x − 1)² − 1 なので頂点は (1, −1)。',
+       '下に凸だから、いちばん低いのは頂点。ただし頂点の x = 1 が範囲の中にあるか確かめる。',
+       '0 ≦ 1 ≦ 3 なので範囲の中。よって頂点がそのまま最小になる。',
+       '最小値は −1（x = 1 のとき）。'],
+    k:'範囲つきの最大・最小は「頂点が範囲の中か外か」を必ず確認する'}
+  ]
+},
+{
+  name:'B3F　三角比の神殿', sub:'数学Ⅰ｜三角比・正弦定理・余弦定理',
+  cw:8, ch:7, gems:5, seed:3033,
+  theme:{ wall:'#6b5a43', mortar:'#332a1e', accent:'#ffb37a',
+          ceilTop:'#070503', ceilBot:'#231c12', flrTop:'#2a2217', flrBot:'#0b0805', range:10 },
+  tips:['30°・60°は「1 : 2 : √3」、45°は「1 : 1 : √2」の直角三角形で思い出す。','sin²θ + cos²θ = 1 はいつでも成り立つ。'],
+  pool:[
+   {q:'sin 30° + cos 60° の値は？',
+    c:['1','{1|2}','√3','{√3|2}'], a:0,
+    s:['30°、60° は正三角形を半分にした「1 : 2 : √3」の直角三角形で考える。',
+       'sin 30° = {対辺|斜辺} = {1|2}。',
+       'cos 60° = {隣辺|斜辺} = {1|2}。',
+       '{1|2} + {1|2} = 1。'],
+    k:'sin 30° = {1|2}、cos 60° = {1|2}、sin 60° = cos 30° = {√3|2}'},
+   {q:'tan 60° の値は？',
+    c:['√3','{1|√3}','{√3|2}','1'], a:0,
+    s:['1 : 2 : √3 の直角三角形で、60° の角から見る。',
+       '60° の対辺は √3、隣辺は 1。',
+       'tan = {対辺|隣辺} なので {√3|1}。',
+       'よって tan 60° = √3。'],
+    k:'tan θ = {sin θ|cos θ} = {対辺|隣辺}'},
+   {q:'θ が鋭角で sin θ = {3|5} のとき、cos θ は？',
+    c:['{4|5}','{5|4}','{3|4}','{2|5}'], a:0,
+    s:['相互関係 sin²θ + cos²θ = 1 を使う。',
+       'cos²θ = 1 − sin²θ = 1 − {9|25} = {16|25}。',
+       'θ は鋭角なので cos θ > 0。負のほうは捨てる。',
+       'cos θ = {4|5}。（3 : 4 : 5 の直角三角形になっている）'],
+    k:'sin²θ + cos²θ = 1'},
+   {q:'△ABC で a = 6、A = 30° のとき、外接円の半径 R は？',
+    c:['6','3','12','√3'], a:0,
+    s:['辺 a とその向かいの角 A の組があるので、正弦定理 {a|sin A} = 2R が使える。',
+       'sin 30° = {1|2} なので、6 ÷ {1|2} = 12。つまり 2R = 12。',
+       '両辺を2でわる。',
+       'R = 6。'],
+    k:'正弦定理 {a|sin A} = {b|sin B} = {c|sin C} = 2R'},
+   {q:'△ABC で b = 3、c = 5、A = 60° のとき、辺 a は？',
+    c:['√19','√34','7','√13'], a:0,
+    s:['2辺とその間の角がわかっているので余弦定理 a² = b² + c² − 2bc cos A。',
+       'a² = 3² + 5² − 2 · 3 · 5 · cos 60°。',
+       'cos 60° = {1|2} だから a² = 9 + 25 − 30 × {1|2} = 34 − 15 = 19。',
+       'a = √19。（a² と a を取りちがえない）'],
+    k:'余弦定理 a² = b² + c² − 2bc cos A'},
+   {q:'b = 4、c = 6、A = 30° の △ABC の面積は？',
+    c:['6','12','24','3√3'], a:0,
+    s:['2辺とその間の角から面積を出す式 S = {1|2} bc sin A を使う。',
+       'sin 30° = {1|2}。',
+       'S = {1|2} × 4 × 6 × {1|2}。',
+       '{1|2} × 24 × {1|2} = 6。'],
+    k:'S = {1|2} bc sin A（2辺とその間の角から面積）'},
+   {q:'sin 120° の値は？',
+    c:['{√3|2}','−{√3|2}','{1|2}','−{1|2}'], a:0,
+    s:['120° は鈍角。鈍角の三角比は sin(180° − θ) = sin θ で考える。',
+       '180° − 120° = 60° なので sin 120° = sin 60°。',
+       'sin 60° = {√3|2}。',
+       'よって {√3|2}。単位円で見ても y 座標は正なので符号は正。'],
+    k:'sin(180° − θ) = sin θ、cos(180° − θ) = −cos θ'}
+  ]
+},
+{
+  name:'B4F　場合の数と確率の広間', sub:'数学A｜順列・組合せ・確率',
+  cw:9, ch:7, gems:5, seed:4044,
+  theme:{ wall:'#4a3f63', mortar:'#241e33', accent:'#c39bff',
+          ceilTop:'#060409', ceilBot:'#1c1730', flrTop:'#231d36', flrBot:'#09070d', range:9.5 },
+  tips:['「並べる」なら P、「選ぶだけ」なら C。','確率の分母は「起こりうる全部の場合の数」。'],
+  pool:[
+   {q:'5人の中から3人の委員を選ぶ方法は何通り？',
+    c:['10通り','60通り','120通り','15通り'], a:0,
+    s:['委員に順番はないので「選ぶだけ」。組合せ C を使う。',
+       '₅C₃ = {5 × 4 × 3|3 × 2 × 1}。',
+       '分子は 60、分母は 6。',
+       '{60|6} = 10 で、10通り。'],
+    k:'ₙCᵣ は「選ぶだけ」、ₙPᵣ は「選んで並べる」'},
+   {q:'5人を1列に並べる方法は何通り？',
+    c:['120通り','25通り','60通り','10通り'], a:0,
+    s:['先頭から順に、そこに入る人を決めていく。',
+       '1番目は5通り、決まると2番目は残り4通り、3番目は3通り…と減っていく。',
+       '5 × 4 × 3 × 2 × 1 を計算する。',
+       '120通り。これを 5!（5の階乗）と書く。'],
+    k:'n個すべてを並べる方法は n! 通り'},
+   {q:'異なる6種類の苗から3種類を選んで、順に植える方法は？',
+    c:['120通り','20通り','216通り','18通り'], a:0,
+    s:['植える順番が意味を持つので順列 P を使う。',
+       '₆P₃ = 6 × 5 × 4。（6から始めて3個ぶんかける）',
+       '6 × 5 = 30、30 × 4 = 120。',
+       '120通り。選ぶだけの ₆C₃ = 20 の、並べ方 3! = 6 倍になっている。'],
+    k:'ₙPᵣ = n(n−1)… の r 個の積。ₙPᵣ = ₙCᵣ × r!'},
+   {q:'さいころを2個投げて、目の和が7になる確率は？',
+    c:['{1|6}','{1|12}','{7|36}','{1|9}'], a:0,
+    s:['起こりうる全部の場合は 6 × 6 = 36通り。これが分母。',
+       '和が7になるのは (1,6) (2,5) (3,4) (4,3) (5,2) (6,1) の6通り。',
+       '確率は {6|36}。',
+       '約分して {1|6}。'],
+    k:'確率 = {条件に合う場合の数|起こりうる全部の場合の数}'},
+   {q:'コインを3枚投げて、ちょうど2枚が表になる確率は？',
+    c:['{3|8}','{1|2}','{1|4}','{1|8}'], a:0,
+    s:['全部の出方は 2 × 2 × 2 = 8通り。',
+       'ちょうど2枚が表になるのは、3枚のうちどの2枚が表かで決まる。',
+       '₃C₂ = 3通り（表表裏・表裏表・裏表表）。',
+       '確率は {3|8}。'],
+    k:'n回のうちちょうど r 回起こる場合の数は ₙCᵣ 通り'},
+   {q:'赤玉3個・白玉2個の袋から同時に2個取るとき、2個とも赤の確率は？',
+    c:['{3|10}','{2|5}','{3|5}','{9|25}'], a:0,
+    s:['同時に取るので順番は考えない。5個から2個取る方法は ₅C₂ = {5 × 4|2 × 1} = 10通り。',
+       '2個とも赤になるのは、赤3個から2個を選ぶ場合。',
+       '₃C₂ = 3通り。',
+       '確率は {3|10}。'],
+    k:'同時に取り出す確率は「組合せ ÷ 組合せ」で求める'},
+   {q:'さいころを1個投げて、偶数の目または3の倍数の目が出る確率は？',
+    c:['{2|3}','{1|2}','{5|6}','{1|3}'], a:0,
+    s:['偶数は {2, 4, 6} の3通り、3の倍数は {3, 6} の2通り。',
+       'そのまま 3 + 2 = 5 とすると、両方にある 6 を2回数えてしまう。',
+       '重なりの1通りを引く。3 + 2 − 1 = 4通り。',
+       '確率は {4|6} = {2|3}。'],
+    k:'P(A または B) = P(A) + P(B) − P(A かつ B)'}
+  ]
+},
+{
+  name:'B5F　指数・対数・数列の深層', sub:'数学Ⅱ・B｜指数法則・対数・数列',
+  cw:9, ch:8, gems:5, seed:5055,
+  theme:{ wall:'#2f4266', mortar:'#141d2f', accent:'#6fd8ff',
+          ceilTop:'#03050a', ceilBot:'#101a2c', flrTop:'#182235', flrBot:'#05070c', range:10 },
+  tips:['指数はかけ算のとき足し算になる。aᵐ × aⁿ = aᵐ⁺ⁿ。','logₐ M = p は「a を p 乗すると M」という意味。'],
+  pool:[
+   {q:'2³ × 2⁴ の値は？',
+    c:['128','64','256','4096'], a:0,
+    s:['底が同じかけ算は、指数どうしを足す。aᵐ × aⁿ = aᵐ⁺ⁿ。',
+       '2³ × 2⁴ = 2³⁺⁴ = 2⁷。',
+       '2⁷ = 128。',
+       '指数をかけて 2¹² = 4096 としないよう注意する。'],
+    k:'aᵐ × aⁿ = aᵐ⁺ⁿ、aᵐ ÷ aⁿ = aᵐ⁻ⁿ、(aᵐ)ⁿ = aᵐⁿ'},
+   {q:'8 の {2|3} 乗の値は？',
+    c:['4','16','2','{16|3}'], a:0,
+    s:['8 を 2 の累乗で書き直すと計算しやすい。8 = 2³。',
+       '(2³) の {2|3} 乗 = 2 の (3 × {2|3}) 乗。',
+       '3 × {2|3} = 2 なので 2²。',
+       '答えは 4。（3乗根をとって 2、それを2乗して 4 と考えても同じ）'],
+    k:'a の {m|n} 乗 = ⁿ√(aᵐ)、a の −n 乗 = {1|aⁿ}'},
+   {q:'log₂ 8 の値は？',
+    c:['3','4','{1|3}','8'], a:0,
+    s:['log₂ 8 は「2 を何乗すると 8 になるか」を表す。',
+       '2¹ = 2、2² = 4、2³ = 8 と試す。',
+       '3乗で 8 になった。',
+       'log₂ 8 = 3。'],
+    k:'logₐ M = p ⇔ aᵖ = M'},
+   {q:'log₁₀ 2 + log₁₀ 5 の値は？',
+    c:['1','log₁₀ 7','10','0.7'], a:0,
+    s:['対数の足し算は、中身のかけ算になる。logₐ M + logₐ N = logₐ MN。',
+       'log₁₀ 2 + log₁₀ 5 = log₁₀ (2 × 5)。',
+       '= log₁₀ 10 で、10 を1乗すると 10。',
+       'よって 1。'],
+    k:'logₐ MN = logₐ M + logₐ N、logₐ {M|N} = logₐ M − logₐ N'},
+   {q:'等差数列 3, 7, 11, 15, … の第10項は？',
+    c:['39','43','40','36'], a:0,
+    s:['となりとの差を見る。7 − 3 = 4 なので公差 d = 4、初項 a = 3。',
+       '一般項は aₙ = a + (n − 1)d。',
+       'a₁₀ = 3 + (10 − 1) × 4 = 3 + 36。',
+       '= 39。（n ではなく n − 1 をかけるのがポイント）'],
+    k:'等差数列 aₙ = a + (n − 1)d'},
+   {q:'等差数列 3, 7, 11, … の初項から第10項までの和は？',
+    c:['210','195','390','230'], a:0,
+    s:['まず末項が必要。a₁₀ = 3 + 9 × 4 = 39。',
+       '和の公式は Sₙ = {n(a + l)|2}（l は末項）。',
+       'S₁₀ = {10 × (3 + 39)|2} = {10 × 42|2}。',
+       '= 210。'],
+    k:'Sₙ = {n(a + l)|2}（初項 a、末項 l、項数 n）'},
+   {q:'等比数列 2, 6, 18, 54, … の第5項は？',
+    c:['162','108','216','486'], a:0,
+    s:['となりとの比を見る。6 ÷ 2 = 3 なので公比 r = 3、初項 a = 2。',
+       '一般項は aₙ = a rⁿ⁻¹。',
+       'a₅ = 2 × 3⁴ = 2 × 81。',
+       '= 162。'],
+    k:'等比数列 aₙ = a rⁿ⁻¹'},
+   {q:'1 + 2 + 3 + … + 20 の値は？',
+    c:['210','200','420','190'], a:0,
+    s:['1 から n までの和の公式 Σ k = {n(n + 1)|2} を使う。',
+       'n = 20 を代入する。',
+       '{20 × 21|2} = {420|2}。',
+       '= 210。'],
+    k:'Σ(k = 1〜n) k = {n(n + 1)|2}'}
+  ]
+}
+];
+
+/* ==================================================================
+   2. テクスチャ（すべてプログラムで描く。画像ファイルなし）
+   ================================================================== */
+var TEX = 64;
+function mkCanvas(w,h){ var c=document.createElement('canvas'); c.width=w; c.height=h; return c; }
+function hex2rgb(h){ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
+function shade(h,f){
+  var v=hex2rgb(h), k=function(x){ return Math.max(0,Math.min(255,Math.round(x*(1+f)))); };
+  return 'rgb('+k(v[0])+','+k(v[1])+','+k(v[2])+')';
+}
+function brickTex(base,mortar){
+  var c=mkCanvas(TEX,TEX), x=c.getContext('2d'), bh=8, r=0, cx;
+  x.fillStyle=mortar; x.fillRect(0,0,TEX,TEX);
+  for(r=0;r<TEX/bh;r++){
+    var off=(r%2)?8:0;
+    for(cx=-16;cx<TEX;cx+=16){
+      x.fillStyle=shade(base, Math.random()*0.22-0.11);
+      x.fillRect(cx+off+1, r*bh+1, 14, bh-2);
+    }
+  }
+  x.fillStyle='rgba(0,0,0,.18)';
+  for(var i=0;i<60;i++) x.fillRect((Math.random()*TEX)|0,(Math.random()*TEX)|0,1,1);
+  return c;
+}
+function runeTex(base,mortar,accent,glyph){
+  var c=brickTex(base,mortar), x=c.getContext('2d');
+  x.fillStyle='rgba(0,0,0,.35)'; x.fillRect(14,12,36,40);
+  x.strokeStyle=accent; x.lineWidth=2; x.strokeRect(14,12,36,40);
+  x.fillStyle=accent; x.font='bold 26px serif'; x.textAlign='center'; x.textBaseline='middle';
+  x.shadowColor=accent; x.shadowBlur=8;
+  x.fillText(glyph,32,33);
+  return c;
+}
+function doorTex(accent, filled, total){
+  var c=mkCanvas(TEX,TEX), x=c.getContext('2d'), i;
+  var g=x.createLinearGradient(0,0,0,TEX);
+  g.addColorStop(0,'#11141c'); g.addColorStop(.5,'#232a3a'); g.addColorStop(1,'#0d1015');
+  x.fillStyle=g; x.fillRect(0,0,TEX,TEX);
+  x.strokeStyle='#3d4760'; x.lineWidth=3;
+  x.beginPath(); x.moveTo(8,TEX); x.lineTo(8,24); x.quadraticCurveTo(32,2,56,24); x.lineTo(56,TEX); x.stroke();
+  x.fillStyle='#181d28';
+  x.beginPath(); x.moveTo(10,TEX); x.lineTo(10,25); x.quadraticCurveTo(32,5,54,25); x.lineTo(54,TEX); x.fill();
+  x.strokeStyle='#2a3244'; x.lineWidth=1;
+  x.beginPath(); x.moveTo(32,25); x.lineTo(32,TEX); x.stroke();
+  for(i=0;i<total;i++){
+    var ang = Math.PI + (i+0.5)/total*Math.PI;
+    var px = 32 + Math.cos(ang)*17, py = 40 + Math.sin(ang)*15;
+    x.beginPath(); x.arc(px,py,3.6,0,7);
+    if(i<filled){ x.fillStyle=accent; x.shadowColor=accent; x.shadowBlur=7; x.fill(); x.shadowBlur=0; }
+    else { x.fillStyle='#0c0f16'; x.fill(); x.strokeStyle='#39425a'; x.lineWidth=1.4; x.stroke(); }
+  }
+  return c;
+}
+function gemSprite(col){
+  var c=mkCanvas(TEX,TEX), x=c.getContext('2d');
+  var g=x.createRadialGradient(32,32,2,32,32,28);
+  g.addColorStop(0,col); g.addColorStop(.35,'rgba(120,200,255,.35)'); g.addColorStop(1,'rgba(0,0,0,0)');
+  x.fillStyle=g; x.fillRect(0,0,TEX,TEX);
+  x.beginPath(); x.moveTo(32,6); x.lineTo(49,26); x.lineTo(32,58); x.lineTo(15,26); x.closePath();
+  var lg=x.createLinearGradient(15,6,49,58);
+  lg.addColorStop(0,'#ffffff'); lg.addColorStop(.35,col); lg.addColorStop(1,'#123049');
+  x.fillStyle=lg; x.fill();
+  x.strokeStyle='rgba(255,255,255,.85)'; x.lineWidth=1.6; x.stroke();
+  x.beginPath(); x.moveTo(15,26); x.lineTo(49,26); x.moveTo(32,6); x.lineTo(32,58);
+  x.strokeStyle='rgba(255,255,255,.45)'; x.lineWidth=1; x.stroke();
+  return c;
+}
+function potionSprite(){
+  var c=mkCanvas(TEX,TEX), x=c.getContext('2d');
+  x.fillStyle='rgba(255,90,90,.20)'; x.beginPath(); x.arc(32,40,20,0,7); x.fill();
+  x.fillStyle='#cfd8ea'; x.fillRect(27,12,10,10);
+  x.beginPath(); x.moveTo(27,20); x.lineTo(19,38); x.quadraticCurveTo(19,56,32,56);
+  x.quadraticCurveTo(45,56,45,38); x.lineTo(37,20); x.closePath();
+  x.fillStyle='rgba(215,228,245,.55)'; x.fill();
+  x.strokeStyle='#e7eefb'; x.lineWidth=1.6; x.stroke();
+  x.save(); x.clip();
+  x.fillStyle='#e8404a'; x.fillRect(16,34,32,24);
+  x.fillStyle='rgba(255,255,255,.35)'; x.fillRect(16,34,32,2);
+  x.restore();
+  x.fillStyle='#8a6b3c'; x.fillRect(25,8,14,7);
+  return c;
+}
+function steleSprite(accent){
+  var c=mkCanvas(TEX,TEX), x=c.getContext('2d'), i;
+  x.fillStyle='rgba(0,0,0,.25)'; x.fillRect(12,58,40,5);
+  var g=x.createLinearGradient(0,0,0,TEX);
+  g.addColorStop(0,'#6c7489'); g.addColorStop(1,'#333a4a');
+  x.fillStyle=g;
+  x.beginPath(); x.moveTo(18,58); x.lineTo(18,16); x.quadraticCurveTo(32,4,46,16); x.lineTo(46,58); x.closePath(); x.fill();
+  x.strokeStyle='#8d97ad'; x.lineWidth=1.5; x.stroke();
+  x.strokeStyle=accent; x.lineWidth=2; x.shadowColor=accent; x.shadowBlur=6;
+  for(i=0;i<4;i++){ x.beginPath(); x.moveTo(24,24+i*8); x.lineTo(40-(i%2)*7,24+i*8); x.stroke(); }
+  return c;
+}
+
+/* ==================================================================
+   3. 迷路の生成
+   ================================================================== */
+function genMaze(cw,ch,rnd){
+  var W=cw*2+1, H=ch*2+1, g=[], y, x, i;
+  for(y=0;y<H;y++){ var row=[]; for(x=0;x<W;x++) row.push(1); g.push(row); }
+  var vis=[]; for(y=0;y<ch;y++){ var r2=[]; for(x=0;x<cw;x++) r2.push(false); vis.push(r2); }
+  var stack=[[0,0]]; vis[0][0]=true; g[1][1]=0;
+  var DIR=[[1,0],[-1,0],[0,1],[0,-1]];
+  while(stack.length){
+    var cur=stack[stack.length-1], cx=cur[0], cy=cur[1], cand=[];
+    for(i=0;i<4;i++){
+      var nx=cx+DIR[i][0], ny=cy+DIR[i][1];
+      if(nx>=0&&ny>=0&&nx<cw&&ny<ch&&!vis[ny][nx]) cand.push(DIR[i]);
+    }
+    if(!cand.length){ stack.pop(); continue; }
+    var d=cand[(rnd()*cand.length)|0];
+    g[cy*2+1+d[1]][cx*2+1+d[0]]=0;
+    g[(cy+d[1])*2+1][(cx+d[0])*2+1]=0;
+    vis[cy+d[1]][cx+d[0]]=true;
+    stack.push([cx+d[0],cy+d[1]]);
+  }
+  /* 行き止まりばかりだと迷うので、壁をすこし抜いて回り道を作る */
+  for(y=1;y<H-1;y++) for(x=1;x<W-1;x++){
+    if(g[y][x]===1 && ((x%2===0)!==(y%2===0)) && rnd()<0.16) g[y][x]=0;
+  }
+  return {W:W,H:H,g:g};
+}
+function bfs(mz,sx,sy){
+  var d=[], y, x;
+  for(y=0;y<mz.H;y++){ var r=[]; for(x=0;x<mz.W;x++) r.push(-1); d.push(r); }
+  d[sy][sx]=0;
+  var q=[[sx,sy]], head=0, DIR=[[1,0],[-1,0],[0,1],[0,-1]];
+  while(head<q.length){
+    var c=q[head++];
+    for(var i=0;i<4;i++){
+      var nx=c[0]+DIR[i][0], ny=c[1]+DIR[i][1];
+      if(nx<0||ny<0||nx>=mz.W||ny>=mz.H) continue;
+      if(mz.g[ny][nx]!==0||d[ny][nx]>=0) continue;
+      d[ny][nx]=d[c[1]][c[0]]+1; q.push([nx,ny]);
+    }
+  }
+  return d;
+}
+function nbrOpen(mz,x,y){
+  var n=0, DIR=[[1,0],[-1,0],[0,1],[0,-1]];
+  for(var i=0;i<4;i++){
+    var nx=x+DIR[i][0], ny=y+DIR[i][1];
+    if(nx>=0&&ny>=0&&nx<mz.W&&ny<mz.H&&mz.g[ny][nx]===0) n++;
+  }
+  return n;
+}
+
+/* ==================================================================
+   4. 状態
+   ================================================================== */
+var st = {
+  mode:'title', fi:0, hp:3, maxhp:3, gems:0, need:0,
+  mz:null, items:[], seen:null, door:{x:1,y:1}, tex:{}, theme:null,
+  notes:[], tries:0, first:0, startTime:0, elapsed:0, seed:1, name:''
+};
+var P = { x:1.5, y:1.5, a:0, bob:0, walk:0 };
+var cur = null;
+
+var V=$('#view'), vctx=V.getContext('2d'), stage=$('#stage');
+var MINI=$('#mini'), mctx=MINI.getContext('2d');
+var zbuf=new Float32Array(8);
+var spTmp=mkCanvas(TEX,TEX), spCtx=spTmp.getContext('2d');
+
+function resize(){
+  var r=stage.getBoundingClientRect();
+  if(r.width<10||r.height<10) return;
+  var w=Math.max(260,Math.min(520,Math.round(r.width/2)));
+  var h=Math.max(160,Math.round(w*r.height/r.width));
+  V.width=w; V.height=h;
+  vctx.imageSmoothingEnabled=false;
+  zbuf=new Float32Array(w);
+}
+window.addEventListener('resize',resize);
+
+/* ==================================================================
+   5. 階の組み立て
+   ================================================================== */
+function buildFloor(i){
+  var F=FLOORS[i], rnd=mulberry32(F.seed+st.seed), x, y, k;
+  st.fi=i; st.theme=F.theme; st.gems=0; st.need=F.gems;
+  st.mz=genMaze(F.cw,F.ch,rnd);
+  var mz=st.mz;
+
+  /* 壁の装飾 */
+  var glyphs=['√','Σ','π','θ','∞','≦'];
+  for(y=1;y<mz.H-1;y++) for(x=1;x<mz.W-1;x++){
+    if(mz.g[y][x]===1 && rnd()<0.07) mz.g[y][x]=2;
+  }
+  st.tex.wall=brickTex(F.theme.wall,F.theme.mortar);
+  st.tex.rune=runeTex(F.theme.wall,F.theme.mortar,F.theme.accent,glyphs[(rnd()*glyphs.length)|0]);
+  st.tex.gem=gemSprite(F.theme.accent);
+  st.tex.potion=potionSprite();
+  st.tex.stele=steleSprite(F.theme.accent);
+
+  /* 未踏破マップ */
+  st.seen=[]; for(y=0;y<mz.H;y++){ var r=[]; for(x=0;x<mz.W;x++) r.push(false); st.seen.push(r); }
+
+  /* 出発点からの距離 */
+  var dist=bfs(mz,1,1);
+  var cells=[];
+  for(y=1;y<mz.H-1;y++) for(x=1;x<mz.W-1;x++)
+    if(mz.g[y][x]===0 && dist[y][x]>0) cells.push({x:x,y:y,d:dist[y][x],dead:nbrOpen(mz,x,y)===1});
+  cells.sort(function(a,b){ return b.d-a.d; });
+
+  /* 扉はいちばん遠い行き止まりに */
+  var door=null;
+  for(k=0;k<cells.length;k++){ if(cells[k].dead){ door=cells[k]; break; } }
+  if(!door) door=cells[0];
+  mz.g[door.y][door.x]=3;
+  st.door={x:door.x,y:door.y};
+
+  /* 結晶（問題）は離れた行き止まり優先 */
+  var used=[{x:door.x,y:door.y}], picks=[];
+  function farEnough(c){
+    for(var j=0;j<used.length;j++)
+      if(Math.abs(used[j].x-c.x)+Math.abs(used[j].y-c.y)<4) return false;
+    return true;
+  }
+  var pass, list;
+  for(pass=0;pass<2 && picks.length<st.need;pass++){
+    list = pass===0 ? cells.filter(function(c){return c.dead;}) : cells;
+    for(k=0;k<list.length && picks.length<st.need;k++){
+      var c=list[k];
+      if(c===door) continue;
+      if(!farEnough(c)) continue;
+      picks.push(c); used.push(c);
+    }
+  }
+  while(picks.length<st.need){ /* 保険（まず起きない） */
+    var c2=cells[(rnd()*cells.length)|0];
+    if(c2!==door){ picks.push(c2); used.push(c2); }
+  }
+
+  /* 問題をランダムに選んで結晶に割りあてる */
+  var order=shuffle(F.pool.map(function(_,idx){return idx;}),rnd).slice(0,st.need);
+  st.items=[];
+  for(k=0;k<picks.length;k++){
+    st.items.push({ x:picks[k].x+0.5, y:picks[k].y+0.5, kind:'gem', pid:order[k],
+                    tex:st.tex.gem, scale:0.5, flt:0.3, ph:rnd()*6, taken:false });
+  }
+  /* 回復のくすり 2つ */
+  var potN=0, guard=0;
+  while(potN<2 && guard++<400){
+    var pc=cells[(rnd()*cells.length)|0];
+    if(pc===door || !farEnough(pc)) continue;
+    st.items.push({ x:pc.x+0.5, y:pc.y+0.5, kind:'potion', tex:st.tex.potion,
+                    scale:0.34, flt:0, ph:0, taken:false });
+    used.push(pc); potN++;
+  }
+  /* 石碑（ヒント）を出発点の近くに */
+  var near=cells.filter(function(c){ return c.d>=2 && c.d<=6; });
+  if(near.length){
+    var nc=near[(rnd()*near.length)|0];
+    st.items.push({ x:nc.x+0.5, y:nc.y+0.5, kind:'stele', tex:st.tex.stele,
+                    scale:0.8, flt:0, ph:0, taken:false, tip:F.tips[(rnd()*F.tips.length)|0] });
+  }
+  st.tex.door=doorTex(F.theme.accent,0,st.need);
+
+  /* 開始位置と向き */
+  P.x=1.5; P.y=1.5; P.walk=0; P.bob=0;
+  P.a = (mz.g[1][2]===0) ? 0 : Math.PI/2;
+  mark();
+  updHUD();
+}
+
+function cellAt(x,y){
+  if(!st.mz) return 1;
+  if(x<0||y<0||x>=st.mz.W||y>=st.mz.H) return 1;
+  return st.mz.g[y][x];
+}
+function texFor(t){ return t===3 ? st.tex.door : (t===2 ? st.tex.rune : st.tex.wall); }
+
+/* ==================================================================
+   6. 3D描画（レイキャスティング）
+   ================================================================== */
+function render(t){
+  var W=V.width, H=V.height, x=vctx, col;
+  if(!st.theme){ x.fillStyle='#000'; x.fillRect(0,0,W,H); return; }
+  var TH=st.theme, horizon=H/2+P.bob;
+
+  var g=x.createLinearGradient(0,0,0,horizon);
+  g.addColorStop(0,TH.ceilTop); g.addColorStop(1,TH.ceilBot);
+  x.fillStyle=g; x.fillRect(0,0,W,horizon+1);
+  g=x.createLinearGradient(0,horizon,0,H);
+  g.addColorStop(0,TH.flrTop); g.addColorStop(1,TH.flrBot);
+  x.fillStyle=g; x.fillRect(0,horizon,W,H-horizon);
+
+  var dirX=Math.cos(P.a), dirY=Math.sin(P.a);
+  var planeX=-dirY*0.68, planeY=dirX*0.68;
+  var flicker=1+Math.sin(t/140)*0.02+Math.sin(t/57)*0.012;
+
+  for(col=0;col<W;col++){
+    var camX=2*col/W-1;
+    var rdx=dirX+planeX*camX, rdy=dirY+planeY*camX;
+    var mapX=Math.floor(P.x), mapY=Math.floor(P.y);
+    var ddx=Math.abs(1/(rdx||1e-9)), ddy=Math.abs(1/(rdy||1e-9));
+    var sx,sy,sdx,sdy;
+    if(rdx<0){ sx=-1; sdx=(P.x-mapX)*ddx; } else { sx=1; sdx=(mapX+1-P.x)*ddx; }
+    if(rdy<0){ sy=-1; sdy=(P.y-mapY)*ddy; } else { sy=1; sdy=(mapY+1-P.y)*ddy; }
+    var side=0, hit=0, guard=0;
+    while(!hit && guard++<80){
+      if(sdx<sdy){ sdx+=ddx; mapX+=sx; side=0; } else { sdy+=ddy; mapY+=sy; side=1; }
+      hit=cellAt(mapX,mapY);
+    }
+    if(!hit){ zbuf[col]=1e9; continue; }
+    var perp = side===0 ? (sdx-ddx) : (sdy-ddy);
+    if(perp<0.06) perp=0.06;
+    zbuf[col]=perp;
+    var lineH=Math.floor(H/perp);
+    var y0=Math.floor(horizon-lineH/2);
+    var wallX = side===0 ? (P.y+perp*rdy) : (P.x+perp*rdx);
+    wallX-=Math.floor(wallX);
+    var tx=Math.floor(wallX*TEX);
+    if(side===0&&rdx>0) tx=TEX-1-tx;
+    if(side===1&&rdy<0) tx=TEX-1-tx;
+    x.drawImage(texFor(hit),tx,0,1,TEX,col,y0,1,lineH);
+    var fog=Math.min(0.9, perp/(TH.range*flicker)) + (side===1?0.13:0);
+    if(fog>0.01){ x.fillStyle='rgba(0,0,0,'+Math.min(0.93,fog).toFixed(3)+')'; x.fillRect(col,y0,1,lineH); }
+  }
+  drawSprites(t,W,H,horizon,dirX,dirY,planeX,planeY);
+  /* 画面のふち（たいまつの明かり風） */
+  var vg=x.createRadialGradient(W/2,H/2,H*0.25,W/2,H/2,H*0.8);
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.55)');
+  x.fillStyle=vg; x.fillRect(0,0,W,H);
+}
+function shadeSprite(src,fog){
+  spCtx.globalCompositeOperation='source-over';
+  spCtx.clearRect(0,0,TEX,TEX);
+  spCtx.drawImage(src,0,0);
+  if(fog>0.02){
+    spCtx.globalCompositeOperation='source-atop';
+    spCtx.fillStyle='rgba(0,0,0,'+fog.toFixed(3)+')';
+    spCtx.fillRect(0,0,TEX,TEX);
+    spCtx.globalCompositeOperation='source-over';
+  }
+  return spTmp;
+}
+function drawSprites(t,W,H,horizon,dirX,dirY,planeX,planeY){
+  var x=vctx, list=[], i;
+  for(i=0;i<st.items.length;i++){
+    var s=st.items[i]; if(s.taken) continue;
+    var dx=s.x-P.x, dy=s.y-P.y;
+    list.push({s:s,d:dx*dx+dy*dy});
+  }
+  list.sort(function(a,b){ return b.d-a.d; });
+  var invDet=1/(planeX*dirY-dirX*planeY);
+  for(i=0;i<list.length;i++){
+    var sp=list[i].s, px=sp.x-P.x, py=sp.y-P.y;
+    var tX=invDet*(dirY*px-dirX*py);
+    var tY=invDet*(-planeY*px+planeX*py);
+    if(tY<=0.15) continue;
+    var scr=Math.floor((W/2)*(1+tX/tY));
+    var unit=H/tY;
+    var sz=Math.max(1,Math.floor(unit*sp.scale));
+    var flt = sp.flt ? (sp.flt+Math.sin(t/620+sp.ph)*0.045)*unit : 0;
+    var y0=Math.floor(horizon+unit*(0.5-sp.scale)-flt);
+    var x0=Math.floor(scr-sz/2);
+    var fog=Math.min(0.85, tY/st.theme.range);
+    var tex=shadeSprite(sp.tex,fog);
+    var a=Math.max(0,x0), b=Math.min(W,x0+sz);
+    for(var c=a;c<b;c++){
+      if(tY>=zbuf[c]) continue;
+      var tx=Math.floor((c-x0)*TEX/sz);
+      if(tx<0) tx=0; if(tx>TEX-1) tx=TEX-1;
+      x.drawImage(tex,tx,0,1,TEX,c,y0,1,sz);
+    }
+  }
+}
+
+/* ---------- ミニマップ ---------- */
+function mark(){
+  var cx=Math.floor(P.x), cy=Math.floor(P.y), dx, dy;
+  for(dy=-2;dy<=2;dy++) for(dx=-2;dx<=2;dx++){
+    var x=cx+dx, y=cy+dy;
+    if(x>=0&&y>=0&&x<st.mz.W&&y<st.mz.H) st.seen[y][x]=true;
+  }
+}
+function drawMini(){
+  if(!st.mz) return;
+  var S=116, x=mctx, n=Math.max(st.mz.W,st.mz.H), cs=S/n;
+  var ox=(S-st.mz.W*cs)/2, oy=(S-st.mz.H*cs)/2;
+  x.clearRect(0,0,S,S);
+  x.fillStyle='rgba(8,10,16,.75)'; x.fillRect(0,0,S,S);
+  for(var j=0;j<st.mz.H;j++) for(var i=0;i<st.mz.W;i++){
+    if(!st.seen[j][i]) continue;
+    var v=st.mz.g[j][i];
+    x.fillStyle = v===0 ? '#39425c' : (v===3 ? st.theme.accent : '#171c28');
+    x.fillRect(ox+i*cs,oy+j*cs,Math.ceil(cs),Math.ceil(cs));
+  }
+  for(var k=0;k<st.items.length;k++){
+    var s=st.items[k];
+    if(s.taken||s.kind==='stele') continue;
+    var ix=Math.floor(s.x), iy=Math.floor(s.y);
+    if(!st.seen[iy][ix]) continue;
+    x.fillStyle = s.kind==='gem' ? '#6fd8ff' : '#f06a6a';
+    x.beginPath(); x.arc(ox+(s.x)*cs,oy+(s.y)*cs,Math.max(1.6,cs*0.28),0,7); x.fill();
+  }
+  x.fillStyle='#ffd166';
+  x.beginPath();
+  var px=ox+P.x*cs, py=oy+P.y*cs, r=Math.max(2.5,cs*0.42);
+  x.moveTo(px+Math.cos(P.a)*r*1.5, py+Math.sin(P.a)*r*1.5);
+  x.lineTo(px+Math.cos(P.a+2.4)*r, py+Math.sin(P.a+2.4)*r);
+  x.lineTo(px+Math.cos(P.a-2.4)*r, py+Math.sin(P.a-2.4)*r);
+  x.closePath(); x.fill();
+}
+
+/* ==================================================================
+   7. 操作
+   ================================================================== */
+var keys={}, stickV={x:0,y:0};
+function keyName(e){
+  var k=e.key.toLowerCase();
+  if(k==='arrowup') return 'w'; if(k==='arrowdown') return 's';
+  if(k==='arrowleft') return 'a'; if(k==='arrowright') return 'd';
+  return k;
+}
+document.addEventListener('keydown',function(e){
+  var k=keyName(e);
+  if([' ','w','a','s','d','q','e'].indexOf(k)>=0) e.preventDefault();
+  if(st.mode!=='play'){
+    if(k==='escape'&&(st.mode==='note'||st.mode==='help')) closeOv();
+    return;
+  }
+  if(k===' '||k==='enter'){ act(); return; }
+  if(k==='m'){ openNote(); return; }
+  keys[k]=true;
+});
+document.addEventListener('keyup',function(e){ keys[keyName(e)]=false; });
+window.addEventListener('blur',function(){ keys={}; stickV.x=0; stickV.y=0; });
+
+/* 画面ドラッグで見まわす */
+(function(){
+  var down=false, lx=0;
+  V.addEventListener('pointerdown',function(e){ down=true; lx=e.clientX; V.setPointerCapture(e.pointerId); });
+  V.addEventListener('pointermove',function(e){
+    if(!down||st.mode!=='play') return;
+    P.a += (e.clientX-lx)*0.005; lx=e.clientX;
+  });
+  V.addEventListener('pointerup',function(e){ down=false; });
+  V.addEventListener('pointercancel',function(){ down=false; });
+})();
+
+/* バーチャルスティック */
+(function(){
+  var el=$('#stick'), knob=$('#knob'), id=null, cx=0, cy=0, R=42;
+  function setKnob(dx,dy){ knob.style.transform='translate('+dx+'px,'+dy+'px)'; }
+  el.addEventListener('pointerdown',function(e){
+    var r=el.getBoundingClientRect(); cx=r.left+r.width/2; cy=r.top+r.height/2;
+    id=e.pointerId; el.setPointerCapture(id); move(e);
+  });
+  el.addEventListener('pointermove',function(e){ if(e.pointerId===id) move(e); });
+  function end(){ id=null; stickV.x=0; stickV.y=0; setKnob(0,0); }
+  el.addEventListener('pointerup',end); el.addEventListener('pointercancel',end);
+  function move(e){
+    var dx=e.clientX-cx, dy=e.clientY-cy, d=Math.hypot(dx,dy);
+    if(d>R){ dx=dx/d*R; dy=dy/d*R; }
+    setKnob(dx,dy);
+    stickV.x=dx/R; stickV.y=-dy/R;
+  }
+})();
+$('#tAct').addEventListener('click',function(){ if(st.mode==='play') act(); });
+$('#tNote').addEventListener('click',openNote);
+$('#bNote').addEventListener('click',openNote);
+$('#bHelp').addEventListener('click',openHelp);
+if(window.matchMedia && window.matchMedia('(pointer:fine)').matches) document.body.classList.add('nopad');
+
+/* ---------- 移動 ---------- */
+function canWalk(x,y){
+  var r=0.28, i, j;
+  for(i=-1;i<=1;i+=2) for(j=-1;j<=1;j+=2)
+    if(cellAt(Math.floor(x+i*r),Math.floor(y+j*r))>0) return false;
+  return true;
+}
+function update(dt){
+  var f=0, sV=0, rot=0;
+  if(keys['w']) f+=1;
+  if(keys['s']) f-=1;
+  if(keys['q']) sV-=1;
+  if(keys['e']) sV+=1;
+  if(keys['a']) rot-=1;
+  if(keys['d']) rot+=1;
+  f+=stickV.y; rot+=stickV.x*0.9;
+  if(f>1) f=1; if(f<-1) f=-1;
+
+  P.a += rot*2.3*dt;
+  var spd=2.7*dt;
+  var dx=Math.cos(P.a)*f*spd + Math.cos(P.a+Math.PI/2)*sV*spd;
+  var dy=Math.sin(P.a)*f*spd + Math.sin(P.a+Math.PI/2)*sV*spd;
+  if(dx||dy){
+    if(canWalk(P.x+dx,P.y)) P.x+=dx;
+    if(canWalk(P.x,P.y+dy)) P.y+=dy;
+    P.walk += Math.hypot(dx,dy)*9;
+    mark();
+  }
+  P.bob = Math.sin(P.walk)*(V.height*0.006);
+  st.elapsed = (Date.now()-st.startTime)/1000;
+  checkNear();
+}
+
+/* ---------- しらべる ---------- */
+function nearItem(){
+  var best=null, bd=1e9;
+  for(var i=0;i<st.items.length;i++){
+    var s=st.items[i]; if(s.taken) continue;
+    var d=Math.hypot(s.x-P.x,s.y-P.y);
+    if(d<0.95&&d<bd){ bd=d; best=s; }
+  }
+  return best;
+}
+function facingDoor(){
+  var fx=P.x+Math.cos(P.a)*0.85, fy=P.y+Math.sin(P.a)*0.85;
+  return cellAt(Math.floor(fx),Math.floor(fy))===3;
+}
+function checkNear(){
+  var el=$('#prompt'), it=nearItem(), msg='';
+  if(it) msg = it.kind==='gem' ? '💎 数の結晶' : (it.kind==='potion' ? '🧪 回復のくすり' : '🪧 石碑');
+  else if(facingDoor()) msg = '🚪 封印の扉';
+  /* パソコンではキーを案内する。スマホは右下の「調べる」ボタンが見えているので名前だけ */
+  if(msg && document.body.classList.contains('nopad')) msg += '　→ スペースキーで調べる';
+  if(msg){ el.textContent=msg; el.style.display='block'; } else el.style.display='none';
+}
+function act(){
+  var it=nearItem();
+  if(it){
+    if(it.kind==='gem'){ openQuiz(it); return; }
+    if(it.kind==='potion'){
+      it.taken=true;
+      if(st.hp<st.maxhp){ st.hp++; toast('体力が1回復した'); } else toast('体力は満タンだ');
+      updHUD(); return;
+    }
+    if(it.kind==='stele'){ toast('🪧 '+it.tip, 3200); return; }
+  }
+  if(facingDoor()){
+    if(st.gems>=st.need) openFloorClear();
+    else toast('封印が解けない。結晶があと '+(st.need-st.gems)+' つ必要だ');
+  }
+}
+function toast(msg,ms){
+  var el=$('#toast');
+  el.innerHTML=mathHTML(msg); el.style.opacity='1';
+  clearTimeout(el._t);
+  el._t=setTimeout(function(){ el.style.opacity='0'; }, ms||1900);
+}
+function updHUD(){
+  $('#floorName').textContent=FLOORS[st.fi].name;
+  var h=''; for(var i=0;i<st.maxhp;i++) h += i<st.hp ? '♥' : '♡';
+  $('#hp').textContent=h;
+  $('#gemc').textContent=st.gems+' / '+st.need;
+}
+
+/* ==================================================================
+   8. オーバーレイ（タイトル・問題・ノートなど）
+   ================================================================== */
+var ov=$('#ov'), ovCard=$('#ovCard');
+function openOv(html){ ovCard.innerHTML=html; ov.classList.add('on'); ovCard.scrollTop=0; }
+function closeOv(){ ov.classList.remove('on'); st.mode='play'; keys={}; }
+
+/* ---------- タイトル ---------- */
+function openTitle(){
+  st.mode='title';
+  var fl='';
+  for(var i=0;i<FLOORS.length;i++)
+    fl += '<div class="fl"><b>'+FLOORS[i].name+'</b><em>'+FLOORS[i].sub+'</em></div>';
+  openOv(
+   '<h2>⛏ 数学ダンジョン</h2>'+
+   '<p class="lead">地下5階のダンジョンを歩き、各階にかくされた「数の結晶」を集めます。'+
+   '結晶にふれると高校数学の問題が出ます。正解すると結晶が手に入り、'+
+   'すべて集めると封印の扉が開いて次の階へ進めます。</p>'+
+   fl+
+   '<h3>操作</h3>'+
+   '<div class="keys">'+
+   '<span><span class="kb">W</span><span class="kb">S</span> / <span class="kb">↑</span><span class="kb">↓</span></span><span>前進・後退</span>'+
+   '<span><span class="kb">A</span><span class="kb">D</span> / <span class="kb">←</span><span class="kb">→</span></span><span>左右を向く（画面のドラッグでも回れます）</span>'+
+   '<span><span class="kb">Q</span><span class="kb">E</span></span><span>横に移動</span>'+
+   '<span><span class="kb">スペース</span></span><span>目の前を調べる</span>'+
+   '<span><span class="kb">M</span></span><span>公式ノートを開く</span>'+
+   '</div>'+
+   '<p class="lead">スマホ・タブレットでは、左下のスティックで進み、右下の「調べる」ボタンで調べます。</p>'+
+   '<div class="note">まちがえても大丈夫です。<b>解説を1段階ずつ読んでから、もう一度おなじ問題に挑戦</b>できます。'+
+   'まちがえると体力が1へりますが、床におちている 🧪 回復のくすり で回復します。</div>'+
+   '<div class="row"><button class="btn" id="go">探索を始める</button>'+
+   '<button class="btn sub" id="hlp">くわしいあそび方</button></div>'
+  );
+  $('#go').onclick=startGame;
+  $('#hlp').onclick=openHelp;
+}
+function openHelp(){
+  if(st.mode==='quiz') return;
+  var back=st.mode;
+  st.mode='help';
+  openOv(
+   '<h2>あそび方</h2>'+
+   '<h3>1．結晶をさがす</h3>'+
+   '<p>青く光る 💎 が「数の結晶」です。近づくと画面の下に案内が出るので、'+
+   '<span class="kb">スペース</span>（スマホは「調べる」）を押してください。</p>'+
+   '<h3>2．問題に答える</h3>'+
+   '<p>4つの選択肢から選びます。答えたあとに解説が出ますが、'+
+   '<b>最初は1段階目だけ</b>しか見えません。「次へ」を押すと、解く人が実際に考える順に'+
+   '1段階ずつ開いていきます。最後の段階に答えが出ます。</p>'+
+   '<h3>3．まちがえたら</h3>'+
+   '<p>体力が1へります。解説を最後まで読むと「もう一度挑戦する」が押せるので、'+
+   '今度は自分で考えて答えてみてください。体力が0になると入口に戻されますが、'+
+   '集めた結晶と公式ノートは消えません。</p>'+
+   '<h3>4．公式ノート</h3>'+
+   '<p>正解するたびに、その問題の要点が <b>📖 公式ノート</b>（<span class="kb">M</span>キー）にたまります。'+
+   'いつでも見返せます。</p>'+
+   '<h3>5．扉をひらく</h3>'+
+   '<p>その階の結晶をすべて集めると、🚪 封印の扉のくぼみが光ります。扉の前で調べると下の階へ。'+
+   '地下5階まで進めばクリアです。</p>'+
+   '<div class="note">迷ったら右上の<b>ミニマップ</b>を見てください。歩いたところだけが表示されます。</div>'+
+   '<div class="row"><button class="btn" id="bk">とじる</button></div>'
+  );
+  $('#bk').onclick=function(){ backTo(back); };
+}
+
+/* ---------- 問題 ---------- */
+function openQuiz(item){
+  st.mode='quiz';
+  var F=FLOORS[st.fi], p=F.pool[item.pid];
+  var rnd=mulberry32((Date.now()&0xffff)+item.pid*97);
+  var idx=shuffle([0,1,2,3],rnd);
+  cur={ item:item, p:p, order:idx, picked:-1, correct:false, rev:0, firstTry:(item.wrong?false:true) };
+  drawQuiz();
+}
+function drawQuiz(){
+  var p=cur.p, F=FLOORS[st.fi], i, h='';
+  h += '<h2>💎 数の結晶</h2><p class="lead">'+F.name.replace(/\s+/g,' ')+'　／　'+F.sub+'</p>';
+  h += '<div class="qbox">'+mathHTML(p.q)+'</div>';
+  h += '<div class="choices">';
+  for(i=0;i<cur.order.length;i++){
+    var oi=cur.order[i], cls='', dis='';
+    if(cur.picked>=0){
+      dis=' disabled';
+      if(oi===p.a) cls=' class="ok"';
+      else if(oi===cur.picked) cls=' class="ng"';
+    }
+    h += '<button data-i="'+oi+'"'+cls+dis+'>'+mathHTML(p.c[oi])+'</button>';
+  }
+  h += '</div>';
+
+  if(cur.picked>=0){
+    h += cur.correct
+      ? '<div class="verdict ok">○ 正解！</div>'
+      : '<div class="verdict ng">× ざんねん。解説を読んでから、もう一度挑戦しよう</div>';
+    h += '<h3>考え方の手順</h3><ol class="steps">';
+    for(i=0;i<p.s.length;i++){
+      var on = i<cur.rev ? ' on' : '';
+      var ans = i===p.s.length-1 ? ' ans' : '';
+      h += '<li class="'+(on+ans).trim()+'">'+(i<cur.rev?mathHTML(p.s[i]):'（ここはまだ開いていません）')+'</li>';
+    }
+    h += '</ol>';
+    h += '<div class="row">';
+    h += '<button class="btn sub" id="nx"'+(cur.rev>=p.s.length?' disabled':'')+'>次へ ▶</button>';
+    if(cur.rev>=p.s.length){
+      h += cur.correct
+        ? '<button class="btn" id="fin">💎 結晶を手に入れる</button>'
+        : '<button class="btn" id="retry">もう一度挑戦する</button>';
+      h += '<button class="btn sub" id="leave">あとにする</button>';
+    }
+    h += '</div>';
+    if(cur.rev>=p.s.length) h += '<div class="note"><b>おぼえること：</b>'+mathHTML(p.k)+'</div>';
+  } else {
+    h += '<div class="row"><button class="btn sub" id="leave">あとにする</button></div>';
+  }
+  openOv(h);
+
+  var bs=ovCard.querySelectorAll('.choices button');
+  for(i=0;i<bs.length;i++) bs[i].onclick=function(){ answer(parseInt(this.getAttribute('data-i'),10)); };
+  var nx=$('#nx'); if(nx) nx.onclick=function(){ if(cur.rev<cur.p.s.length){ cur.rev++; drawQuiz(); } };
+  var fin=$('#fin'); if(fin) fin.onclick=takeGem;
+  var rt=$('#retry'); if(rt) rt.onclick=function(){ openQuiz(cur.item); };
+  var lv=$('#leave'); if(lv) lv.onclick=leaveQuiz;
+}
+/* 解説を読み終わるまで倒れさせない（読んでいる途中で画面を切りかえない） */
+function leaveQuiz(){
+  closeOv();
+  if(st.pendingFaint){ st.pendingFaint=false; faint(); }
+}
+function answer(i){
+  if(cur.picked>=0) return;
+  cur.picked=i;
+  cur.correct=(i===cur.p.a);
+  cur.rev=1;
+  st.tries++;
+  if(cur.correct){
+    if(cur.firstTry) st.first++;
+  } else {
+    cur.item.wrong=true;
+    st.hp=Math.max(0,st.hp-1);
+    if(st.hp<=0) st.pendingFaint=true;
+    updHUD();
+  }
+  drawQuiz();
+}
+function takeGem(){
+  cur.item.taken=true;
+  st.gems++;
+  var k=cur.p.k;
+  var dup=false;
+  for(var i=0;i<st.notes.length;i++) if(st.notes[i].k===k) dup=true;
+  if(!dup) st.notes.push({ floor:FLOORS[st.fi].name, k:k });
+  st.tex.door=doorTex(st.theme.accent, Math.min(st.gems,st.need), st.need);
+  updHUD();
+  leaveQuiz();
+  toast(st.gems>=st.need ? '結晶がそろった！ 封印の扉へ向かおう' : '💎 結晶を手に入れた（'+st.gems+' / '+st.need+'）');
+}
+function faint(){
+  st.mode='faint';
+  openOv(
+   '<h2>…気を失った</h2>'+
+   '<p>体力がなくなり、入口まで運ばれた。<b>集めた結晶と公式ノートはそのまま</b>残っている。</p>'+
+   '<div class="note">あせらなくて大丈夫。解説を読みなおしてから、もう一度その結晶に挑戦しよう。</div>'+
+   '<div class="row"><button class="btn" id="rv">立ち上がる（体力が全回復）</button></div>'
+  );
+  $('#rv').onclick=function(){
+    st.hp=st.maxhp; P.x=1.5; P.y=1.5;
+    P.a=(cellAt(2,1)===0)?0:Math.PI/2;
+    updHUD(); closeOv();
+  };
+}
+
+/* ---------- 公式ノート ---------- */
+function openNote(){
+  if(st.mode==='quiz') return;
+  var back=st.mode;
+  st.mode='note';
+  var h='<h2>📖 公式ノート</h2><p class="lead">正解した問題の要点がたまります（'+st.notes.length+' 件）。</p>';
+  if(!st.notes.length) h += '<p class="empty">まだ空っぽです。結晶の問題に正解すると、ここにたまっていきます。</p>';
+  else {
+    h += '<div class="notelist">';
+    for(var i=0;i<st.notes.length;i++)
+      h += '<div class="nitem"><small>'+esc(st.notes[i].floor)+'</small>'+mathHTML(st.notes[i].k)+'</div>';
+    h += '</div>';
+  }
+  h += '<div class="row"><button class="btn" id="bk">とじる</button></div>';
+  openOv(h);
+  $('#bk').onclick=function(){ backTo(back); };
+}
+/* ノート・あそび方から、元の画面にもどす */
+function backTo(m){
+  if(m==='title') openTitle();
+  else if(m==='clear') openClear();
+  else if(m==='floor') openFloorClear();
+  else if(m==='faint') faint();
+  else closeOv();
+}
+
+/* ---------- 階クリア ---------- */
+function openFloorClear(){
+  st.mode='floor';
+  var last = st.fi>=FLOORS.length-1;
+  if(last){ openClear(); return; }
+  openOv(
+   '<h2>🚪 封印がとけた</h2>'+
+   '<p>'+FLOORS[st.fi].name.replace(/\s+/g,' ')+' の結晶をすべて集めた。階段が下へのびている。</p>'+
+   '<div class="fl"><b>次の階</b><em>'+FLOORS[st.fi+1].name.replace(/\s+/g,' ')+'｜'+FLOORS[st.fi+1].sub+'</em></div>'+
+   '<div class="note">ここまでに集めた公式は <b>'+st.notes.length+'</b> 件。体力は全回復します。</div>'+
+   '<div class="row"><button class="btn" id="dn">下の階へおりる</button>'+
+   '<button class="btn sub" id="nt">📖 公式ノートを見る</button></div>'
+  );
+  $('#dn').onclick=function(){ st.hp=st.maxhp; buildFloor(st.fi+1); closeOv(); toast(FLOORS[st.fi].name.replace(/\s+/g,' ')+' に到着'); };
+  $('#nt').onclick=openNote;
+}
+
+/* ---------- 全クリア ---------- */
+function openClear(){
+  st.mode='clear';
+  var sec=Math.floor((Date.now()-st.startTime)/1000), mm=Math.floor(sec/60), ss=sec%60;
+  var rate = st.tries ? Math.round(st.first/st.tries*100) : 0;
+  openOv(
+   '<h2>🏆 ダンジョン踏破！</h2>'+
+   '<p class="lead">地下5階すべての封印をとき、外の光のもとへ戻ってきた。</p>'+
+   '<div class="stat">'+
+   '<div><b>'+st.tries+'</b><small>答えた回数</small></div>'+
+   '<div><b>'+st.first+'</b><small>一発で正解</small></div>'+
+   '<div><b>'+rate+'%</b><small>一発正解率</small></div>'+
+   '<div><b>'+st.notes.length+'</b><small>集めた公式</small></div>'+
+   '<div><b>'+mm+'分'+ss+'秒</b><small>探索時間</small></div>'+
+   '</div>'+
+   '<h3>提出用テキスト</h3>'+
+   '<p class="lead">氏名を入れて、下の文章をコピーして提出してください。'+
+   '（このアプリはブラウザの中だけで動いていて、どこにも自動送信されません）</p>'+
+   '<div class="row" style="margin-top:6px"><input type="text" id="nm" placeholder="氏名を入力"></div>'+
+   '<div class="row" style="margin-top:8px"><textarea id="sub" readonly></textarea></div>'+
+   '<div class="row"><button class="btn sub" id="cp">コピーする</button>'+
+   '<button class="btn sub" id="nt">📖 公式ノートを見る</button>'+
+   '<button class="btn" id="ag">もう一度、最初から</button></div>'
+  );
+  function build(){
+    var n=$('#nm').value||'（　　　　　　）';
+    $('#sub').value =
+      '数学ダンジョン 探索記録\n'+
+      '氏名：'+n+'\n'+
+      '到達：地下5階まで踏破\n'+
+      '答えた回数：'+st.tries+' 回／一発で正解：'+st.first+' 回（一発正解率 '+rate+'%）\n'+
+      '集めた公式：'+st.notes.length+' 件\n'+
+      '探索時間：'+mm+'分'+ss+'秒\n';
+  }
+  $('#nm').oninput=build; build();
+  $('#cp').onclick=function(){
+    var t=$('#sub'); t.select(); t.setSelectionRange(0,99999);
+    try{ document.execCommand('copy'); toast('コピーしました'); }catch(e){ toast('長押しして選択・コピーしてください'); }
+  };
+  $('#nt').onclick=openNote;
+  $('#ag').onclick=function(){ openTitle(); };
+}
+
+/* ==================================================================
+   9. 開始とループ
+   ================================================================== */
+function startGame(){
+  st.seed=(Math.random()*100000)|0;
+  st.hp=st.maxhp; st.notes=[]; st.tries=0; st.first=0; st.pendingFaint=false;
+  st.startTime=Date.now(); st.elapsed=0;
+  buildFloor(0);
+  closeOv();
+  toast(FLOORS[0].name.replace(/\s+/g,' ')+' に降り立った');
+}
+var last=0;
+function loop(t){
+  var dt=Math.min(0.05,(t-last)/1000)||0; last=t;
+  if(st.mode==='play') update(dt);
+  render(t);
+  drawMini();
+  requestAnimationFrame(loop);
+}
+resize();
+buildFloor(0);          /* タイトルの背景として1階を描いておく */
+st.mode='title';
+openTitle();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
