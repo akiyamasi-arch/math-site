@@ -260,6 +260,13 @@
       </span>
       <span class="chev" aria-hidden="true">›</span>
     </a>`);
+    subjects.push(`<a class="hero-btn iroiro" href="apps/math-dungeon.html">
+      <span class="label">
+        <span class="name">数学ダンジョン</span>
+        <span class="meta">単元をまたいで復習・3Dの迷宮を歩いて問題を解く</span>
+      </span>
+      <span class="chev" aria-hidden="true">›</span>
+    </a>`);
     subjects.push(`<a class="hero-btn iroiro" href="iroiro.html">
       <span class="label">
         <span class="name">数学いろいろ</span>
