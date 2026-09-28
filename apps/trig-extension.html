@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>三角比の拡張（鋭角から0°〜180°へ）｜数学学習サイト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
+<style>
+  /* サイト共通（assets/style.css）と同じトークン。アプリは1ファイル完結にするためここに再掲 */
+  :root{
+    --orange-50:#FFEEE2; --orange-100:#FFDFCA; --orange-400:#FF8D44;
+    --orange-700:#E25100; --orange-800:#C74700; --orange-900:#AC3E00;
+    --ink:#1E293B; --sub:#475569; --line:#D9DEE6; --line-strong:#B9C2CF;
+    --bg:#FBFBFA; --card:#FFFFFF; --focus:#FFD866;
+    --accent:#e63946; --accent-soft:#fde2e4; --neutral:#94a3b8;
+    --cos:#C74700;      /* 横（x・cos） */
+    --sin:#1D6FB8;      /* 縦（y・sin） */
+    --tan:#6D28D9;      /* tan */
+    --sp-1:8px; --sp-2:16px; --sp-3:24px; --sp-4:32px; --sp-6:48px;
+    --radius-sm:4px; --radius-md:8px; --radius-pill:999px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.7;}
+  a{color:var(--orange-800);}
+  a:focus-visible, button:focus-visible, input:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+  .brand-bar{height:6px;background:var(--orange-700);}
+  .site-header{background:var(--card);border-bottom:1px solid var(--line);padding:var(--sp-2);}
+  .site-header .inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;}
+  .site-title{margin:0;font-size:18px;font-weight:700;}
+  .site-title a{color:var(--ink);text-decoration:none;}
+  .back-link{font-size:14px;font-weight:700;}
+  .wrap{max-width:1100px;margin:0 auto;padding:var(--sp-3) var(--sp-2) var(--sp-6);}
+  h1{margin:0 0 4px;font-size:26px;line-height:1.4;}
+  .lead{margin:0 0 var(--sp-3);color:var(--sub);font-size:15px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--sp-2) var(--sp-3);}
+  @media (max-width:600px){ .card{padding:var(--sp-2);} }
+  .section-title{font-size:13px;font-weight:700;color:var(--sub);margin:0 0 var(--sp-1);}
+  .controls{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:end;}
+  .field label, .field .flabel{display:block;font-size:12px;font-weight:700;color:var(--sub);}
+  .field input[type=number]{font-size:16px;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius-md);width:88px;text-align:center;font-family:inherit;}
+  .slider-field{flex:1 1 260px;min-width:220px;}
+  .slider-field input[type=range]{width:100%;height:32px;accent-color:var(--orange-800);}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;}
+  .presets button, .btn, .seg button{border:1px solid var(--line);background:#f8fafc;color:var(--ink);padding:8px 14px;border-radius:var(--radius-pill);font-size:14px;cursor:pointer;font-family:inherit;}
+  .presets button:hover, .btn:hover, .seg button:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .btn:disabled{opacity:.35;cursor:default;}
+  .btn.primary{background:var(--orange-800);color:#fff;border-color:var(--orange-800);font-weight:700;}
+  .btn.primary:hover{background:var(--orange-900);color:#fff;}
+  .seg{display:flex;gap:6px;flex-wrap:wrap;}
+  .seg button[aria-pressed=true]{background:var(--orange-800);border-color:var(--orange-800);color:#fff;font-weight:700;}
+  .hint{font-size:13px;color:var(--sub);margin:var(--sp-1) 0 0;}
+
+  .main-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:var(--sp-2);align-items:start;margin-top:var(--sp-2);}
+  @media (max-width:900px){ .main-grid{grid-template-columns:1fr;} }
+  .figure svg{width:100%;height:auto;display:block;touch-action:none;cursor:pointer;user-select:none;-webkit-user-select:none;}
+  .legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:var(--sub);margin-top:var(--sp-1);}
+  .legend span::before{content:"";display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:5px;vertical-align:middle;}
+  .lg-cos::before{background:var(--cos);}
+  .lg-sin::before{background:var(--sin);}
+  .lg-r::before{background:var(--ink);}
+
+  /* 思考のステップ（クリックで巻き戻し／早送り） */
+  .stepper{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:var(--sp-2);padding-bottom:12px;border-bottom:1px dashed var(--line);}
+  .stepper .progress{font-size:12px;font-weight:700;color:var(--sub);text-align:center;flex:1;}
+  .steps{display:flex;flex-direction:column;gap:10px;}
+  .step{display:flex;gap:10px;padding:6px 8px;margin:0 -8px;border-radius:var(--radius-md);cursor:pointer;}
+  .step:hover{background:#f8fafc;}
+  .step.dim{opacity:.4;}
+  .step.now{background:var(--orange-50);}
+  .step-num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .step.dim .step-num{background:#cbd5e1;}
+  .step-body{font-size:14px;line-height:1.8;}
+  .mono{font-family:Consolas,"Courier New",monospace;background:#f1f5f9;padding:1px 6px;border-radius:5px;}
+  /* 分数は横線の縦組みで表示する（1/2 のような斜線表記は画面に出さない） */
+  .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25;margin:0 2px;}
+  .frac .num, .frac .den{padding:0 4px;white-space:nowrap;}
+  .frac .bar{display:block;width:100%;height:2px;background:currentColor;margin:2px 0;}
+  .neg{display:inline-flex;align-items:center;gap:3px;vertical-align:middle;}
+  .c-cos{color:var(--cos);font-weight:700;}
+  .c-sin{color:var(--sin);font-weight:700;}
+  .c-tan{color:var(--tan);font-weight:700;}
+
+  /* 定義と値のカード */
+  .defs{margin-top:var(--sp-2);padding:12px 16px;border:1.5px solid var(--orange-800);border-radius:var(--radius-md);background:linear-gradient(135deg,#fff3ea,#fff);}
+  .defs .label{font-size:12px;font-weight:700;color:var(--orange-800);}
+  .defs .coord{font-size:15px;color:var(--sub);margin:4px 0 6px;}
+  .defs .row{display:flex;flex-wrap:wrap;align-items:center;gap:4px;font-size:18px;padding:6px 0;border-top:1px dashed var(--line);min-height:58px;}
+  .defs .row:first-of-type{border-top:none;}
+  .defs .row .name{font-weight:700;min-width:84px;}
+  .defs .row .muted{color:var(--neutral);font-size:15px;}
+  .defs .row .approx{color:var(--sub);font-size:14px;}
+  .defs .note{font-size:13px;color:var(--sub);margin-top:6px;}
+  .warn{background:#fff3cd;border:1px solid #ffe08a;color:#7a5b00;padding:10px 14px;border-radius:var(--radius-md);font-size:14px;margin-top:var(--sp-1);}
+
+  table.sign{border-collapse:collapse;font-size:14px;margin-top:6px;background:#fff;}
+  table.sign th, table.sign td{border:1px solid var(--line);padding:4px 8px;text-align:center;white-space:nowrap;}
+  table.sign th{background:var(--orange-50);}
+
+  details.table-box{margin-top:var(--sp-3);}
+  details.table-box summary{cursor:pointer;font-weight:700;font-size:15px;padding:10px 0;}
+  .tbl-scroll{overflow-x:auto;}
+  table.vals{border-collapse:collapse;font-size:15px;min-width:560px;background:#fff;}
+  table.vals th, table.vals td{border:1px solid var(--line);padding:6px 10px;text-align:center;white-space:nowrap;height:54px;}
+  table.vals th{background:var(--orange-50);}
+  table.vals td.hi, table.vals th.hi{background:#fff3ea;font-weight:700;color:var(--orange-800);}
+  table.vals .acute{background:#f8fafc;}
+
+  /* 確認クイズ */
+  .quiz{margin-top:var(--sp-3);}
+  .q{padding:12px 0;border-top:1px solid var(--line);}
+  .q:first-child{border-top:none;}
+  .q .qtext{font-size:15px;font-weight:700;margin-bottom:8px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
+  .q .qtext .btn{font-size:12px;padding:4px 10px;font-weight:400;}
+  .opts{display:flex;flex-wrap:wrap;gap:8px;}
+  .opts button{border:1px solid var(--line);background:#fff;color:var(--ink);padding:8px 16px;border-radius:var(--radius-md);font-size:16px;cursor:pointer;font-family:inherit;min-width:72px;min-height:52px;line-height:1.25;}
+  .opts button:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .opts button.ok{background:#e8f5e9;border-color:#2e7d32;color:#1b5e20;font-weight:700;}
+  .opts button.ng{background:#fdecea;border-color:#c62828;color:#b71c1c;}
+  .fb{font-size:14px;margin-top:8px;color:var(--sub);}
+  .fb.ok{color:#1b5e20;}
+</style>
+</head>
+<body>
+
+<div class="brand-bar"></div>
+<header class="site-header">
+  <div class="inner">
+    <p class="site-title"><a href="../index.html">数学学習サイト</a></p>
+    <a class="back-link" href="../unit.html?s=math1&u=zukei-keiryo">← 単元ページに戻る</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <h1>三角比の拡張（鋭角から0°〜180°へ）</h1>
+  <p class="lead">これまで sin・cos・tan は「直角三角形の辺の比」で決めてきました。でも 120° の直角三角形はつくれません。では sin 120° はどう決めればよいのでしょう？ 角 θ を動かしながら、今までの定義を「点の座標」で言いかえて、0°〜180° に広げるまでを1段階ずつ組み立てます。</p>
+
+  <div class="card">
+    <div class="controls">
+      <div class="field">
+        <label for="thetaNum">角 θ（度）</label>
+        <input type="number" id="thetaNum" value="30" min="0" max="180" step="1">
+      </div>
+      <div class="field slider-field">
+        <label for="thetaRange">スライダーで動かす（0°〜180°）</label>
+        <input type="range" id="thetaRange" value="30" min="0" max="180" step="1">
+      </div>
+      <div class="field">
+        <span class="flabel">半径 r（斜辺の長さ）</span>
+        <div class="seg" id="rSeg">
+          <button type="button" data-r="0">r = 1</button>
+          <button type="button" data-r="1" aria-pressed="true">r = 2</button>
+          <button type="button" data-r="2">r = √2</button>
+        </div>
+      </div>
+    </div>
+    <div class="presets" style="margin-top:12px;">
+      <button data-deg="30">30°</button>
+      <button data-deg="60">60°</button>
+      <button data-deg="120">120°</button>
+      <button data-deg="135">135°</button>
+      <button data-deg="150">150°</button>
+      <button data-deg="90">90°</button>
+      <button data-deg="0">0°</button>
+      <button data-deg="180">180°</button>
+    </div>
+    <p class="hint">図をタップ・ドラッグしても角 θ を動かせます。30°・60°・120°・150° は r = 2、45°・135° は r = √2 にすると座標がきれいな数になります。</p>
+    <div id="inputNote"></div>
+  </div>
+
+  <div class="main-grid">
+    <div class="card figure">
+      <p class="section-title" id="figTitle">図</p>
+      <div id="figure"></div>
+      <div class="legend">
+        <span class="lg-r">斜辺・半径 r</span>
+        <span class="lg-cos">横（隣辺 → x座標）</span>
+        <span class="lg-sin">縦（対辺 → y座標）</span>
+      </div>
+      <div class="defs" id="defs"></div>
+    </div>
+
+    <div>
+      <div class="card">
+        <p class="section-title">思考のステップ</p>
+        <div class="stepper">
+          <button class="btn" id="prevBtn">◀ 前へ</button>
+          <span class="progress" id="progress"></span>
+          <button class="btn primary" id="nextBtn">次へ ▶</button>
+        </div>
+        <div class="steps" id="steps"></div>
+        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn" id="resetBtn">最初にもどす</button>
+          <button class="btn" id="autoBtn">▶ 通しで自動再生する</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <details class="table-box">
+    <summary>0°〜180° の三角比の表（いま選んでいる角に色が付きます）</summary>
+    <div class="tbl-scroll" id="tblBox"></div>
+  </details>
+
+  <div class="card quiz">
+    <p class="section-title">確認クイズ（「図で確かめる」を押すと、その角の図になります）</p>
+    <div id="quiz"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  // ---- 状態 ----
+  // 探究型：θ や r を動かしても、いま見ている段階（level）は保ったまま図と数値だけ更新する。
+  const MAX_LEVEL = 5;
+  const LEVEL_LABELS = [
+    '① 鋭角のときの定義（直角三角形）',
+    '② 三角形を座標平面に置く',
+    '③ 点Pを半円の上で動かす',
+    '④ 0°〜180° に定義を広げる',
+    '⑤ 半径1の円（単位円）で見る',
+    '⑥ 0°・90°・180° と符号'
+  ];
+  let level = 0;
+  let theta = 30;
+  let rIdx = 1;            // R_OPTS の番号
+  let state = null;
+  let autoTimer = null;
+
+  const $ = function(id){ return document.getElementById(id); };
+  const MINUS = '−';
+
+  function gcd(a, b){ a = Math.abs(a); b = Math.abs(b); while(b){ var t = a % b; a = b; b = t; } return a || 1; }
+  function fmt(x, d){
+    if(x === null || !isFinite(x)) return '—';
+    var v = x.toFixed(d == null ? 3 : d);
+    if(/^-0\.?0*$/.test(v)) v = v.slice(1);
+    return v.replace('-', MINUS);
+  }
+
+  // ---- 分数の表示（横線の分数）----
+  function fracHTML(n, d){
+    return '<span class="frac"><span class="num">' + n + '</span><span class="bar"></span><span class="den">' + d + '</span></span>';
+  }
+  function mathHTML(s){
+    return String(s).replace(/\{([^|{}]+)\|([^|{}]+)\}/g, function(_, n, d){ return fracHTML(n, d); });
+  }
+  // "√3/2" "−1/√2" のような値の文字列を分数に（マイナスは分数の中央にそろえる）
+  function valHTML(v){
+    var s = String(v), neg = false;
+    if(s.charAt(0) === MINUS || s.charAt(0) === '-'){ neg = true; s = s.slice(1); }
+    if(s.indexOf('/') < 0) return (neg ? MINUS : '') + s;
+    var p = s.split('/'), f = fracHTML(p[0], p[1]);
+    return neg ? '<span class="neg">' + MINUS + f + '</span>' : f;
+  }
+
+  // ---- 特別な角の値 ----
+  // 三角比の値（教科書の形。1/√2, 1/√3 は有理化しない）
+  const VAL = {
+    0:   {s:'0',    c:'1',           t:'0'},
+    30:  {s:'1/2',  c:'√3/2',        t:'1/√3'},
+    45:  {s:'1/√2', c:'1/√2',        t:'1'},
+    60:  {s:'√3/2', c:'1/2',         t:'√3'},
+    90:  {s:'1',    c:'0',           t:null},
+    120: {s:'√3/2', c:MINUS+'1/2',   t:MINUS+'√3'},
+    135: {s:'1/√2', c:MINUS+'1/√2',  t:MINUS+'1'},
+    150: {s:'1/2',  c:MINUS+'√3/2',  t:MINUS+'1/√3'},
+    180: {s:'0',    c:MINUS+'1',     t:'0'}
+  };
+  // 座標計算用：cos・sin を [p, q, d]（= p√q / d）で持つ
+  const EX = {
+    0:{c:[1,1,1],s:[0,1,1]}, 30:{c:[1,3,2],s:[1,1,2]}, 45:{c:[1,2,2],s:[1,2,2]},
+    60:{c:[1,1,2],s:[1,3,2]}, 90:{c:[0,1,1],s:[1,1,1]}, 120:{c:[-1,1,2],s:[1,3,2]},
+    135:{c:[-1,2,2],s:[1,2,2]}, 150:{c:[-1,3,2],s:[1,1,2]}, 180:{c:[-1,1,1],s:[0,1,1]}
+  };
+  // 半径の選択肢：m√n
+  const R_OPTS = [ {label:'1', m:1, n:1, v:1}, {label:'2', m:2, n:1, v:2}, {label:'√2', m:1, n:2, v:Math.SQRT2} ];
+
+  function exMul(e, r){                 // (p√q/d) × (m√n) を簡単にする
+    var qq = e[1] * r.n, k = 1;
+    if(qq === 4){ k = 2; qq = 1; }
+    var coef = e[0] * r.m * k, d = e[2], g = gcd(coef, d);
+    return [coef / g, qq, d / g];
+  }
+  function exHTML(e){                   // [p,q,d] → HTML
+    var p = e[0], q = e[1], d = e[2];
+    if(p === 0) return '0';
+    var a = Math.abs(p);
+    var mag = (a === 1 && q !== 1 ? '' : String(a)) + (q !== 1 ? '√' + q : '');
+    if(d === 1) return (p < 0 ? MINUS : '') + mag;
+    var f = fracHTML(mag, d);
+    return p < 0 ? '<span class="neg">' + MINUS + f + '</span>' : f;
+  }
+
+  // ---- 数学（θ, r → 各値）----
+  function solve(deg, r){
+    var rad = deg * Math.PI / 180;
+    var c = Math.cos(rad), s = Math.sin(rad);
+    if(Math.abs(c) < 1e-12) c = 0;
+    if(Math.abs(s) < 1e-12) s = 0;
+    var st = { deg: deg, c: c, s: s, r: r, x: r.v * c, y: r.v * s,
+               tanDefined: c !== 0, t: c !== 0 ? s / c : null,
+               val: VAL[deg] || null, ex: null };
+    if(EX[deg]) st.ex = { x: exMul(EX[deg].c, r), y: exMul(EX[deg].s, r) };
+    st.acute = deg > 0 && deg < 90;
+    return st;
+  }
+
+  // 座標の表示（厳密値があればそれ、なければ小数）
+  function xHTML(){ return state.ex ? exHTML(state.ex.x) : fmt(state.x, 2); }
+  function yHTML(){ return state.ex ? exHTML(state.ex.y) : fmt(state.y, 2); }
+  // 三角比の値の表示
+  function ratioHTML(kind){
+    var st = state, num = kind === 's' ? st.s : kind === 'c' ? st.c : st.t;
+    if(kind === 't' && !st.tanDefined) return null;
+    if(st.val){
+      var v = st.val[kind];
+      if(v.indexOf('√') < 0 && v.indexOf('/') < 0) return valHTML(v);
+      return valHTML(v) + ' <span class="approx">≈ ' + fmt(num) + '</span>';
+    }
+    return fmt(num);
+  }
+
+  function ratioPlain(kind){          // 「≈」を付けない短い表示
+    var st = state;
+    return st.val ? valHTML(st.val[kind]) : fmt(kind === 's' ? st.s : st.c);
+  }
+
+  // ---- 図 ----
+  // 図の座標は「半径 r を 1 とした」単位。実際の座標は r 倍。
+  const XMIN = -1.32, XMAX = 1.32, YMIN = -0.46, YMAX = 1.36;
+  const SVGW = 520, SC = SVGW / (XMAX - XMIN), SVGH = Math.round((YMAX - YMIN) * SC);
+  function X(u){ return ((u - XMIN) * SC).toFixed(1); }
+  function Y(v){ return ((YMAX - v) * SC).toFixed(1); }
+
+  function arc(r, fromDeg, toDeg, attrs){
+    var pts = [], n = Math.max(2, Math.round(Math.abs(toDeg - fromDeg) / 2) + 1), i, a;
+    for(i = 0; i < n; i++){
+      a = (fromDeg + (toDeg - fromDeg) * i / (n - 1)) * Math.PI / 180;
+      pts.push(X(r * Math.cos(a)) + ',' + Y(r * Math.sin(a)));
+    }
+    return '<polyline points="' + pts.join(' ') + '" ' + attrs + '/>';
+  }
+  function line(u1, v1, u2, v2, attrs){
+    return '<line x1="' + X(u1) + '" y1="' + Y(v1) + '" x2="' + X(u2) + '" y2="' + Y(v2) + '" ' + attrs + '/>';
+  }
+  function txt(u, v, s, attrs){
+    return '<text x="' + X(u) + '" y="' + Y(v) + '" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round" ' + (attrs || '') + '>' + s + '</text>';
+  }
+  // 分数を含むラベルは SVG の文字では書けないので HTML を埋め込む。anchor: 'start' | 'middle' | 'end'
+  function htmlLabel(u, v, html, color, anchor, size){
+    var w = 240, h = 64, x = +X(u), y = +Y(v) - h / 2;
+    var jc = 'flex-start';
+    if(anchor === 'end'){ x -= w; jc = 'flex-end'; }
+    else if(anchor === 'middle'){ x -= w / 2; jc = 'center'; }
+    return '<foreignObject x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w + '" height="' + h + '" style="pointer-events:none">' +
+      '<div xmlns="http://www.w3.org/1999/xhtml" style="width:' + w + 'px;height:' + h + 'px;display:flex;align-items:center;justify-content:' + jc + ';">' +
+      '<span style="font:700 ' + (size || 15) + 'px/1.2 \'Noto Sans JP\',\'Yu Gothic\',sans-serif;color:' + color + ';background:rgba(255,255,255,0.9);padding:1px 4px;border-radius:4px;display:inline-flex;align-items:center;white-space:nowrap;">' + html + '</span></div></foreignObject>';
+  }
+  function msgBox(lines, color){
+    var w = SVGW - 24, h = 22 + lines.length * 22;
+    var g = '<rect x="12" y="' + (SVGH - h - 10) + '" width="' + w + '" height="' + h + '" rx="8" fill="#fff3cd" stroke="#e0b94a"/>';
+    lines.forEach(function(s, i){
+      g += '<text x="24" y="' + (SVGH - h - 10 + 26 + i * 22) + '" font-size="15" fill="' + (color || '#7a5b00') + '" font-weight="' + (i === 0 ? 700 : 400) + '">' + s + '</text>';
+    });
+    return g;
+  }
+
+  function drawFigure(){
+    var st = state, c = st.c, s = st.s, deg = st.deg, R = st.r;
+    var g = '';
+    var coordMode = level >= 1;        // 座標平面に置いたか
+    var circleMode = level >= 2;       // 半円を描いたか
+    var extended = level >= 3;         // 0°〜180° に広げたか
+    var canTri = st.acute;             // θ を内角にもつ直角三角形がつくれるか
+
+    g += '<rect x="0" y="0" width="' + SVGW + '" height="' + SVGH + '" fill="#ffffff"/>';
+
+    // level 5：左右の領域を色分け（符号）
+    if(level >= 5){
+      g += '<rect x="' + X(0) + '" y="0" width="' + (SVGW - X(0)) + '" height="' + Y(0) + '" fill="#fff3ea"/>';
+      g += '<rect x="0" y="0" width="' + X(0) + '" height="' + Y(0) + '" fill="#eef4fb"/>';
+      g += txt(0.62, 1.24, 'x > 0 → cos θ > 0', 'font-size="14" font-weight="700" fill="#C74700" text-anchor="middle"');
+      g += txt(-0.62, 1.24, 'x < 0 → cos θ < 0', 'font-size="14" font-weight="700" fill="#1D6FB8" text-anchor="middle"');
+    }
+
+    // 座標軸（level 1〜）
+    if(coordMode){
+      g += line(XMIN, 0, XMAX, 0, 'stroke="#334155" stroke-width="1.6"');
+      g += line(0, YMIN + 0.08, 0, YMAX, 'stroke="#334155" stroke-width="1.6"');
+      g += txt(XMAX - 0.05, 0.07, 'x', 'font-size="15" fill="#475569" text-anchor="end" font-style="italic"');
+      g += txt(0.05, YMAX - 0.07, 'y', 'font-size="15" fill="#475569" font-style="italic"');
+      var oppo = c < 0 ? 1 : -1;   // P と反対側にラベルを置く（重なり防止）
+      g += txt(0.04 * oppo, -0.13, 'O', 'font-size="15" fill="#475569" text-anchor="' + (oppo > 0 ? 'start' : 'end') + '"');
+    }
+
+    // 半円（level 2〜）
+    if(circleMode){
+      g += arc(1, 0, 180, 'fill="none" stroke="#B9C2CF" stroke-width="2.2"');
+      g += txt(1, -0.13, R.label === '1' ? '1' : R.label, 'font-size="14" fill="#64748b" text-anchor="middle"');
+      g += txt(-1, -0.13, MINUS + R.label, 'font-size="14" fill="#64748b" text-anchor="middle"');
+      g += txt((c < 0 ? 0.05 : -0.05), (level >= 5 ? 0.9 : 1.05), R.label, 'font-size="14" fill="#64748b" text-anchor="' + (c < 0 ? 'start' : 'end') + '"');
+      g += '<circle cx="' + X(1) + '" cy="' + Y(0) + '" r="3" fill="#94a3b8"/><circle cx="' + X(-1) + '" cy="' + Y(0) + '" r="3" fill="#94a3b8"/>';
+    }
+
+    // 単位円（level 4〜、r ≠ 1 のとき内側に）
+    var unitK = 1 / R.v;
+    if(level >= 4 && R.v !== 1){
+      g += arc(unitK, 0, 180, 'fill="none" stroke="#6D28D9" stroke-width="1.8" stroke-dasharray="5 4"');
+      g += txt(unitK, -0.13, '1', 'font-size="14" fill="#6D28D9" text-anchor="middle"');
+    }
+
+    // ---- 三角形・点P ----
+    var showTri = (level <= 1) ? canTri : true;
+    if(level <= 1 && !canTri){
+      // 直角三角形がつくれない場合：底辺と斜辺の方向だけを示す
+      g += line(0, 0, 1.05, 0, 'stroke="#C74700" stroke-width="3" opacity="0.5"');
+      g += line(0, 0, c, s, 'stroke="#1E293B" stroke-width="3"');
+      g += '<circle cx="' + X(c) + '" cy="' + Y(s) + '" r="6" fill="#1E293B"/>';
+      g += arc(0.2, 0, deg, 'fill="none" stroke="#E25100" stroke-width="2.5"');
+      var ma = deg / 2 * Math.PI / 180;
+      g += txt(0.36 * Math.cos(ma), 0.36 * Math.sin(ma) - 0.03, 'θ=' + deg + '°', 'font-size="15" font-weight="700" fill="#C74700" text-anchor="middle"');
+      if(deg > 90){
+        // P から垂線をおろすと、O の左側に落ちる
+        g += line(c, s, c, 0, 'stroke="#1D6FB8" stroke-width="2" stroke-dasharray="5 4"');
+        g += line(c, 0, 0, 0, 'stroke="#94a3b8" stroke-width="2" stroke-dasharray="5 4"');
+      }
+      var why = deg === 0 ? ['θ = 0° では三角形がつぶれてしまう。', 'sin 0° ・ cos 0° は直角三角形では決められない。']
+              : deg === 90 ? ['θ = 90° だと、直角が2つある「三角形」になってしまう。', '内角の和が180°をこえるので、つくれない。']
+              : deg === 180 ? ['θ = 180° では辺が一直線に重なって三角形にならない。', '']
+              : ['θ = ' + deg + '° を内角にもつ直角三角形はつくれない！', '（θ + 90° が 180° をこえてしまう）'];
+      g += msgBox(why.filter(function(x){ return x; }));
+    }else if(showTri){
+      var hx = c;   // 垂線の足 H(c, 0)
+      // 三角形の塗り（鋭角なら今までの直角三角形）
+      if(s > 0 && c !== 0){
+        g += '<polygon points="' + X(0) + ',' + Y(0) + ' ' + X(hx) + ',' + Y(0) + ' ' + X(c) + ',' + Y(s) + '" fill="' + (c > 0 ? 'rgba(255,141,68,0.18)' : 'rgba(29,111,184,0.10)') + '"/>';
+      }
+      // 横（隣辺 / x）
+      if(c !== 0) g += line(0, 0, hx, 0, 'stroke="#C74700" stroke-width="5" stroke-linecap="round"');
+      // 縦（対辺 / y）
+      if(s !== 0) g += line(hx, 0, c, s, 'stroke="#1D6FB8" stroke-width="5" stroke-linecap="round"' + (circleMode && !canTri ? '' : ''));
+      // 直角マーク
+      if(s > 0 && c !== 0){
+        var d = (c > 0 ? -0.07 : 0.07);
+        g += '<polyline points="' + X(hx + d) + ',' + Y(0) + ' ' + X(hx + d) + ',' + Y(0.07) + ' ' + X(hx) + ',' + Y(0.07) + '" fill="none" stroke="#64748b" stroke-width="1.5"/>';
+      }
+      // 斜辺（半径）
+      g += line(0, 0, c, s, 'stroke="#1E293B" stroke-width="3"');
+      // 角 θ
+      if(deg > 0){
+        g += arc(0.2, 0, deg, 'fill="none" stroke="#E25100" stroke-width="2.5"');
+        var mb = deg / 2 * Math.PI / 180, rr = deg < 25 ? 0.5 : 0.34;
+        g += txt(rr * Math.cos(mb), rr * Math.sin(mb) - 0.04, 'θ', 'font-size="17" font-weight="700" fill="#C74700" text-anchor="middle"');
+      }
+      // 鈍角のとき、三角形の中の角は 180°−θ であることを示す
+      if(circleMode && c < 0 && s > 0){
+        g += arc(0.12, deg, 180, 'fill="none" stroke="#1D6FB8" stroke-width="2"');
+      }
+      g += '<circle cx="' + X(c) + '" cy="' + Y(s) + '" r="7" fill="#1E293B"/>';
+      if(circleMode) g += '<circle cx="' + X(c) + '" cy="' + Y(s) + '" r="16" fill="none" stroke="#1E293B" stroke-opacity="0.18" stroke-width="2"/>';
+
+      // ---- ラベル ----
+      var left = c < 0;
+      var mx = c / 2 - s * 0.12, my = s / 2 + Math.abs(c) * 0.12;
+      if(!coordMode){
+        // level 0：辺の名前
+        g += txt(hx / 2, -0.15, '隣辺', 'font-size="16" font-weight="700" fill="#C74700" text-anchor="middle"');
+        g += txt(hx + 0.06, s / 2, '対辺', 'font-size="16" font-weight="700" fill="#1D6FB8"');
+        g += txt(mx - 0.03, my, '斜辺', 'font-size="16" font-weight="700" fill="#1E293B" text-anchor="end"');
+      }else{
+        // level 1〜：座標で表す
+        var xLab = 'x = ' + xHTML(), yLab = 'y = ' + yHTML();
+        if(c !== 0) g += htmlLabel(hx / 2, -0.2, xLab, '#C74700', 'middle', 15);
+        if(s !== 0) g += htmlLabel(hx + (left ? -0.05 : 0.05), (deg === 90 ? 0.64 : s / 2), yLab, '#1D6FB8', left ? 'end' : 'start', 15);
+        if(deg > 0 && deg < 180 && Math.abs(c) > 0.001){
+          g += txt(mx + (left ? 0.03 : -0.03), my, 'r', 'font-size="17" font-weight="700" font-style="italic" fill="#1E293B" text-anchor="' + (left ? 'start' : 'end') + '"');
+        }else if(deg === 90){
+          g += txt(-0.05, 0.75, 'r', 'font-size="17" font-weight="700" font-style="italic" fill="#1E293B" text-anchor="end"');
+        }
+        // P の座標
+        var pLab = 'P(' + xHTML() + ', ' + yHTML() + ')';
+        var anc = left ? 'end' : 'start', pu = c + (left ? -0.07 : 0.07), pv = s + 0.12;
+        if(Math.abs(c) > 0.75 && s < 0.5){ anc = left ? 'start' : 'end'; pu = c + (left ? 0.02 : -0.02); pv = s + 0.2; }
+        if(deg === 90){ anc = 'start'; pu = 0.07; pv = 1.1; }
+        g += htmlLabel(pu, pv, pLab, '#1E293B', anc, 15);
+      }
+
+      // level 1〜2 で鈍角：「まだ定義していない」
+      if((level === 1 && !canTri) || (level === 2 && !canTri)){
+        g += msgBox(level === 2
+          ? ['P は半円の上をそのまま左へ進める。', '直角三角形はないが、点P の座標 (x, y) はちゃんとある！']
+          : ['この角の直角三角形はまだ考えられない。']);
+      }
+    }
+
+    // level 4：単位円上の点 Q(cos θ, sin θ)
+    if(level >= 4){
+      var qx = c * (R.v === 1 ? 1 : unitK), qy = s * (R.v === 1 ? 1 : unitK);
+      if(R.v !== 1){
+        g += '<circle cx="' + X(qx) + '" cy="' + Y(qy) + '" r="6" fill="#6D28D9"/>';
+        g += txt(qx + (c < 0 ? 0.05 : -0.05), qy + 0.05, 'Q', 'font-size="16" font-weight="700" fill="#6D28D9" text-anchor="' + (c < 0 ? 'start' : 'end') + '"');
+      }else{
+        g += htmlLabel(0, -0.36, 'r = 1 なので  P(x, y) ＝ P(cos θ, sin θ)', '#6D28D9', 'middle', 15);
+      }
+    }
+
+    // level 5：0°・90°・180° の点
+    if(level >= 5){
+      [[1, 0, '0°'], [0, 1, '90°'], [-1, 0, '180°']].forEach(function(p){
+        g += '<circle cx="' + X(p[0]) + '" cy="' + Y(p[1]) + '" r="5" fill="#fff" stroke="#E25100" stroke-width="2.5"/>';
+      });
+      g += txt(1.04, 0.1, '0°', 'font-size="13" font-weight="700" fill="#E25100"');
+      g += txt(-1.04, 0.1, '180°', 'font-size="13" font-weight="700" fill="#E25100" text-anchor="end"');
+      g += txt(-0.06, 1.1, '90°', 'font-size="13" font-weight="700" fill="#E25100" text-anchor="end"');
+    }
+
+    $('figure').innerHTML = '<svg id="svg" viewBox="0 0 ' + SVGW + ' ' + SVGH + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="三角比の拡張の図">' + g + '</svg>';
+    $('figTitle').textContent = level === 0 ? '直角三角形' : level === 1 ? '座標平面に置いた直角三角形' : level >= 4 ? '半径 ' + R.label + ' の半円と単位円' : '半径 ' + R.label + ' の半円';
+  }
+
+  // ---- 思考のステップ ----
+  function buildSteps(){
+    var st = state, deg = st.deg;
+    return [
+      { level: 0, body: 'これまでの定義：θ を1つの角にもつ<b>直角三角形</b>で<br>' +
+          'sin θ = ' + fracHTML('対辺', '斜辺') + '　cos θ = ' + fracHTML('隣辺', '斜辺') + '　tan θ = ' + fracHTML('対辺', '隣辺') +
+          '<br>でも、直角三角形のほかの2つの角は 90° より小さい。<b>θ が 90° 以上だと三角形がつくれない</b>。θ を 120° にして確かめてみよう。' },
+      { level: 1, body: '直角三角形を座標平面に置く。θ の頂点を原点 O、隣辺を x 軸の正の向きにのせ、斜辺の端を P(x, y)、斜辺の長さを r とする。すると<br>' +
+          '<span class="c-cos">隣辺 = x</span>、<span class="c-sin">対辺 = y</span>、斜辺 = r なので<br>' +
+          'sin θ = ' + fracHTML('y', 'r') + '　cos θ = ' + fracHTML('x', 'r') + '　tan θ = ' + fracHTML('y', 'x') +
+          '<br>三角形の辺の代わりに<b>点Pの座標</b>だけで書けた。' },
+      { level: 2, body: 'r を決めて θ を動かすと、P は原点が中心・半径 r の<b>半円の上</b>を動く。θ が 90° をこえても P は止まらずに左へ進み、' +
+          '<b>座標 (x, y) はちゃんと決まる</b>。ちがうのは <span class="c-cos">x が負になる</span>ことだけ。' },
+      { level: 3, body: 'そこで、<b>0° ≦ θ ≦ 180° のすべての θ</b> について、半円上の点 P(x, y) を使って<br>' +
+          'sin θ = ' + fracHTML('y', 'r') + '　cos θ = ' + fracHTML('x', 'r') + '　tan θ = ' + fracHTML('y', 'x') +
+          '<br>と<b>決める（定義する）</b>。鋭角のときは今までと同じ値になるので、つじつまが合う。' +
+          (deg > 90 && deg < 180 ? '<br>いまの θ = ' + deg + '° では x < 0 なので <span class="c-cos">cos θ < 0</span>、tan θ < 0。' : '') },
+      { level: 4, body: 'r を変えても、三角形は拡大・縮小（相似）するだけなので<b>比の値は同じ</b>。r = 1（単位円）にとると<br>' +
+          '<span class="c-sin">sin θ = y</span>、<span class="c-cos">cos θ = x</span>　つまり<b>点の座標がそのまま (cos θ, sin θ)</b>。' +
+          '<br>上の「r =」ボタンで r を変えて、値が変わらないことを確かめよう。' },
+      { level: 5, body: '三角形がつくれなかった角も、点 P で決まる。<br>' +
+          '0°：P(r, 0) → sin 0° = 0、cos 0° = 1<br>' +
+          '90°：P(0, r) → sin 90° = 1、cos 90° = 0、<b>tan 90° は x = 0 で割れないので定義しない</b><br>' +
+          '180°：P(' + MINUS + 'r, 0) → sin 180° = 0、cos 180° = ' + MINUS + '1' +
+          '<table class="sign"><tr><th>θ</th><th>0°&lt;θ&lt;90°</th><th>90°</th><th>90°&lt;θ&lt;180°</th></tr>' +
+          '<tr><th>sin θ</th><td>＋</td><td>1</td><td>＋</td></tr>' +
+          '<tr><th>cos θ</th><td>＋</td><td>0</td><td>' + MINUS + '</td></tr>' +
+          '<tr><th>tan θ</th><td>＋</td><td>なし</td><td>' + MINUS + '</td></tr></table>' }
+    ];
+  }
+
+  function renderSteps(){
+    var steps = buildSteps();
+    $('steps').innerHTML = steps.map(function(s, i){
+      return '<div class="step' + (s.level > level ? ' dim' : '') + (s.level === level ? ' now' : '') + '" data-level="' + s.level + '">' +
+             '<div class="step-num">' + (i + 1) + '</div><div class="step-body">' + s.body + '</div></div>';
+    }).join('');
+    Array.prototype.forEach.call($('steps').querySelectorAll('.step'), function(el){
+      el.addEventListener('click', function(){ stopAuto(); goTo(+el.dataset.level); });
+    });
+    $('progress').innerHTML = mathHTML(LEVEL_LABELS[level]);
+    $('prevBtn').disabled = level <= 0;
+    $('nextBtn').disabled = level >= MAX_LEVEL;
+  }
+
+  // ---- 定義と値 ----
+  function renderDefs(){
+    var st = state, deg = st.deg, R = st.r;
+    var h = '';
+    var names = { s: 'sin ' + deg + '°', c: 'cos ' + deg + '°', t: 'tan ' + deg + '°' };
+    var cls = { s: 'c-sin', c: 'c-cos', t: 'c-tan' };
+
+    if(level === 0){
+      h += '<div class="label">いまの定義：直角三角形の辺の比（鋭角だけ）</div>';
+      if(!st.acute){
+        h += '<div class="coord">θ = ' + deg + '° の直角三角形はつくれない</div>';
+        ['s', 'c', 't'].forEach(function(k){
+          h += '<div class="row"><span class="name ' + cls[k] + '">' + names[k] + '</span> = <span class="muted">？（この定義では決められない）</span></div>';
+        });
+      }else{
+        var def0 = { s: fracHTML('対辺', '斜辺'), c: fracHTML('隣辺', '斜辺'), t: fracHTML('対辺', '隣辺') };
+        h += '<div class="coord">斜辺 = ' + R.label + '、隣辺 = ' + xHTML() + '、対辺 = ' + yHTML() + '</div>';
+        ['s', 'c', 't'].forEach(function(k){
+          h += '<div class="row"><span class="name ' + cls[k] + '">' + names[k] + '</span> = ' + def0[k] + ' = ' + ratioHTML(k) + '</div>';
+        });
+      }
+      $('defs').innerHTML = h;
+      return;
+    }
+
+    var defined = level >= 3 || st.acute;
+    h += '<div class="label">' + (level >= 3 ? '新しい定義：半円上の点 P(x, y) の座標（0° ≦ θ ≦ 180°）' : '座標で言いかえた定義（まだ鋭角だけ）') + '</div>';
+    h += '<div class="coord">P(x, y) = (' + xHTML() + ', ' + yHTML() + ')、r = ' + R.label + (st.ex ? '' : '（小数第2位まで）') + '</div>';
+
+    var defs = { s: ['y', 'r'], c: ['x', 'r'], t: ['y', 'x'] };
+    // 代入した分数を見せるのは、座標が分数でないときだけ（分数の中に分数が入ると読みにくい）
+    var intCoords = st.ex && st.ex.x[2] === 1 && st.ex.y[2] === 1 && R.n === 1 && R.v !== 1;
+    ['s', 'c', 't'].forEach(function(k){
+      h += '<div class="row"><span class="name ' + cls[k] + '">' + names[k] + '</span> = ' + fracHTML(defs[k][0], defs[k][1]);
+      if(!defined){
+        h += ' = <span class="muted">？（' + (deg >= 90 ? '90° 以上はまだ定義していない' : '三角形がつぶれている') + '）</span>';
+      }else if(k === 't' && !st.tanDefined){
+        h += ' = ' + fracHTML(yHTML(), '0') + ' → <b>定義されない</b>';
+      }else{
+        if(intCoords){
+          var top = k === 'c' ? xHTML() : yHTML(), bot = k === 't' ? xHTML() : R.label;
+          h += ' = ' + fracHTML(top, bot);
+        }else if(R.v === 1 && k !== 't'){
+          h += ' = ' + (k === 's' ? 'y' : 'x');
+        }
+        h += ' = <b>' + ratioHTML(k) + '</b>';
+      }
+      h += '</div>';
+    });
+    if(level >= 4 && R.v !== 1){
+      h += '<div class="note"><b style="color:#6D28D9">紫の点 Q</b> は、半径1の円（単位円）と OP の交わる点。Q の座標がそのまま (cos θ, sin θ) ＝ (' + ratioPlain('c') + ', ' + ratioPlain('s') + ')。</div>';
+    }
+    if(level >= 3 && !st.ex){
+      h += '<div class="note">30°・45°・60°・120°・135°・150° などを選ぶと、分数・√ のままの値が出ます。</div>';
+    }
+    $('defs').innerHTML = h;
+  }
+
+  // ---- 表 ----
+  function renderTable(){
+    var angles = [0, 30, 45, 60, 90, 120, 135, 150, 180];
+    var h = '<table class="vals"><thead><tr><th>θ</th>' + angles.map(function(a){
+      return '<th class="' + (a === state.deg ? 'hi' : '') + '">' + a + '°</th>'; }).join('') + '</tr></thead><tbody>';
+    ['s', 'c', 't'].forEach(function(k){
+      var name = k === 's' ? 'sin θ' : k === 'c' ? 'cos θ' : 'tan θ';
+      h += '<tr><th>' + name + '</th>' + angles.map(function(a){
+        var v = VAL[a][k];
+        return '<td class="' + (a === state.deg ? 'hi' : (a > 0 && a < 90 ? 'acute' : '')) + '">' + (v === null ? 'なし' : valHTML(v)) + '</td>';
+      }).join('') + '</tr>';
+    });
+    h += '</tbody></table><p class="hint">灰色の列（30°・45°・60°）が、直角三角形で決めていた範囲です。</p>';
+    $('tblBox').innerHTML = h;
+  }
+
+  // ---- 確認クイズ ----
+  var QUIZ = [
+    { q: 'sin 120° の値は？', deg: 120, r: 1,
+      opts: ['√3/2', MINUS + '√3/2', '1/2', MINUS + '1/2'], ans: 0,
+      exp: '半径2の半円で P(' + MINUS + '1, √3)。sin 120° = {y|r} = {√3|2}。y は正なので sin は正。' },
+    { q: 'cos 135° の値は？', deg: 135, r: 2,
+      opts: ['1/√2', MINUS + '1/√2', '1', MINUS + '1'], ans: 1,
+      exp: '半径 √2 の半円で P(' + MINUS + '1, 1)。cos 135° = {x|r} = {' + MINUS + '1|√2}。' },
+    { q: 'tan 150° の値は？', deg: 150, r: 1,
+      opts: ['1/√3', MINUS + '1/√3', '√3', MINUS + '√3'], ans: 1,
+      exp: '半径2の半円で P(' + MINUS + '√3, 1)。tan 150° = {y|x} = {1|' + MINUS + '√3}。' },
+    { q: 'cos 180° の値は？', deg: 180, r: 0,
+      opts: ['0', '1', MINUS + '1', 'なし'], ans: 2,
+      exp: '単位円で P(' + MINUS + '1, 0)。cos 180° = x = ' + MINUS + '1。' },
+    { q: 'tan 90° の値は？', deg: 90, r: 0,
+      opts: ['0', '1', '∞', '定義されない'], ans: 3,
+      exp: 'P(0, 1) で x = 0。{y|x} の分母が0になり割り算ができないので、tan 90° は定義しない。' },
+    { q: 'θ が鈍角（90° < θ < 180°）のとき、いつでも正の値になるのは？', deg: 130, r: null,
+      opts: ['sin θ', 'cos θ', 'tan θ', 'どれも負'], ans: 0,
+      exp: 'P は半円の左上にあるので y > 0、x < 0。sin θ = {y|r} だけが正。' }
+  ];
+
+  function renderQuiz(){
+    $('quiz').innerHTML = QUIZ.map(function(item, i){
+      return '<div class="q"><div class="qtext"><span>問' + (i + 1) + '　' + mathHTML(item.q) + '</span>' +
+             '<button type="button" class="btn" data-go="' + i + '">図で確かめる</button></div>' +
+             '<div class="opts" data-q="' + i + '">' + item.opts.map(function(o, j){
+               return '<button type="button" data-i="' + j + '">' + valHTML(o) + '</button>';
+             }).join('') + '</div><div class="fb" id="fb' + i + '"></div></div>';
+    }).join('');
+    Array.prototype.forEach.call($('quiz').querySelectorAll('[data-go]'), function(btn){
+      btn.addEventListener('click', function(){
+        var it = QUIZ[+btn.dataset.go];
+        stopAuto();
+        if(it.r !== null) setR(it.r, true);
+        if(level < 3) level = 3;
+        updateTheta(it.deg);
+        document.querySelector('.main-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+    Array.prototype.forEach.call($('quiz').querySelectorAll('.opts'), function(box){
+      var qi = +box.dataset.q;
+      Array.prototype.forEach.call(box.querySelectorAll('button'), function(btn){
+        btn.addEventListener('click', function(){
+          var pick = +btn.dataset.i, correct = QUIZ[qi].ans;
+          Array.prototype.forEach.call(box.querySelectorAll('button'), function(b){ b.classList.remove('ok', 'ng'); });
+          btn.classList.add(pick === correct ? 'ok' : 'ng');
+          if(pick !== correct) box.querySelectorAll('button')[correct].classList.add('ok');
+          var fb = $('fb' + qi);
+          fb.className = 'fb' + (pick === correct ? ' ok' : '');
+          fb.innerHTML = (pick === correct ? '正解！ ' : 'おしい。正解は ' + valHTML(QUIZ[qi].opts[correct]) + '。') + mathHTML(QUIZ[qi].exp);
+        });
+      });
+    });
+  }
+
+  // ---- 進行 ----
+  function renderAll(){
+    drawFigure();
+    renderSteps();
+    renderDefs();
+  }
+  function goTo(n){
+    level = Math.max(0, Math.min(MAX_LEVEL, n));
+    renderAll();
+  }
+  function stopAuto(){
+    if(autoTimer){ clearInterval(autoTimer); autoTimer = null; $('autoBtn').textContent = '▶ 通しで自動再生する'; }
+  }
+
+  function updateTheta(deg){
+    if(!isFinite(deg)){
+      $('inputNote').innerHTML = '<div class="warn">0〜180 の数値を入れてください。</div>';
+      return;
+    }
+    $('inputNote').innerHTML = '';
+    theta = Math.max(0, Math.min(180, Math.round(deg)));
+    $('thetaNum').value = theta;
+    $('thetaRange').value = theta;
+    state = solve(theta, R_OPTS[rIdx]);
+    renderTable();
+    renderAll();
+  }
+  function setR(i, silent){
+    rIdx = i;
+    Array.prototype.forEach.call($('rSeg').querySelectorAll('button'), function(b){
+      b.setAttribute('aria-pressed', String(+b.dataset.r === i));
+    });
+    if(!silent) updateTheta(theta);
+  }
+
+  // ---- 図のタップ・ドラッグで θ を動かす ----
+  var SNAP = [0, 30, 45, 60, 90, 120, 135, 150, 180];
+  var dragging = false;
+  function thetaFromEvent(e){
+    var svg = $('svg');
+    if(!svg || !svg.getScreenCTM) return null;
+    var pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+    var u = p.x / SC + XMIN, v = YMAX - p.y / SC;
+    if(Math.abs(u) < 0.02 && Math.abs(v) < 0.02) return null;
+    var a = Math.atan2(v, u) * 180 / Math.PI;
+    if(a < 0) a = (u >= 0 ? 0 : 180);
+    a = Math.round(a);
+    SNAP.forEach(function(sn){ if(Math.abs(a - sn) <= 2) a = sn; });
+    return a;
+  }
+  $('figure').addEventListener('pointerdown', function(e){
+    var a = thetaFromEvent(e); if(a === null) return;
+    dragging = true; stopAuto();
+    try{ $('figure').setPointerCapture(e.pointerId); }catch(_){}
+    updateTheta(a);
+  });
+  $('figure').addEventListener('pointermove', function(e){
+    if(!dragging) return;
+    var a = thetaFromEvent(e); if(a === null || a === theta) return;
+    updateTheta(a);
+  });
+  ['pointerup', 'pointercancel'].forEach(function(t){ $('figure').addEventListener(t, function(){ dragging = false; }); });
+
+  // ---- イベント ----
+  Array.prototype.forEach.call(document.querySelectorAll('.presets button'), function(btn){
+    btn.addEventListener('click', function(){ stopAuto(); updateTheta(+btn.dataset.deg); });
+  });
+  Array.prototype.forEach.call($('rSeg').querySelectorAll('button'), function(btn){
+    btn.addEventListener('click', function(){ stopAuto(); setR(+btn.dataset.r); });
+  });
+  $('thetaNum').addEventListener('input', function(){ stopAuto(); updateTheta(parseFloat(this.value)); });
+  $('thetaRange').addEventListener('input', function(){ stopAuto(); updateTheta(parseFloat(this.value)); });
+  $('prevBtn').addEventListener('click', function(){ stopAuto(); goTo(level - 1); });
+  $('nextBtn').addEventListener('click', function(){ stopAuto(); goTo(level + 1); });
+  $('resetBtn').addEventListener('click', function(){ stopAuto(); goTo(0); });
+  $('autoBtn').addEventListener('click', function(){
+    if(autoTimer){ stopAuto(); return; }
+    goTo(0);
+    $('autoBtn').textContent = '■ 停止';
+    autoTimer = setInterval(function(){
+      if(level >= MAX_LEVEL){ stopAuto(); return; }
+      goTo(level + 1);
+    }, 1600);
+  });
+
+  renderQuiz();
+  // URL で最初の状態を指定できる（例：trig-extension.html?deg=120&step=4&r=2）。授業で特定の場面を配るとき用
+  var qs = new URLSearchParams(location.search);
+  var r0 = { '1': 0, '2': 1, 'root2': 2 }[qs.get('r')];
+  if(r0 !== undefined) setR(r0, true);
+  var step0 = parseInt(qs.get('step'), 10);
+  if(step0 >= 1 && step0 <= MAX_LEVEL + 1) level = step0 - 1;
+  var deg0 = parseInt(qs.get('deg'), 10);
+  updateTheta(deg0 >= 0 && deg0 <= 180 ? deg0 : 30);
+})();
+</script>
+</body>
+</html>
