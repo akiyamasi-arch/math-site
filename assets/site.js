@@ -120,8 +120,11 @@
     const base = 'https://docs.google.com/presentation/d/' + m[1];
     return { embed: base + '/embed?start=false&loop=false', open: base + '/present' };
   }
-  // 授業スライド（表紙 → クリックでページ内に埋め込み表示）
+  // 授業スライド
+  //  ・url（Googleスライド）… 表紙 → クリックでページ内に埋め込み表示
+  //  ・images＋pages（PowerPointから書き出した画像）… 1枚目を最初から表示し、◀ ▶ でページ送り
   function slideCard(sl){
+    if(sl.images) return imageSlideCard(sl);
     const u = slideUrls(sl.url);
     return `<div class="video-card slide-card">
       <div class="video-thumb slide-thumb" data-embed="${esc(u.embed)}" data-title="${esc(sl.title)}" role="button" tabindex="0" aria-label="スライドを表示：${esc(sl.title)}">
@@ -133,7 +136,59 @@
       <p class="slide-open"><a href="${esc(u.open)}" target="_blank" rel="noopener">全画面で見る（新しいタブで開きます）</a></p>
     </div>`;
   }
+  // images は画像を入れたフォルダ（例 "slides/div-by-zero/"）。中身は 01.png, 02.png … と連番にしておく
+  const slideImages = sl => Array.from({ length: sl.pages || 0 }, (_, i) => sl.images.replace(/\/?$/, '/') + String(i + 1).padStart(2, '0') + '.png');
+  function imageSlideCard(sl){
+    const imgs = slideImages(sl);
+    return `<div class="video-card slide-card">
+      <div class="slide-viewer" data-images="${esc(JSON.stringify(imgs))}" data-title="${esc(sl.title)}" tabindex="0" role="region" aria-roledescription="スライド" aria-label="${esc(sl.title)}（左右の矢印キーでページ送り）">
+        <div class="slide-stage"><img src="${esc(encodeURI(imgs[0] || ''))}" alt="${esc(sl.title)} 1ページ目"></div>
+        <div class="slide-controls">
+          <button type="button" class="slide-btn" data-act="prev" aria-label="前のページ">◀</button>
+          <span class="slide-count" aria-live="polite">1 / ${imgs.length}</span>
+          <button type="button" class="slide-btn" data-act="next" aria-label="次のページ">▶</button>
+          <button type="button" class="slide-btn slide-fs" data-act="fs">全画面</button>
+        </div>
+      </div>
+      <h3>${esc(sl.title)}</h3>
+      ${sl.description ? `<p>${esc(sl.description)}</p>` : ''}
+    </div>`;
+  }
+  function bindImageSlides(root){
+    root.querySelectorAll('.slide-viewer').forEach(v => {
+      const imgs = JSON.parse(v.dataset.images || '[]');
+      const img = v.querySelector('img'), count = v.querySelector('.slide-count');
+      const prev = v.querySelector('[data-act="prev"]'), next = v.querySelector('[data-act="next"]'), fs = v.querySelector('[data-act="fs"]');
+      let i = 0;
+      const go = n => {
+        i = Math.max(0, Math.min(imgs.length - 1, n));
+        img.src = encodeURI(imgs[i]);
+        img.alt = `${v.dataset.title} ${i + 1}ページ目`;
+        count.textContent = `${i + 1} / ${imgs.length}`;
+        prev.disabled = i === 0;
+        next.disabled = i === imgs.length - 1;
+        if(imgs[i + 1]) (new Image()).src = encodeURI(imgs[i + 1]); // 次のページを先読み
+      };
+      prev.addEventListener('click', () => go(i - 1));
+      next.addEventListener('click', () => go(i + 1));
+      // 画像の右半分をタップで次へ、左半分で前へ
+      img.addEventListener('click', e => { const r = img.getBoundingClientRect(); go(e.clientX - r.left > r.width / 2 ? i + 1 : i - 1); });
+      v.addEventListener('keydown', e => {
+        if(e.key === 'ArrowRight'){ e.preventDefault(); go(i + 1); }
+        if(e.key === 'ArrowLeft'){ e.preventDefault(); go(i - 1); }
+      });
+      // 全画面（iPhone の Safari など、対応していない端末ではボタンを出さない）
+      if(v.requestFullscreen && document.fullscreenEnabled){
+        fs.addEventListener('click', () => document.fullscreenElement ? document.exitFullscreen() : v.requestFullscreen());
+        document.addEventListener('fullscreenchange', () => { fs.textContent = document.fullscreenElement === v ? '全画面を終了' : '全画面'; });
+      } else {
+        fs.hidden = true;
+      }
+      go(0);
+    });
+  }
   function bindSlideThumbs(root){
+    bindImageSlides(root);
     root.querySelectorAll('.slide-thumb').forEach(el => {
       const show = () => {
         if(!el.dataset.embed || el.classList.contains('is-open')) return;
@@ -314,7 +369,9 @@
       <h2>${esc(t.title)}</h2>
       ${t.added ? `<time datetime="${esc(t.added)}">${fmtDate(t.added)}</time>` : ''}
       <p>${esc(t.body)}</p>
-      ${t.url ? `<p class="topic-link"><a href="${esc(t.url)}" target="_blank" rel="noopener">${esc(t.urlLabel || t.url)}（新しいタブで開きます）</a></p>` : ''}
+      ${t.url ? (/^https?:/.test(t.url)
+        ? `<p class="topic-link"><a href="${esc(t.url)}" target="_blank" rel="noopener">${esc(t.urlLabel || t.url)}（新しいタブで開きます）</a></p>`
+        : `<p class="topic-link"><a href="${esc(t.url)}">${esc(t.urlLabel || t.url)} →</a></p>`) : ''}
     </article>`).join('');
   }
 

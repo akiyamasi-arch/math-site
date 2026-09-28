@@ -460,6 +460,39 @@ a.card h3::after{content:" →";}
 .slide-thumb .play-badge::before{right:var(--sp-2);bottom:var(--sp-2);}
 .slide-thumb .play-badge span{width:56px;height:56px;display:flex;align-items:center;justify-content:center;}
 .slide-thumb:hover .play-badge, .slide-thumb:focus-visible .play-badge{background:rgba(199,71,0,0.08);}
+/* 画像で書き出したスライド（ページ送り付きのビューア） */
+.slide-viewer{border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden;background:#fff;}
+.slide-viewer:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+.slide-stage{aspect-ratio:16/9;background:#fff;}
+.slide-stage img{width:100%;height:100%;object-fit:contain;display:block;cursor:pointer;user-select:none;}
+.slide-controls{
+  display:flex;
+  align-items:center;
+  gap:var(--sp-1);
+  padding:var(--sp-1);
+  border-top:1px solid var(--line);
+  background:var(--bg);
+}
+.slide-btn{
+  min-width:48px;
+  min-height:44px;
+  padding:0 var(--sp-2);
+  font:inherit;
+  font-size:16px;
+  font-weight:700;
+  color:var(--orange-800);
+  background:#fff;
+  border:1px solid var(--line-strong);
+  border-radius:var(--radius-sm);
+  cursor:pointer;
+}
+.slide-btn:hover:not(:disabled){background:var(--orange-50);}
+.slide-btn:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+.slide-btn:disabled{color:var(--line-strong);cursor:default;}
+.slide-fs{margin-left:auto;font-size:15px;}
+.slide-count{min-width:4.5em;text-align:center;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
+.slide-viewer:fullscreen{display:flex;flex-direction:column;border:0;border-radius:0;}
+.slide-viewer:fullscreen .slide-stage{flex:1;aspect-ratio:auto;min-height:0;}
 .slide-open{font-size:15px;}
 .slide-open a{color:var(--orange-800);}
 
