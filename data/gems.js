@@ -18,6 +18,15 @@ const GEM_DATA = [
     url: "https://gemini.google.com/gem/1mzbQvtVaxJ_QrBRrkXaEp8gBYQe9gqB-?usp=sharing",
     added: "2026-09-14"
   },
+  {
+    common: true,
+    kind: "hint",
+    order: 20,
+    title: "AI数学チューター",
+    description: "問題文や数式を入力すると、AIが質問を返しながら一歩ずつ一緒に考えてくれます。問題の写真を貼り付けてスタートすることもできます。",
+    url: "https://gemini.google.com/share/d/1lDU9gjbY_3QGGJyHk4RnofKO7_mpkoX7?usp=sharing",
+    added: "2026-09-28"
+  },
 
   // ---- 学習をふり返るときに使うGEM（どの単元でも使える） ----
   {
