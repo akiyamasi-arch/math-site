@@ -249,7 +249,7 @@
     // どの単元でも使えるGEMは、追加日と種類（ヒント／振り返り）ごとにまとめる
     const commonByDate = new Map();
     D.gems.filter(g => g.common && g.added).forEach(g => {
-      const key = `${g.added}|${g.kind === 'hint' ? 'ヒントGEM' : '振り返りGEM'}`;
+      const key = `${g.added}|${g.kind === 'hint' ? 'ヒント用のAI' : '振り返りGEM'}`;
       commonByDate.set(key, (commonByDate.get(key) || 0) + 1);
     });
     commonByDate.forEach((n, key) => {
@@ -310,7 +310,7 @@
     });
     if(hasCommonGem()) subjects.push(`<a class="hero-btn iroiro" href="furikaeri.html">
       <span class="label">
-        <span class="name">学習サポートGEM</span>
+        <span class="name">AI学習サポート</span>
         <span class="meta">どの単元でも使える・AIがヒントとふり返りを手伝う</span>
       </span>
       <span class="chev" aria-hidden="true">›</span>
@@ -453,7 +453,7 @@
       <span>${next ? `<a href="${unitUrl(s, next)}">${esc(next.name)} →</a>` : ''}</span>`;
   }
 
-  // ---- 学習サポートGEMページ ----
+  // ---- AI学習サポートページ ----
   function renderFurikaeriPage(){
     // 問題を解いているときに使うGEM（無ければ欄ごと非表示）
     const hints = commonGems('hint');

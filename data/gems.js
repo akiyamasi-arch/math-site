@@ -3,7 +3,7 @@
 // order・added の使い方はアプリ・プリントと同じです。
 //
 // ・どの単元でも使えるGEM … common: true と書く（subject・unit は不要）。
-//   「学習サポートGEM」ページ（furikaeri.html）に表示されます。
+//   「AI学習サポート」ページ（furikaeri.html）に表示されます。
 //   kind: "hint" と書くと「問題を解いているとき」の欄に、書かなければ「ふり返るとき」の欄に入ります。
 // ・単元専用のGEM … subject・unit を書く。その単元ページの「振り返りGEM」欄に表示されます
 //   （GEMが無い単元では欄ごと表示されません）。
