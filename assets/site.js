@@ -82,7 +82,7 @@
   // ---- カードの描画 ----
   function appCard(a){
     return `<a class="card" href="${esc(a.file)}">
-      <span class="tag">アプリ</span>
+      <span class="tag">${esc(a.tag || 'アプリ')}</span>
       <h3>${esc(a.title)}</h3>
       ${a.description ? `<p>${esc(a.description)}</p>` : ''}
     </a>`;

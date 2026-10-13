@@ -80,6 +80,9 @@
   .answer .more{font-size:14px;margin-top:6px;}
   .answer.pending{opacity:.6;}
   .answer.pending .value{font-size:15px;font-weight:400;}
+  .next-app{display:block;margin-top:12px;padding:10px 14px;border:1px dashed var(--orange-800);border-radius:var(--radius-md);background:#fff;font-weight:700;text-decoration:none;line-height:1.6;}
+  .next-app:hover{background:var(--orange-50);}
+  .next-tag{display:inline-block;font-size:12px;background:var(--orange-800);color:#fff;border-radius:var(--radius-sm);padding:0 6px;margin-right:6px;}
   .warn{background:#fff3cd;border:1px solid #ffe08a;color:#7a5b00;padding:10px 14px;border-radius:var(--radius-md);font-size:14px;margin-top:var(--sp-1);}
   /* 分数は横線の縦組みで表示する */
   .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25;margin:0 2px;}
@@ -135,7 +138,7 @@
       </div>
       <div class="answer pending" id="answer">
         <div class="label">わかったこと</div>
-        <div class="value" id="answerValue">小数第4位まで追いつめると表示されます</div>
+        <div class="value" id="answerValue"></div>
         <div class="more" id="answerMore"></div>
       </div>
     </div>
@@ -234,8 +237,12 @@
       });
       g += `<text x="${x0}" y="${yL + 64}" font-size="13" fill="#1D6FB8">● 2乗が ${Nstr} より小さい</text>`;
       g += `<text x="${x0 + 200}" y="${yL + 64}" font-size="13" fill="#C74700">● 2乗が ${Nstr} より大きい</text>`;
+    }else if(hist.some(h => h && h.exact !== null)){
+      g += `<text x="40" y="280" font-size="16" font-weight="700" fill="#1b5e20">ぴったり終わった！ 右の記録を見てみよう。</text>`;
     }else{
-      g += `<text x="40" y="280" font-size="16" font-weight="700" fill="#1b5e20">しぼりこみ完了。右の記録を見てみよう。</text>`;
+      // 無理数は終わらない。「完了」ではなく「いったん止めた」と言う
+      g += `<text x="40" y="270" font-size="16" font-weight="700" fill="#1D6FB8">小数第${MAXD}位で、いったん手を止めました。</text>`;
+      g += `<text x="40" y="298" font-size="15" fill="#475569">√${Nstr} の小数は、この先もずっと続きます。右の記録を見てみよう。</text>`;
     }
     $('figure').innerHTML = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="正方形と数直線の図">${g}</svg>`;
   }
@@ -259,7 +266,7 @@
     if(h.exact !== null){
       html += `<div class="found">ぴったり！ ${fmt(h.exact, d)}² = ${Nstr} なので √${Nstr} = ${fmt(h.exact, d)}。ここで終わり。「次の桁へ」でまとめへ。</div>`;
     }else if(h.found !== null){
-      html += `<div class="found">しぼりこめた！ ${fmt(h.found, d)} &lt; √${Nstr} &lt; ${fmt(h.found + 1, d)}　${d < MAXD ? '→「次の桁へ」で拡大しよう' : '→「次の桁へ」でまとめへ'}</div>`;
+      html += `<div class="found">しぼりこめた！ ${fmt(h.found, d)} &lt; √${Nstr} &lt; ${fmt(h.found + 1, d)}　${d < MAXD ? '→「次の桁へ」で拡大しよう' : '→ この先もまだ続くけれど、このアプリでは小数第' + MAXD + '位でいったん止めて「まとめへ」'}</div>`;
     }
     box.innerHTML = html;
     box.querySelectorAll('.ticks button').forEach(btn => btn.addEventListener('click', () => tryK(+btn.dataset.k)));
@@ -303,7 +310,7 @@
 
   function renderAnswer(){
     const ans = $('answer');
-    if(d <= MAXD){ ans.classList.add('pending'); $('answerValue').textContent = 'しぼりこみを最後まで進めると表示されます'; $('answerMore').innerHTML = ''; return; }
+    if(d <= MAXD){ ans.classList.add('pending'); $('answerValue').textContent = `小数第${MAXD}位まで追いつめると表示されます`; $('answerMore').innerHTML = ''; return; }
     ans.classList.remove('pending');
     const ex = hist.find(h => h && h.exact !== null);
     if(ex){
@@ -313,11 +320,26 @@
       $('answerMore').innerHTML = `終わりのある小数なので、${den === 1 ? '整数' : '分数 ' + fracHTML(ex.exact / g0, den / g0) + ' で表せる'}。つまり <b>有理数</b>。<br>√2・√3 と比べてみよう。`;
     }else{
       const h = hist[MAXD];
-      $('answerValue').innerHTML = `${fmt(h.found, MAXD)} &lt; √${Nstr} &lt; ${fmt(h.found + 1, MAXD)}`;
-      $('answerMore').innerHTML = `電卓で計算すると √${Nstr} = ${Math.sqrt(Nn / 100).toFixed(8)}… 。どこまで追いつめても<b>終わらず</b>、同じ並びの<b>くり返しにもならない</b>ことが知られています（循環小数ではない）。<br>このように分数で表せない数を <b>無理数</b> といいます。畑の1辺は「約 ${fmt(h.found, 2)} m」のように近い値で測ることになります。`;
+      $('answerValue').innerHTML = `${fmt(h.found, MAXD)} &lt; √${Nstr} &lt; ${fmt(h.found + 1, MAXD)}<span style="font-size:14px;font-weight:400;">（小数第${MAXD}位で、いったん止めた）</span>`;
+      const more = [];
+      for(let n = MAXD + 1; n <= MAXD + 4; n++) more.push(truncRoot(n));
+      $('answerMore').innerHTML = `ここで止めたのは、こちらの都合です。続けると ${more.join(' → ')} → … と、どこまで追いつめても<b>終わらず</b>、同じ並びの<b>くり返しにもならない</b>ことが知られています（循環小数ではない）。<br>このように分数で表せない数を <b>無理数</b> といいます。畑の1辺は「約 ${fmt(Math.round(h.found / Math.pow(10, MAXD - 2)), 2)} m」のように近い値で測ることになります。`
+        + `<a class="next-app" href="sqrt-epsilon-delta.html"><span class="next-tag">発展</span>「どこまでも追いつめられる」を、大学の数学ではどう言い表す？（ε-δ 論法の入り口）→</a>`;
     }
   }
   const gcd = (x, y) => { while(y){ [x, y] = [y, x % y]; } return x; };
+  // √面積 を小数第 n 位で切り捨てた値（BigInt で誤差なく）
+  function isqrt(v){
+    if(v < 2n) return v;
+    let x = BigInt(Math.floor(Math.sqrt(Number(v))));
+    while(x * x > v) x--;
+    while((x + 1n) * (x + 1n) <= v) x++;
+    return x;
+  }
+  function truncRoot(n){
+    const s = isqrt(BigInt(Nn) * 10n ** BigInt(2 * n - 2)).toString().padStart(n + 1, '0');
+    return s.slice(0, s.length - n) + '.' + s.slice(s.length - n);
+  }
 
   function renderAll(){ drawFigure(); renderTry(); renderSteps(); renderAnswer(); }
 
