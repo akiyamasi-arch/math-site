@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>【発展】√2 に「いくらでも近づく」とは？（大学の ε-δ 論法）｜数学学習サイト</title>
+<title>ε-δ 論法：「限りなく近づく」を勝負で言い切る｜数学学習サイト</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
@@ -14,7 +14,8 @@
     --orange-700:#E25100; --orange-800:#C74700; --orange-900:#AC3E00;
     --ink:#1E293B; --sub:#475569; --line:#D9DEE6; --line-strong:#B9C2CF;
     --bg:#FBFBFA; --card:#FFFFFF; --focus:#FFD866;
-    --blue:#1D6FB8; --ok:#1b5e20; --ng:#B42318;
+    --eps:#C74700; --eps-bg:#FFEEE2; --del:#1D6FB8; --del-bg:#E6F0FA;
+    --ok:#1b5e20; --ok-bg:#E8F5E9; --ng:#B42318; --ng-bg:#FDECEA;
     --sp-1:8px; --sp-2:16px; --sp-3:24px; --sp-4:32px; --sp-6:48px;
     --radius-sm:4px; --radius-md:8px; --radius-pill:999px;
   }
@@ -22,7 +23,7 @@
   [hidden]{display:none !important;}
   body{margin:0;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.7;}
   a{color:var(--orange-800);}
-  a:focus-visible, button:focus-visible, input:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+  a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
   .brand-bar{height:6px;background:var(--orange-700);}
   .site-header{background:var(--card);border-bottom:1px solid var(--line);padding:var(--sp-2);}
   .site-header .inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;}
@@ -32,80 +33,105 @@
   .wrap{max-width:1100px;margin:0 auto;padding:var(--sp-3) var(--sp-2) var(--sp-6);}
   .kicker{display:inline-block;font-size:13px;font-weight:700;color:#fff;background:var(--orange-800);border-radius:var(--radius-sm);padding:2px 8px;margin-bottom:6px;}
   h1{margin:0 0 4px;font-size:26px;line-height:1.4;}
-  .lead{margin:0 0 var(--sp-3);color:var(--sub);font-size:15px;}
+  @media (max-width:600px){ h1{font-size:22px;} }
+  .lead{margin:0 0 var(--sp-2);color:var(--sub);font-size:15px;}
 
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--sp-2) var(--sp-3);}
-  @media (max-width:600px){ .card{padding:var(--sp-2);} }
-  .section-title{font-size:13px;font-weight:700;color:var(--sub);margin:0 0 var(--sp-1);}
+  @media (max-width:600px){ .card{padding:12px;} }
+  .card + .card{margin-top:var(--sp-2);}
 
-  .main-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:var(--sp-2);align-items:start;}
-  @media (max-width:900px){ .main-grid{grid-template-columns:1fr;} }
-  .figure svg{width:100%;height:auto;display:block;}
-
-  .stage-head{font-size:18px;font-weight:700;margin:var(--sp-2) 0 4px;}
-  .stage-text{font-size:15px;margin:0 0 var(--sp-1);}
-  .pick{margin-top:12px;}
-  .pick .q{font-size:14px;font-weight:700;margin-bottom:6px;}
-  .pick .who{display:inline-block;font-size:12px;font-weight:700;border-radius:var(--radius-sm);padding:0 6px;margin-right:6px;}
-  .who.them{background:var(--orange-50);color:var(--orange-800);border:1px solid var(--orange-800);}
-  .who.you{background:#e8f1fb;color:var(--blue);border:1px solid var(--blue);}
-  .chips{display:flex;flex-wrap:wrap;gap:6px;}
-  .chips button{border:1px solid var(--line-strong);background:#fff;padding:6px 10px;border-radius:var(--radius-md);font-size:15px;cursor:pointer;font-family:Consolas,"Courier New",monospace;min-height:44px;min-width:56px;color:var(--ink);}
-  .chips button:hover{border-color:var(--orange-800);}
-  .chips.eps button.on{background:var(--orange-50);border-color:var(--orange-800);color:var(--orange-800);font-weight:700;}
-  .chips.ans button.on{background:#e8f1fb;border-color:var(--blue);color:var(--blue);font-weight:700;}
-  .chips button.won{box-shadow:inset 0 -3px 0 var(--ok);}
-  .btn{border:1px solid var(--line);background:#f8fafc;color:var(--ink);padding:8px 14px;border-radius:var(--radius-pill);font-size:14px;cursor:pointer;font-family:inherit;min-height:40px;}
+  /* 場面の切り替え */
+  .scenebar{display:flex;align-items:center;gap:8px;margin-bottom:var(--sp-2);flex-wrap:wrap;}
+  .pills{display:flex;gap:6px;flex:1;flex-wrap:wrap;}
+  .pill{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;border-radius:var(--radius-pill);padding:4px 12px 4px 4px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--ink);min-height:40px;}
+  .pill .n{width:26px;height:26px;border-radius:50%;background:#cbd5e1;color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .pill.reached .n{background:var(--ink);}
+  .pill.now{border-color:var(--orange-800);background:var(--orange-50);font-weight:700;}
+  .pill.now .n{background:var(--orange-800);}
+  .pill:disabled{opacity:.45;cursor:default;}
+  .pill{white-space:nowrap;flex:none;}
+  @media (max-width:700px){
+    .scenebar{justify-content:space-between;}
+    .pills{order:-1;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;}
+  }
+  .btn{border:1px solid var(--line);background:#f8fafc;color:var(--ink);padding:8px 16px;border-radius:var(--radius-pill);font-size:15px;cursor:pointer;font-family:inherit;min-height:44px;}
   .btn:hover{border-color:var(--orange-800);background:var(--orange-50);}
   .btn:disabled{opacity:.35;cursor:default;}
   .btn.primary{background:var(--orange-800);color:#fff;border-color:var(--orange-800);font-weight:700;}
   .btn.primary:hover{background:var(--orange-900);color:#fff;}
-  .btn.formula{border-color:var(--ok);color:var(--ok);font-weight:700;background:#f1f8f1;}
-  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px;}
-  .row input{font-size:16px;padding:6px 8px;border:1px solid var(--line-strong);border-radius:var(--radius-md);width:150px;font-family:Consolas,"Courier New",monospace;}
-  .row label{font-size:13px;font-weight:700;color:var(--sub);}
+  .btn.go{background:var(--ok);border-color:var(--ok);color:#fff;font-weight:700;}
+  .btn.go:hover{background:#144a18;}
+  .btn.blue{border-color:var(--del);color:var(--del);font-weight:700;background:#fff;}
 
-  .verdict{margin-top:12px;padding:10px 14px;border-radius:var(--radius-md);font-weight:700;font-size:15px;}
-  .verdict.win{background:#e8f5e9;color:var(--ok);}
-  .verdict.lose{background:#fdecea;color:var(--ng);}
-  .verdict.wait{background:#f1f5f9;color:var(--sub);font-weight:400;}
-  .explain{margin-top:12px;padding:12px 14px;border-left:4px solid var(--ok);background:#f6fbf6;font-size:15px;}
-  .explain p{margin:0 0 6px;}
-  .explain p:last-child{margin-bottom:0;}
-  table.tbl{border-collapse:collapse;margin-top:10px;font-size:14px;width:100%;}
-  .tbl th,.tbl td{border:1px solid var(--line);padding:4px 8px;text-align:center;}
-  .tbl th{background:#f8fafc;font-size:13px;}
-  .tbl td.mono{font-family:Consolas,"Courier New",monospace;}
-  .tbl td.y{color:var(--ok);font-weight:700;} .tbl td.n{color:var(--ng);font-weight:700;}
-  .tblwrap{overflow-x:auto;}
-  .nums{margin-top:10px;font-size:14px;line-height:1.9;}
-  .nums .mono{font-family:Consolas,"Courier New",monospace;}
+  .main-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:var(--sp-2);align-items:start;}
+  @media (max-width:900px){ .main-grid{grid-template-columns:1fr;} }
+  .main-grid > div, .main-grid .card{min-width:0;}   /* 横長の式で列が広がらないように */
+  /* 1列のときは「説明 → 図 → 操作 → 式 → 記録」の順に並べる（説明を読む前に操作が来ないように） */
+  @media (max-width:900px){
+    .main-grid > div{display:contents;}
+    #scene{order:1;} .figure{order:2;} #controls{order:3;} #formula{order:4;} #record{order:5;}
+    .main-grid .card + .card{margin-top:0;}
+  }
+  .figure{padding:8px;}
+  .figure svg{width:100%;height:auto;display:block;}
+
+  /* 操作 */
+  .turn{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--line);}
+  .turn:last-child{border-bottom:none;}
+  .who{flex:none;font-size:13px;font-weight:700;border-radius:var(--radius-sm);padding:2px 8px;margin-top:2px;}
+  .who.e{background:var(--eps-bg);color:var(--eps);border:1px solid var(--eps);}
+  .who.d{background:var(--del-bg);color:var(--del);border:1px solid var(--del);}
+  .who.j{background:#f1f5f9;color:var(--sub);border:1px solid var(--line-strong);}
+  .turn-body{flex:1;min-width:0;font-size:15px;}
+  .big{font-size:20px;font-weight:700;font-family:Consolas,"Courier New",monospace;}
+  .ce{color:var(--eps);} .cd{color:var(--del);}
+  .sub{color:var(--sub);font-size:14px;}
+  input[type=range]{width:100%;height:36px;accent-color:var(--del);margin:4px 0 0;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+  .chips button{border:1px solid var(--line-strong);background:#fff;padding:6px 10px;border-radius:var(--radius-md);font-size:15px;cursor:pointer;font-family:Consolas,"Courier New",monospace;min-height:44px;color:var(--ink);}
+  .chips button.on{background:var(--eps-bg);border-color:var(--eps);color:var(--eps);font-weight:700;}
+  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px;}
+  .row input[type=text]{font-size:16px;padding:6px 8px;border:1px solid var(--line-strong);border-radius:var(--radius-md);width:160px;font-family:Consolas,"Courier New",monospace;}
+  .verdict{margin-top:10px;padding:10px 14px;border-radius:var(--radius-md);font-weight:700;font-size:16px;}
+  .verdict.win{background:var(--ok-bg);color:var(--ok);}
+  .verdict.lose{background:var(--ng-bg);color:var(--ng);}
+  .verdict.wait{background:#f1f5f9;color:var(--sub);font-weight:400;font-size:15px;}
+  .warn{background:#fff3cd;border:1px solid #ffe08a;color:#7a5b00;padding:8px 12px;border-radius:var(--radius-md);font-size:14px;margin-top:8px;}
+
+  /* 説明 */
+  .scene-title{font-size:19px;font-weight:700;margin:0 0 8px;line-height:1.5;}
+  .scene p{margin:0 0 10px;font-size:15px;}
+  .rules{margin:0 0 10px;padding-left:1.4em;font-size:15px;}
+  .rules li{margin-bottom:8px;}
+  .key{margin-top:10px;padding:12px 14px;border-left:4px solid var(--orange-800);background:#fff8f2;font-size:15px;}
+  .key.ok{border-left-color:var(--ok);background:#f4faf4;}
+  .key.ng{border-left-color:var(--ng);background:#fff6f5;}
+  details{margin-top:10px;border:1px solid var(--line);border-radius:var(--radius-md);padding:8px 12px;font-size:15px;}
+  details summary{cursor:pointer;font-weight:700;color:var(--orange-800);}
+  details p{margin:8px 0 0;}
   .mono{font-family:Consolas,"Courier New",monospace;background:#f1f5f9;padding:1px 6px;border-radius:5px;}
 
-  /* 思考のステップ（クリックで巻き戻し／早送り） */
-  .stepper{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:var(--sp-2);padding-bottom:12px;border-bottom:1px dashed var(--line);}
-  .stepper .progress{font-size:12px;font-weight:700;color:var(--sub);text-align:center;flex:1;}
-  .steps{display:flex;flex-direction:column;gap:10px;}
-  .step{display:flex;gap:10px;padding:6px 8px;margin:0 -8px;border-radius:var(--radius-md);cursor:pointer;}
-  .step:hover{background:#f8fafc;}
-  .step.dim{opacity:.4;cursor:default;}
-  .step.now{background:#fffaf5;}
-  .step-num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;}
-  .step.dim .step-num{background:#cbd5e1;}
-  .step.done .step-num{background:var(--ok);}
-  .step-body{font-size:14px;line-height:1.7;}
-  .hint{font-size:13px;color:var(--sub);margin-top:8px;text-align:right;}
-
-  .answer{margin-top:var(--sp-2);padding:14px 16px;border:1.5px solid var(--orange-800);border-radius:var(--radius-md);background:linear-gradient(135deg,#fff3ea,#fff);}
-  .answer .label{font-size:12px;font-weight:700;color:var(--orange-800);}
-  .answer .value{font-size:15px;}
-  .answer.pending{opacity:.6;}
-  .formal{font-family:"Cambria Math","Times New Roman",serif;font-size:19px;background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:8px 12px;margin:6px 0;overflow-x:auto;white-space:nowrap;}
-  .reading{font-size:14px;color:var(--sub);margin:0 0 10px;}
+  /* 式（勝負の進み具合に合わせて部分が光る） */
+  .formula-title{font-size:13px;font-weight:700;color:var(--sub);margin:0 0 6px;}
+  .formula{font-family:"Cambria Math","Times New Roman",serif;font-size:21px;line-height:2;overflow-x:auto;white-space:nowrap;padding:2px 0;}
+  @media (max-width:600px){ .formula{font-size:17px;} }
+  .fp{padding:2px 6px;border-radius:6px;transition:background .2s,opacity .2s;}
+  .fp.dim{opacity:.3;}
+  .fp.e{background:var(--eps-bg);color:var(--eps);}
+  .fp.d{background:var(--del-bg);color:var(--del);}
+  .fp.w{background:var(--ok-bg);color:var(--ok);}
+  .fp.l{background:var(--ng-bg);color:var(--ng);}
+  .reading{font-size:14px;line-height:1.9;margin-top:4px;}
+  .reading .fp{padding:1px 3px;}
+  .now-note{margin-top:8px;font-size:14px;color:var(--sub);}
+  .neg{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);}
+  table.tbl{border-collapse:collapse;width:100%;font-size:14px;}
+  .tbl th,.tbl td{border:1px solid var(--line);padding:5px 8px;text-align:center;}
+  .tbl th{background:#f8fafc;font-size:13px;}
+  .tbl td.mono2{font-family:Consolas,"Courier New",monospace;}
   table.map{border-collapse:collapse;width:100%;font-size:14px;margin-top:8px;}
   .map td{border:1px solid var(--line);padding:6px 8px;vertical-align:middle;}
-  .map td.sym{font-family:"Cambria Math","Times New Roman",serif;font-size:18px;text-align:center;white-space:nowrap;background:#f8fafc;}
-  .warn{background:#fff3cd;border:1px solid #ffe08a;color:#7a5b00;padding:8px 12px;border-radius:var(--radius-md);font-size:14px;margin-top:8px;}
+  .map td.sym{font-family:"Cambria Math","Times New Roman",serif;font-size:19px;text-align:center;white-space:nowrap;width:30%;}
   /* 分数は横線の縦組みで表示する */
   .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25;margin:0 2px;}
   .frac .num, .frac .den{padding:0 4px;white-space:nowrap;}
@@ -124,31 +150,24 @@
 
 <div class="wrap">
   <span class="kicker">発展・大学の数学をのぞいてみよう</span>
-  <h1>√2 に「いくらでも近づく」とは？（ε-δ 論法の入り口）</h1>
-  <p class="lead"><a href="sqrt-zoom.html">「√2 はどれくらい？」</a>で、√2 を 1.4、1.41、1.414、… と追いつめました。この作業は終わりません。では「終わらないけれど、いくらでも近づける」とは、正確にはどういうことでしょう？　大学の数学では、これを<b>相手と自分のゲーム</b>として言い表します。興味のある人向けの発展内容です。</p>
+  <h1>ε-δ 論法：「限りなく近づく」を勝負で言い切る</h1>
+  <p class="lead"><a href="sqrt-zoom.html">「√2 はどれくらい？」</a>の続き（興味のある人向け）。「1辺 x を √2 に近づけると、面積 x² は 2 に近づく」――この「近づく」を、大学の数学ではどう言い表すのかを、相手との勝負で体験します。</p>
+
+  <nav class="scenebar" aria-label="場面">
+    <button class="btn" id="prevBtn">◀ 前へ</button>
+    <div class="pills" id="pills"></div>
+    <button class="btn primary" id="nextBtn">次へ ▶</button>
+  </nav>
 
   <div class="main-grid">
-    <div class="card figure">
-      <p class="section-title" id="figTitle">図</p>
-      <div id="figure"></div>
-      <div id="panel"></div>
-    </div>
-
     <div>
-      <div class="card">
-        <p class="section-title">考え方のステップ</p>
-        <div class="stepper">
-          <button class="btn" id="prevBtn">◀ 前へ</button>
-          <span class="progress" id="progress"></span>
-          <button class="btn primary" id="nextBtn">次へ ▶</button>
-        </div>
-        <div class="steps" id="steps"></div>
-        <div class="hint" id="hint"></div>
-      </div>
-      <div class="answer pending" id="answer">
-        <div class="label">大学ではこう書く</div>
-        <div class="value" id="answerValue">最後のステップまで進むと表示されます</div>
-      </div>
+      <div class="card figure"><div id="figure"></div></div>
+      <div class="card" id="controls"></div>
+    </div>
+    <div>
+      <div class="card scene" id="scene"></div>
+      <div class="card" id="formula"></div>
+      <div class="card" id="record" hidden></div>
     </div>
   </div>
 </div>
@@ -158,375 +177,417 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const fracHTML = (n, d) => `<span class="frac"><span class="num">${n}</span><span class="bar"></span><span class="den">${d}</span></span>`;
-  const SUB = n => String(n).split('').map(c => c === 'n' ? 'ₙ' : '₀₁₂₃₄₅₆₇₈₉'[+c]).join('');
-  const SUP = n => String(n).split('').map(c => c === '-' ? '⁻' : '⁰¹²³⁴⁵⁶⁷⁸⁹'[+c]).join('');
-
-  // √2 の小数部分（a_n は √2 を小数第 n 位で切り捨てた数）
-  const DIG = '41421356237309504880168872420969807856967187537694';
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const R2 = Math.SQRT2;
-  const aStr = n => '1.' + DIG.slice(0, n);
-  const aErr = n => R2 - Number(aStr(n));            // n ≦ 12 なら倍精度で十分
 
-  // 小さい正の数を切り捨てで表示（例 0.0000135…）
-  function fmtSmall(x){
-    if(x <= 0) return '0';
-    const p = Math.max(1, Math.ceil(-Math.log10(x) - 1e-12));
-    const dp = Math.min(p + 2, 16);
-    return (Math.floor(x * Math.pow(10, dp)) / Math.pow(10, dp)).toFixed(dp) + '…';
-  }
-  // ε に合わせた桁数で表示
-  const digitsFor = e => Math.min(14, Math.max(3, Math.ceil(-Math.log10(e) - 1e-12) + 3));
-  const fmtE = (x, e) => x.toFixed(digitsFor(e));
-  // 入力された ε を、そのままの見た目で表示する文字列にする
-  function epsText(v){
+  // ---- 2つの関数：つながっている x²、切れているトマトの値段 ----
+  const FA = { f: x => x * x, a: R2, L: 2, aName: '√2', LName: '2', xTitle: 'x：1辺（m）', yTitle: 'y = x²：面積（m²）', smooth: true };
+  const FB = { f: x => (x >= 200 ? 50 : 30), a: 200, L: 50, aName: '200', LName: '50', xTitle: 'x：トマトの重さ（g）', yTitle: 'y：1個の値段（円）', smooth: false };
+
+  const SCENES = ['ルール', 'ゲーム', '必勝法', 'つながらないグラフ', '大学の定義'];
+  const A_EPS = [1, 0.1, 0.01, 0.001];
+  const S_EPS = [0.5, 0.01, 0.00001, 0.0000001];
+
+  const st = { scene: 0, reach: 0 };
+  const A = { round: 0, s: null, rec: [] };                                              // ゲーム（4ラウンド）
+  const S = { eps: 0.01, delta: null, used: false, reverse: false, customErr: '' };      // 必勝法
+  const B = { eps: 30, s: null, zoom: 0, done: false };                                   // トマト
+
+  // ---- 図の座標 ----
+  const W = 600, H = 420, PX0 = 74, PY0 = 14, PW = 506, PH = 330;
+
+  // ---- 数の表示 ----
+  const q2 = v => Number(v.toPrecision(2));                       // δ は有効数字2けたにそろえる
+  function numText(v){                                            // 0.0000001 のように指数を使わず表示
     if(v >= 1e-6) return String(Number(v.toPrecision(6)));
     const p = Math.ceil(-Math.log10(v) - 1e-12) + 5;
-    return v.toFixed(Math.min(p, 20)).replace(/0+$/, '');
+    return v.toFixed(Math.min(p, 20)).replace(/0+$/, '').replace(/\.$/, '');
+  }
+  const dg = v => Math.min(12, Math.max(1, Math.ceil(-Math.log10(v) - 1e-9) + 2));
+  function zoomText(z){
+    const r = Math.round(z);
+    if(r < 2) return '';
+    if(r >= 1e8) return '×' + Number((r / 1e8).toPrecision(3)) + '億';
+    if(r >= 1e4) return '×' + Number((r / 1e4).toPrecision(4)) + '万';
+    return '×' + r;
   }
 
-  const STAGES = [
-    { label: '高校での言い方',            body: '<b>高校の言い方</b>：「1.4、1.41、1.414、… は √2 に<b>限りなく近づく</b>」。でも「限りなく」とはどのくらい？' },
-    { label: 'ゲーム①：何桁目から？',     body: '<b>ゲーム①</b>：相手が誤差 ε を出す → あなたは「何桁目 N から先なら、ずっと誤差 ε 未満」かを答える' },
-    { label: 'どんな ε でも勝てる N',     body: '<b>どんな ε を出されても勝てる N の決め方</b>がある（ε-N 論法）' },
-    { label: 'ゲーム②：1辺の精度は？',    body: '<b>ゲーム②</b>：面積の誤差 ε を出される → 1辺 x を √2 から何 m 以内（δ）にすれば、面積 x² が誤差 ε 以内に入る？' },
-    { label: 'どんな ε でも勝てる δ',     body: '<b>どんな ε を出されても勝てる δ の決め方</b>がある（ε-δ 論法）' },
-    { label: '大学ではこう書く',          body: '<b>記号で書く</b>：∀（どんな）と ∃（ある）でゲームを1行にする' }
-  ];
-  const LAST = STAGES.length - 1;
-
-  const st = {
-    s: 0, reach: 0,
-    shown: 1,                                 // ステップ1で表示している桁数
-    eps1: 0.01, N: null, won1: false,         // ゲーム①
-    eps2: 0.1, delta: null, won2: false,      // ゲーム②
-    custom1: false, custom2: false
-  };
-  const EPS1 = [0.1, 0.01, 0.005, 0.0003, 0.00001];
-  const EPS2 = [0.5, 0.1, 0.01, 0.001];
-  const DELTAS = [0.5, 0.2, 0.1, 0.05, 0.02, 0.01, 0.005, 0.002, 0.001, 0.0005, 0.0002, 0.0001];
-
-  const win1 = () => st.N !== null && aErr(st.N) < st.eps1;
-  const hiGap = d => 2 * R2 * d + d * d;      // (√2+δ)² − 2
-  const loGap = d => 2 * R2 * d - d * d;      // 2 − (√2−δ)²
-  const win2 = () => st.delta !== null && hiGap(st.delta) < st.eps2;
-  const sureN = e => Math.max(1, Math.ceil(-Math.log10(e) - 1e-12));
-
-  // 1本の数直線に a_n の点を打つ（名前は上、√2 は下）
-  function lineWithPoints(lo, hi, yL, nList, colorOf, x0, x1){
-    const X = v => x0 + (x1 - x0) * (v - lo) / (hi - lo);
-    let g = `<line x1="${x0 - 15}" y1="${yL}" x2="${x1 + 15}" y2="${yL}" stroke="#334155" stroke-width="2"/>`;
-    g += `<line x1="${X(R2)}" y1="${yL - 22}" x2="${X(R2)}" y2="${yL + 22}" stroke="#1E293B" stroke-width="2"/>`;
-    g += `<text x="${X(R2)}" y="${yL + 40}" font-size="15" font-weight="700" fill="#1E293B" text-anchor="middle">√2</text>`;
-    let lastX = -999, row = 0, hidden = [];
-    nList.forEach(n => {
-      const v = Number(aStr(n));
-      if(v < lo || v > hi) return;
-      const x = X(v), col = colorOf(n);
-      g += `<circle cx="${x}" cy="${yL}" r="6" fill="${col}"/>`;
-      if(x - lastX > 30 && Math.abs(x - X(R2)) > 14){
-        g += `<text x="${x}" y="${yL - 14 - row * 16}" font-size="13" font-weight="700" fill="${col}" text-anchor="middle">a${SUB(n)}</text>`;
-        lastX = x; row = 1 - row;
-      }else hidden.push(n);
+  // ---- いまの勝負の状態 ----
+  function wxFor(F, eps){ return F === FA ? 2.4 * eps / (2 * R2) * (PW / PH) : 20 / Math.pow(10, B.zoom); }
+  function cur(){
+    switch(st.scene){
+      case 0: return { F: FA, eps: 1, delta: 0.25, demo: true };
+      case 1: { const e = A_EPS[A.round]; return { F: FA, eps: e, delta: A.s === null ? null : q2(A.s * wxFor(FA, e)) }; }
+      case 2: return { F: FA, eps: S.eps, delta: S.delta };
+      case 3: return { F: FB, eps: B.eps, delta: B.s === null ? null : q2(B.s * wxFor(FB)) };
+      default: return { F: FA, eps: 0.1, delta: 0.025, demo: true };
+    }
+  }
+  // 帯の中（a−δ < x < a+δ）の x をくまなく調べ、はみ出す x を探す
+  function judge(F, eps, delta){
+    let up = -Infinity, xUp = null, dn = Infinity, xDn = null;
+    const N = 800, xs = [];
+    for(let i = 1; i < N; i++) xs.push(F.a - delta + 2 * delta * i / N);
+    // 帯の端ぎりぎりの x も調べる（端の近くではみ出すことが多いので、等間隔だけでは見落とす）
+    xs.push(F.a - delta * (1 - 1e-9), F.a + delta * (1 - 1e-9));
+    xs.forEach(x => {
+      const v = F.f(x) - F.L;
+      if(v > up){ up = v; xUp = x; }
+      if(v < dn){ dn = v; xDn = x; }
     });
-    return { g, X, hidden };
+    return { win: up < eps && dn > -eps, xUp: up >= eps ? xUp : null, xDn: dn <= -eps ? xDn : null, lo: F.L + dn, hi: F.L + up };
   }
 
-  // ===== 図：数直線（ステップ1〜3） =====
-  function drawLine(){
-    const W = 600, x0 = 40, x1 = 560;
-    if(st.s === 0){
-      // 上：ふつうの数直線、下：√2 のまわりを拡大
-      const H = 300, nList = [];
-      for(let n = 1; n <= st.shown; n++) nList.push(n);
-      let g = `<rect width="${W}" height="${H}" fill="#fff"/>`;
-      const up = lineWithPoints(1.395, 1.4185, 70, nList, () => '#1D6FB8', x0, x1);
-      g += up.g;
-      if(up.hidden.length) g += `<text x="${up.X(R2) - 26}" y="${70 + 40}" font-size="12" fill="#475569" text-anchor="end">a${SUB(up.hidden[0])}〜 は √2 に重なって見える</text>`;
-      if(st.shown >= 3){
-        const zlo = 1.41388, zhi = 1.41438, yZ = 220;
-        const zx0 = up.X(zlo), zx1 = up.X(zhi);
-        g += `<rect x="${zx0 - 3}" y="${70 - 10}" width="${zx1 - zx0 + 6}" height="20" fill="none" stroke="#C74700" stroke-width="1.5"/>`;
-        g += `<line x1="${zx0 - 3}" y1="80" x2="${x0 - 15}" y2="${yZ - 30}" stroke="#C74700" stroke-dasharray="4 4"/>`;
-        g += `<line x1="${zx1 + 3}" y1="80" x2="${x1 + 15}" y2="${yZ - 30}" stroke="#C74700" stroke-dasharray="4 4"/>`;
-        g += `<text x="${x0}" y="${yZ - 66}" font-size="13" font-weight="700" fill="#C74700">√2 のまわりを 約50倍に拡大</text>`;
-        const dn = lineWithPoints(zlo, zhi, yZ, nList, () => '#1D6FB8', x0, x1);
-        g += dn.g;
-        if(dn.hidden.length) g += `<text x="${x1}" y="${yZ + 62}" font-size="12" fill="#475569" text-anchor="end">a${SUB(dn.hidden[0])}${dn.hidden.length > 1 ? '〜a' + SUB(dn.hidden[dn.hidden.length - 1]) : ''} は、拡大してもまだ √2 に重なって見える</text>`;
-      }
-      return { W, H, g };
-    }
-
-    const H = 250, yL = 150;
-    let g = `<rect width="${W}" height="${H}" fill="#fff"/>`;
-    const e = st.eps1, lo = R2 - 3.2 * e, hi = R2 + 1.6 * e;
-    const X = v => x0 + (x1 - x0) * (v - lo) / (hi - lo);
-    const pts = [];
-    for(let n = 1; n <= 12; n++) pts.push(n);
-    g += `<line x1="${x0 - 15}" y1="${yL}" x2="${x1 + 15}" y2="${yL}" stroke="#334155" stroke-width="2"/>`;
-
-    // 誤差 ε のゾーン
-    g += `<rect x="${X(R2 - e)}" y="${yL - 46}" width="${X(R2 + e) - X(R2 - e)}" height="92" fill="rgba(199,71,0,0.10)" stroke="#C74700" stroke-dasharray="5 4"/>`;
-    g += `<text x="${X(R2 - e)}" y="${yL + 66}" font-size="13" fill="#C74700" text-anchor="middle">√2−ε</text>`;
-    g += `<text x="${X(R2 + e)}" y="${yL + 66}" font-size="13" fill="#C74700" text-anchor="middle">√2+ε</text>`;
-    g += `<text x="${X(R2)}" y="${yL - 56}" font-size="13" font-weight="700" fill="#C74700" text-anchor="middle">誤差 ε 以内のゾーン（ε = ${epsText(e)}）</text>`;
-    // √2 の位置
-    g += `<line x1="${X(R2)}" y1="${yL - 22}" x2="${X(R2)}" y2="${yL + 22}" stroke="#1E293B" stroke-width="2"/>`;
-    g += `<text x="${X(R2)}" y="${yL + 42}" font-size="15" font-weight="700" fill="#1E293B" text-anchor="middle">√2</text>`;
-
-    // a_n の点（N より前は灰色、N から先はゾーンの中なら緑・外なら赤）
-    let leftOut = [], lastX = -999, row = 0;
-    pts.forEach(n => {
-      const v = Number(aStr(n));
-      if(v < lo){ leftOut.push(n); return; }
-      const col = (st.N === null || n < st.N) ? '#94a3b8' : (aErr(n) < e ? '#1b5e20' : '#B42318');
-      const x = X(v);
-      g += `<circle cx="${x}" cy="${yL}" r="6" fill="${col}"/>`;
-      if(x - lastX > 30 && Math.abs(x - X(R2)) > 14){
-        g += `<text x="${x}" y="${yL - 14 - row * 16}" font-size="13" font-weight="700" fill="${col}" text-anchor="middle">a${SUB(n)}</text>`;
-        lastX = x; row = 1 - row;
-      }
-    });
-    if(leftOut.length){
-      g += `<text x="${x0}" y="${yL - 64}" font-size="12" fill="#94a3b8">← a${SUB(leftOut[0])}${leftOut.length > 1 ? '〜a' + SUB(leftOut[leftOut.length - 1]) : ''} はもっと左</text>`;
-    }
-    g += `<text x="${x0}" y="${H - 14}" font-size="12" fill="#1b5e20">● ゾーンの中</text>`;
-    g += `<text x="${x0 + 110}" y="${H - 14}" font-size="12" fill="#B42318">● ゾーンの外</text>`;
-    g += `<text x="${x0 + 220}" y="${H - 14}" font-size="12" fill="#94a3b8">● N より前（気にしなくてよい）</text>`;
-    return { W, H, g };
+  // ---- 表示範囲（ε が小さくなると拡大する） ----
+  let view = null, animId = 0;
+  function targetView(){
+    const c = cur(), F = c.F;
+    if(F === FA) return { F, cx: F.a, cy: F.L, hy: 2.4 * c.eps, wx: wxFor(FA, c.eps) };
+    return { F, cx: 200, cy: 50, hy: 40, wx: wxFor(FB) };
+  }
+  function updateView(){
+    const t = targetView();
+    if(!view || view.F !== t.F || reduceMotion){ animId++; view = t; drawFigure(); return; }
+    if(Math.abs(Math.log(t.wx / view.wx)) < 1e-9 && Math.abs(Math.log(t.hy / view.hy)) < 1e-9){ drawFigure(); return; }
+    const from = Object.assign({}, view), id = ++animId, t0 = performance.now(), dur = 800;
+    const lerpLog = (p, q, k) => Math.exp(Math.log(p) + (Math.log(q) - Math.log(p)) * k);
+    const step = now => {
+      if(id !== animId) return;
+      const k = Math.min(1, (now - t0) / dur), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      view = { F: t.F, cx: t.cx, cy: t.cy, wx: lerpLog(from.wx, t.wx, e), hy: lerpLog(from.hy, t.hy, e) };
+      drawFigure();
+      if(k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
   }
 
-  // ===== 図：y = x² のグラフ（ステップ4〜6） =====
-  function drawGraph(){
-    const W = 600, H = 462;
-    const px0 = 100, py0 = 20, PW = 470, PH = 340;
-    const e = st.eps2;
-    const Hy = 2 * e, Hx = Hy / (2 * R2) * (PW / PH);
-    const X = x => px0 + (x - (R2 - Hx)) / (2 * Hx) * PW;
-    const Y = y => py0 + PH - (y - (2 - Hy)) / (2 * Hy) * PH;
-    let g = `<rect width="${W}" height="${H}" fill="#fff"/>`;
-    g += `<defs><clipPath id="plot"><rect x="${px0}" y="${py0}" width="${PW}" height="${PH}"/></clipPath></defs>`;
-    g += `<rect x="${px0}" y="${py0}" width="${PW}" height="${PH}" fill="#fcfcfd" stroke="#D9DEE6"/>`;
-
-    // ε の帯（面積の許容範囲）
-    g += `<rect x="${px0}" y="${Y(2 + e)}" width="${PW}" height="${Y(2 - e) - Y(2 + e)}" fill="rgba(199,71,0,0.10)"/>`;
-    g += `<line x1="${px0}" y1="${Y(2 + e)}" x2="${px0 + PW}" y2="${Y(2 + e)}" stroke="#C74700" stroke-dasharray="6 4"/>`;
-    g += `<line x1="${px0}" y1="${Y(2 - e)}" x2="${px0 + PW}" y2="${Y(2 - e)}" stroke="#C74700" stroke-dasharray="6 4"/>`;
-    g += `<text x="${px0 - 8}" y="${Y(2 + e) + 5}" font-size="13" fill="#C74700" text-anchor="end">2+ε</text>`;
-    g += `<text x="${px0 - 8}" y="${Y(2) + 5}" font-size="13" fill="#1E293B" text-anchor="end">2</text>`;
-    g += `<text x="${px0 - 8}" y="${Y(2 - e) + 5}" font-size="13" fill="#C74700" text-anchor="end">2−ε</text>`;
-    g += `<text x="${px0 + 14}" y="${Y(2 + e) - 6}" font-size="12" fill="#C74700">面積の許される範囲（ε = ${epsText(e)}）</text>`;
-
-    // δ の帯（1辺の範囲）とその行き先
-    let won = null;
-    if(st.delta !== null){
-      const dl = st.delta, a = R2 - dl, b = R2 + dl;
-      won = win2();
-      const col = won ? '#1b5e20' : '#B42318';
-      const xa = Math.max(px0, X(a)), xb = Math.min(px0 + PW, X(b));
-      g += `<rect x="${xa}" y="${py0}" width="${Math.max(0, xb - xa)}" height="${PH}" fill="rgba(29,111,184,0.12)"/>`;
-      // 曲線上の行き先を太く
-      let path = '';
-      for(let i = 0; i <= 80; i++){ const x = a + (b - a) * i / 80; path += (i ? 'L' : 'M') + X(x).toFixed(1) + ' ' + Y(x * x).toFixed(1); }
-      g += `<path d="${path}" fill="none" stroke="#1D6FB8" stroke-width="6" stroke-linecap="round" clip-path="url(#plot)" opacity="0.55"/>`;
-      // 投影（曲線 → y 軸）
-      const ya = Math.min(py0 + PH, Math.max(py0, Y(a * a))), yb = Math.min(py0 + PH, Math.max(py0, Y(b * b)));
-      if(X(a) >= px0) g += `<line x1="${X(a)}" y1="${ya}" x2="${px0}" y2="${ya}" stroke="#1D6FB8" stroke-dasharray="4 4"/>`;
-      if(X(b) <= px0 + PW) g += `<line x1="${X(b)}" y1="${yb}" x2="${px0}" y2="${yb}" stroke="#1D6FB8" stroke-dasharray="4 4"/>`;
-      // y 軸上の行き先バー
-      g += `<rect x="${px0 - 6}" y="${yb}" width="12" height="${Math.max(2, ya - yb)}" fill="${col}" rx="3"/>`;
-      if(Y(b * b) < py0) g += `<text x="${px0 + 14}" y="${py0 + 46}" font-size="13" font-weight="700" fill="#B42318">↑ 面積が上にはみ出す</text>`;
-      if(Y(a * a) > py0 + PH) g += `<text x="${px0 + 10}" y="${py0 + PH - 8}" font-size="13" font-weight="700" fill="#B42318">↓ 下にもはみ出す</text>`;
-      // x 側のラベル
-      if(xb - xa > 90 && X(a) >= px0 && X(b) <= px0 + PW){
-        g += `<text x="${X(a)}" y="${py0 + PH + 20}" font-size="13" fill="#1D6FB8" text-anchor="middle">√2−δ</text>`;
-        g += `<text x="${X(b)}" y="${py0 + PH + 20}" font-size="13" fill="#1D6FB8" text-anchor="middle">√2+δ</text>`;
-      }
-      g += `<text x="${px0 + 6}" y="${py0 + PH + 56}" font-size="13" fill="#1D6FB8">青い帯：1辺 x の範囲（δ = ${epsText(dl)}）</text>`;
-    }else{
-      g += `<text x="${px0 + PW / 2}" y="${py0 + 40}" font-size="15" fill="#94a3b8" text-anchor="middle">下で δ を選ぶと、1辺の範囲が青い帯で表示されます</text>`;
-    }
-
-    // y = x² の曲線
-    let curve = '';
-    for(let i = 0; i <= 160; i++){ const x = (R2 - Hx) + 2 * Hx * i / 160; curve += (i ? 'L' : 'M') + X(x).toFixed(1) + ' ' + Y(x * x).toFixed(1); }
-    g += `<path d="${curve}" fill="none" stroke="#1E293B" stroke-width="2.5" clip-path="url(#plot)"/>`;
-    g += `<text x="${px0 + 14}" y="${py0 + 22}" font-size="15" font-weight="700" fill="#1E293B">y = x²（面積）</text>`;
-    // 中心 (√2, 2)
-    g += `<line x1="${X(R2)}" y1="${py0 + PH}" x2="${X(R2)}" y2="${Y(2)}" stroke="#94a3b8" stroke-dasharray="2 3"/>`;
-    g += `<circle cx="${X(R2)}" cy="${Y(2)}" r="5" fill="#1E293B"/>`;
-    g += `<text x="${X(R2)}" y="${py0 + PH + 38}" font-size="15" font-weight="700" fill="#1E293B" text-anchor="middle">√2</text>`;
-    g += `<text x="${px0 + PW}" y="${py0 + PH + 38}" font-size="13" fill="#475569" text-anchor="end">x（1辺）→</text>`;
-    if(won !== null){
-      g += `<text x="${px0 + PW / 2}" y="${H - 10}" font-size="15" font-weight="700" fill="${won ? '#1b5e20' : '#B42318'}" text-anchor="middle">${won ? '行き先のバーが、オレンジの帯の中に収まった → 勝ち' : '行き先のバーが、オレンジの帯からはみ出した → 負け'}</text>`;
-    }
-    return { W, H, g };
-  }
-
+  // ---- 図 ----
   function drawFigure(){
-    const f = st.s <= 2 ? drawLine() : drawGraph();
-    $('figTitle').textContent = st.s <= 2 ? '数直線：aₙ（√2 を小数第 n 位で切り捨てた数）' : 'グラフ：1辺 x と面積 x² の関係';
-    $('figure').innerHTML = `<svg viewBox="0 0 ${f.W} ${f.H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${st.s <= 2 ? '数直線の図' : 'y=x²のグラフ'}">${f.g}</svg>`;
-  }
+    const c = cur(), F = c.F, v = view, e = c.eps, L = F.L, a = F.a;
+    const xL = v.cx - v.wx, xR = v.cx + v.wx;
+    const X = x => PX0 + (x - xL) / (2 * v.wx) * PW;
+    const Y = y => PY0 + PH - (y - (v.cy - v.hy)) / (2 * v.hy) * PH;
+    const cx = x => Math.max(PX0, Math.min(PX0 + PW, x));
+    const cy = y => Math.max(PY0, Math.min(PY0 + PH, y));
+    let g = `<rect width="${W}" height="${H}" fill="#fff"/>`;
+    g += `<defs><clipPath id="clip"><rect x="${PX0}" y="${PY0}" width="${PW}" height="${PH}"/></clipPath>
+      <marker id="ae" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#C74700"/></marker>
+      <marker id="ad" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1D6FB8"/></marker></defs>`;
+    g += `<rect x="${PX0}" y="${PY0}" width="${PW}" height="${PH}" fill="#fcfcfd" stroke="#D9DEE6"/>`;
 
-  // ===== 操作パネル =====
-  const chip = (v, on, cls, extra) => `<button type="button" data-v="${v}" class="${on ? 'on' : ''} ${cls || ''}" ${extra || ''}>${epsText(v)}</button>`;
+    // 相手の要求：ε の帯（オレンジ）
+    const yT = cy(Y(L + e)), yB = cy(Y(L - e));
+    g += `<rect x="${PX0}" y="${yT}" width="${PW}" height="${yB - yT}" fill="rgba(199,71,0,0.13)"/>`;
+    [L + e, L - e].forEach(yy => { if(Y(yy) > PY0 && Y(yy) < PY0 + PH) g += `<line x1="${PX0}" y1="${Y(yy)}" x2="${PX0 + PW}" y2="${Y(yy)}" stroke="#C74700" stroke-width="1.5" stroke-dasharray="7 5"/>`; });
+    g += `<text x="${PX0 - 8}" y="${Y(L + e) + 5}" font-size="15" fill="#C74700" text-anchor="end" font-weight="700">${F.LName}+ε</text>`;
+    g += `<text x="${PX0 - 8}" y="${Y(L) + 5}" font-size="15" fill="#1E293B" text-anchor="end">${F.LName}</text>`;
+    g += `<text x="${PX0 - 8}" y="${Y(L - e) + 5}" font-size="15" fill="#C74700" text-anchor="end" font-weight="700">${F.LName}−ε</text>`;
+    if(F === FB) g += `<text x="${PX0 - 8}" y="${Y(30) + 5}" font-size="15" fill="#475569" text-anchor="end">30</text>`;
 
-  function panelStage0(){
-    const list = [];
-    for(let n = 1; n <= st.shown; n++) list.push(`a${SUB(n)} = ${aStr(n)}`);
-    return `<p class="stage-head">高校では「限りなく近づく」と言う</p>
-      <p class="stage-text">√2 を小数第 n 位で切り捨てた数を a${SUB('n')} とよびます。ボタンで1つずつ足してみよう。</p>
-      <div class="row"><button class="btn primary" id="addBtn" ${st.shown >= 6 ? 'disabled' : ''}>次の桁をたす（a${SUB(Math.min(st.shown + 1, 6))}）</button></div>
-      <p class="stage-text" style="margin-top:10px;font-family:Consolas,monospace;">${list.join('　→　')}${st.shown >= 6 ? '　→　…' : ''}</p>
-      ${st.shown >= 3 ? `<div class="explain"><p>点は √2 のまわりに、どんどん集まっていきます。でも、どれも √2 ぴったりにはなりません。</p>
-      <p>「<b>限りなく近づく</b>」と言いたくなりますが、<b>「限りなく」ってどのくらい？</b> 0.01 くらい？ 0.0000001 くらい？　人によって受け取り方がちがいます。</p>
-      <p>大学の数学では、このあいまいさを<b>ゲーム</b>にして消します。「次へ」で始めよう。</p></div>` : ''}`;
-  }
-
-  function panelGame1(){
-    const e = st.eps1;
-    let html = `<p class="stage-head">ゲーム①：誤差 ε を言われたら、何桁目から？</p>
-      <p class="stage-text"><b>ルール</b>：相手が「誤差は ε より小さくしてね」と ε を出します。あなたは桁 N を答えます。<b>N 番目から先の a${SUB('n')} が全部</b>、√2 との誤差が ε より小さければ、あなたの勝ち。</p>
-      <div class="pick"><div class="q"><span class="who them">相手</span>誤差 ε を出す</div><div class="chips eps" id="epsChips">${EPS1.map(v => chip(v, !st.custom1 && v === e)).join('')}</div></div>`;
-    if(st.s === 2){
-      html += `<div class="row"><label for="epsIn1">自分で ε を入力（0 より大きく 1 未満）</label><input id="epsIn1" type="text" inputmode="decimal" value="${st.custom1 ? epsText(e) : ''}" placeholder="例 0.0000007"><button class="btn" id="epsSet1">この ε で</button></div><div id="epsWarn1"></div>`;
+    // あなたの答え：δ の帯（青）
+    let J = null, xl = 0, xr = 0;
+    if(c.delta !== null){
+      J = judge(F, e, c.delta);
+      xl = cx(X(a - c.delta)); xr = cx(X(a + c.delta));
+      g += `<rect x="${xl}" y="${PY0}" width="${xr - xl}" height="${PH}" fill="rgba(29,111,184,0.12)"/>`;
     }
-    html += `<div class="pick"><div class="q"><span class="who you">あなた</span>桁 N を答える（N 番目から先は全部ゾーンの中？）</div><div class="chips ans" id="nChips">`;
-    for(let n = 1; n <= 9; n++) html += `<button type="button" data-n="${n}" class="${st.N === n ? 'on' : ''}">N = ${n}</button>`;
-    html += `</div></div>`;
-    if(st.s === 2) html += `<div class="row"><button class="btn formula" id="sureN">必ず勝てる N を使う</button></div>`;
 
-    if(st.N === null){
-      html += `<div class="verdict wait">N を選ぶと、N 番目から先の誤差が表に出ます。</div>`;
+    // グラフ全体（うすく）
+    g += `<g clip-path="url(#clip)">`;
+    if(F.smooth){
+      let p = '';
+      for(let i = 0; i <= 200; i++){ const x = xL + (xR - xL) * i / 200; p += (i ? 'L' : 'M') + X(x).toFixed(1) + ' ' + Y(F.f(x)).toFixed(1); }
+      g += `<path d="${p}" fill="none" stroke="#64748b" stroke-width="2.5"/>`;
     }else{
-      const ok = win1();
-      html += `<div class="tblwrap"><table class="tbl"><tr><th>n</th><th>aₙ</th><th>誤差 √2 − aₙ</th><th>ε = ${epsText(e)} より小さい？</th></tr>`;
-      for(let n = st.N; n <= st.N + 3; n++){
-        const y = aErr(n) < e;
-        html += `<tr><td>${n}</td><td class="mono">${aStr(n)}</td><td class="mono">${fmtSmall(aErr(n))}</td><td class="${y ? 'y' : 'n'}">${y ? '○' : '×'}</td></tr>`;
+      if(xL < 200) g += `<line x1="${X(xL)}" y1="${Y(30)}" x2="${X(Math.min(200, xR))}" y2="${Y(30)}" stroke="#64748b" stroke-width="3"/>`;
+      if(xR > 200) g += `<line x1="${X(Math.max(200, xL))}" y1="${Y(50)}" x2="${X(xR)}" y2="${Y(50)}" stroke="#64748b" stroke-width="3"/>`;
+      g += `<line x1="${X(200)}" y1="${Y(30)}" x2="${X(200)}" y2="${Y(50)}" stroke="#94a3b8" stroke-dasharray="2 4"/>`;
+    }
+    // 帯の中のグラフを、入っていれば緑・はみ出していれば赤で太く
+    if(J){
+      const lo = Math.max(a - c.delta, xL), hi = Math.min(a + c.delta, xR);
+      let pg = '', pr = '';
+      if(F.smooth){
+        const n = 160; let prev = null;
+        for(let i = 0; i <= n; i++){
+          const x = lo + (hi - lo) * i / n, y = F.f(x), ok = Math.abs(y - L) < e;
+          const pt = X(x).toFixed(1) + ' ' + Y(y).toFixed(1);
+          if(prev){ const seg = `M${prev.pt}L${pt}`; if(ok && prev.ok) pg += seg; else pr += seg; }
+          prev = { pt, ok };
+        }
+      }else{
+        if(lo < 200){ const seg = `M${X(lo)} ${Y(30)}L${X(Math.min(200, hi))} ${Y(30)}`; if(Math.abs(30 - L) < e) pg += seg; else pr += seg; }
+        if(hi > 200) pg += `M${X(Math.max(200, lo))} ${Y(50)}L${X(hi)} ${Y(50)}`;
       }
-      html += `<tr><td>…</td><td colspan="3" style="color:var(--sub);font-size:13px;">桁を増やすほど誤差は小さくなる一方（大きくはならない）</td></tr></table></div>`;
-      html += ok
-        ? `<div class="verdict win">勝ち！ N = ${st.N} から先は、ずっと誤差が ${epsText(e)} より小さい。${st.s === 1 ? 'ε を小さくして、もう一度挑戦してみよう。' : ''}</div>`
-        : `<div class="verdict lose">負け… a${SUB(st.N)} の誤差が ${epsText(e)} 以上。もっと先の桁から数えよう。</div>`;
+      if(pg) g += `<path d="${pg}" fill="none" stroke="#1b5e20" stroke-width="6" stroke-linecap="round"/>`;
+      if(pr) g += `<path d="${pr}" fill="none" stroke="#B42318" stroke-width="6" stroke-linecap="round"/>`;
     }
-    if(st.s === 2){
-      const n0 = sureN(e);
-      html += `<div class="explain"><p><b>必ず勝てる N の決め方</b></p>
-        <p>a${SUB('n')} は √2 を小数第 n 位で<b>切り捨てた</b>数なので、誤差 √2 − a${SUB('n')} は、いつも <span class="mono">10${SUP('-n')}</span>（小数第 n 位の 1）より小さい。</p>
-        <p>だから <span class="mono">10${SUP('-N')} ≦ ε</span> となる N を選べば、n ≧ N のとき<br>誤差 ＜ 10${SUP('-n')} ≦ 10${SUP('-N')} ≦ ε 　となって、<b>必ず勝てる</b>。</p>
-        <p>いまの ε = ${epsText(e)} なら、10${SUP('-' + n0)}（= ${epsText(Math.pow(10, -n0))}）≦ ε なので <b>N = ${n0}</b>。</p>
-        <p style="color:var(--sub);font-size:14px;">※ これより小さい N で勝てることもあります。大事なのは「どんな ε を出されても、勝てる N が<b>必ず見つかる</b>」こと。これが、数列 a${SUB('n')} が √2 に<b>収束する</b>ことの、大学での意味です（ε-N 論法）。</p></div>`;
-    }
-    return html;
-  }
+    if(!F.smooth) g += `<circle cx="${X(200)}" cy="${Y(30)}" r="6" fill="#fff" stroke="#475569" stroke-width="2.5"/>`;
+    g += `</g>`;
 
-  function panelGame2(){
-    const e = st.eps2;
-    let html = `<p class="stage-head">ゲーム②：面積をぴったりに近づけたい</p>
-      <p class="stage-text">面積 2 m² の畑を、<b>面積の誤差 ε m² 以内</b>でつくりたい。1辺 x を √2 m から <b>δ m 以内</b>（√2−δ ＜ x ＜ √2+δ）の精度で測れば足りるでしょうか？　範囲の中の<b>どの x でも</b>面積 x² が 2−ε と 2+ε の間に入れば、あなたの勝ち。（δ は「デルタ」と読みます）</p>
-      <div class="pick"><div class="q"><span class="who them">相手</span>面積の誤差 ε を出す</div><div class="chips eps" id="epsChips2">${EPS2.map(v => chip(v, !st.custom2 && v === e)).join('')}</div></div>`;
-    if(st.s >= 4){
-      html += `<div class="row"><label for="epsIn2">自分で ε を入力（0 より大きく 1 以下）</label><input id="epsIn2" type="text" inputmode="decimal" value="${st.custom2 ? epsText(e) : ''}" placeholder="例 0.000001"><button class="btn" id="epsSet2">この ε で</button></div><div id="epsWarn2"></div>`;
+    // 箱（δ の帯と ε の帯が重なるところ）
+    if(J){
+      const col = J.win ? '#1b5e20' : '#B42318';
+      g += `<rect x="${xl}" y="${yT}" width="${xr - xl}" height="${yB - yT}" fill="none" stroke="${col}" stroke-width="3.5"/>`;
+      if(J.xUp !== null) g += `<text x="${Math.min(PX0 + PW - 60, Math.max(PX0 + 60, cx(X(J.xUp))))}" y="${Math.max(PY0 + 66, yT - 10)}" font-size="16" font-weight="700" fill="#B42318" text-anchor="middle">↑ 上にはみ出す</text>`;
+      if(J.xDn !== null) g += `<text x="${Math.min(PX0 + PW - 60, Math.max(PX0 + 60, cx(X(J.xDn))))}" y="${Math.min(PY0 + PH - 8, yB + 22)}" font-size="16" font-weight="700" fill="#B42318" text-anchor="middle">↓ 下にはみ出す</text>`;
     }
-    html += `<div class="pick"><div class="q"><span class="who you">あなた</span>1辺の精度 δ を答える</div><div class="chips ans" id="dChips">${DELTAS.map(v => chip(v, st.delta === v)).join('')}</div></div>`;
-    if(st.s >= 4) html += `<div class="row"><button class="btn formula" id="sureD">δ = ε ÷ 4 で挑戦する</button></div>`;
 
-    if(st.delta === null){
-      html += `<div class="verdict wait">δ を選ぶと、1辺の範囲（青い帯）と、そのときの面積の行き先が図に出ます。</div>`;
+    // 中心の点と x のラベル
+    if(F.smooth) g += `<circle cx="${X(a)}" cy="${Y(L)}" r="5" fill="#1E293B"/>`;
+    else g += `<circle cx="${X(200)}" cy="${Y(50)}" r="6" fill="#1E293B"/>`;
+    g += `<line x1="${X(a)}" y1="${PY0 + PH}" x2="${X(a)}" y2="${PY0 + PH + 6}" stroke="#1E293B" stroke-width="2"/>`;
+    g += `<text x="${X(a)}" y="${PY0 + PH + 24}" font-size="16" font-weight="700" fill="#1E293B" text-anchor="middle">${F.aName}</text>`;
+    if(J && xr - xl > 110 && X(a - c.delta) >= PX0 && X(a + c.delta) <= PX0 + PW){
+      g += `<text x="${xl}" y="${PY0 + PH + 24}" font-size="15" fill="#1D6FB8" text-anchor="middle" font-weight="700">${F.aName}−δ</text>`;
+      g += `<text x="${xr}" y="${PY0 + PH + 24}" font-size="15" fill="#1D6FB8" text-anchor="middle" font-weight="700">${F.aName}+δ</text>`;
+    }
+
+    // ルールの場面などで、ε と δ の長さを矢印で示す
+    if(c.demo && J){
+      const ax = Math.min(PX0 + PW - 20, xr + 26);
+      g += `<line x1="${ax}" y1="${Y(L)}" x2="${ax}" y2="${Y(L + e) + 2}" stroke="#C74700" stroke-width="2.5" marker-end="url(#ae)" marker-start="url(#ae)"/>`;
+      g += `<text x="${ax + 10}" y="${(Y(L) + Y(L + e)) / 2 + 7}" font-size="22" font-weight="700" fill="#C74700">ε</text>`;
+      const ay = Math.min(PY0 + PH - 12, yB + 26);
+      g += `<line x1="${X(a)}" y1="${ay}" x2="${X(a + c.delta) - 2}" y2="${ay}" stroke="#1D6FB8" stroke-width="2.5" marker-end="url(#ad)" marker-start="url(#ad)"/>`;
+      g += `<text x="${(X(a) + X(a + c.delta)) / 2}" y="${ay + 22}" font-size="22" font-weight="700" fill="#1D6FB8" text-anchor="middle">δ</text>`;
+      g += `<text x="${xr + 6}" y="${yT - 8}" font-size="15" font-weight="700" fill="#1b5e20">箱</text>`;
+    }
+
+    // 軸の名前と拡大率
+    g += `<text x="${PX0 + 10}" y="${PY0 + 22}" font-size="15" font-weight="700" fill="#1E293B">${F.yTitle}</text>`;
+    g += `<text x="${PX0 + PW - 8}" y="${PY0 + PH - 10}" font-size="14" fill="#475569" text-anchor="end">${F.xTitle} →</text>`;
+    const z = F === FA ? 2.4 / v.hy : 20 / v.wx, zt = c.demo ? '' : zoomText(z);
+    if(zt){
+      const label = F === FA ? '拡大 ' + zt : '横に ' + zt + ' 拡大';
+      g += `<rect x="${PX0 + PW - 156}" y="${PY0 + 8}" width="148" height="30" rx="15" fill="#1E293B"/>`;
+      g += `<text x="${PX0 + PW - 82}" y="${PY0 + 28}" font-size="15" font-weight="700" fill="#fff" text-anchor="middle">${label}</text>`;
+    }
+    // 判定
+    if(J){
+      g += `<text x="${PX0 + PW / 2}" y="${H - 14}" font-size="17" font-weight="700" fill="${J.win ? '#1b5e20' : '#B42318'}" text-anchor="middle">${J.win ? '箱の上下からはみ出さない → 勝ち' : '箱の上下からはみ出す x がある → 負け'}</text>`;
     }else{
-      const dl = st.delta, ok = win2(), k = Math.max(digitsFor(e), digitsFor(dl));
-      html += `<div class="nums">
-        1辺 x の範囲：<span class="mono">${(R2 - dl).toFixed(k)}… ＜ x ＜ ${(R2 + dl).toFixed(k)}…</span><br>
-        面積 x² の範囲：<span class="mono">${((R2 - dl) ** 2).toFixed(k)}… 〜 ${((R2 + dl) ** 2).toFixed(k)}…</span><br>
-        許される範囲：<span class="mono">${(2 - e).toFixed(k)} 〜 ${(2 + e).toFixed(k)}</span></div>`;
-      html += ok
-        ? `<div class="verdict win">勝ち！ 1辺を √2 から ${epsText(dl)} m 以内で測れば、面積の誤差は必ず ${epsText(e)} m² より小さい。${st.s === 3 ? 'ε を小さくして、もう一度挑戦してみよう。' : ''}</div>`
-        : `<div class="verdict lose">負け… 面積が最大で 2 より ${fmtSmall(hiGap(dl))} 大きくなり、ε = ${epsText(e)} をこえてしまう。δ をもっと小さくしよう。</div>`;
+      g += `<text x="${PX0 + PW / 2}" y="${H - 14}" font-size="16" fill="#94a3b8" text-anchor="middle">δ を決めると、青い帯と「箱」が出ます</text>`;
     }
-    if(st.s >= 4){
-      html += `<div class="explain"><p><b>必ず勝てる δ の決め方</b>（数学Ⅰの因数分解だけで説明できます）</p>
-        <p><span class="mono">x² − 2 = (x − √2)(x + √2)</span> なので　|x² − 2| ＝ |x − √2| × |x + √2|</p>
-        <p>x が √2 の近く（1 以内）にあれば、x + √2 は 4 より小さい（√2+1+√2 ≒ 3.83）。<br>だから |x − √2| ＜ δ なら　|x² − 2| ＜ δ × 4。</p>
-        <p>そこで δ ＝ ${fracHTML('ε', '4')} と選べば　|x² − 2| ＜ ${fracHTML('ε', '4')} × 4 ＝ ε 　となって、<b>必ず勝てる</b>。</p>
-        <p style="color:var(--sub);font-size:14px;">※ 正確には「δ は 1 と ${fracHTML('ε', '4')} の小さいほう」と決めます。ここでは ε ≦ 1 なので ${fracHTML('ε', '4')} のままで大丈夫。とても小さい ε を入力して、何度でも試してみよう。これが「x を √2 に近づけると、x² は 2 に近づく」ことの、大学での意味です（ε-δ 論法）。</p></div>`;
+    $('figure').innerHTML = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ε の帯と δ の帯とグラフ">${g}</svg>`;
+  }
+
+  // ---- 操作パネル（場面が変わったときだけ作り直す。スライダーを動かしている最中に消さないため） ----
+  const slider = s => `<label for="dSlider" class="sub">スライダーを動かして δ を決める（左ほど小さい）</label><input type="range" id="dSlider" min="1" max="100" value="${s === null ? 100 : Math.round(s * 100)}">`;
+  function renderControls(){
+    const sc = st.scene;
+    let html = '';
+    if(sc === 0 || sc === 4){
+      html = `<div class="turn"><span class="who e">相手</span><div class="turn-body">「x² を 2 から <span class="big ce">ε = ${sc === 0 ? 1 : 0.1}</span> 以内にして」</div></div>
+        <div class="turn"><span class="who d">あなた</span><div class="turn-body">「x を √2 から <span class="big cd">δ = ${sc === 0 ? 0.25 : 0.025}</span> 以内にすれば大丈夫」</div></div>
+        <div id="status"></div>`;
+    }else if(sc === 1){
+      html = `<div class="turn"><span class="who e">相手</span><div class="turn-body">ラウンド ${A.round + 1} / 4　「面積 x² を 2 から <span class="big ce">ε = ${numText(A_EPS[A.round])}</span> 以内にして」</div></div>
+        <div class="turn"><span class="who d">あなた</span><div class="turn-body">${slider(A.s)}<div id="dText"></div></div></div>
+        <div id="status"></div>`;
+    }else if(sc === 2){
+      html = `<div class="turn"><span class="who e">相手</span><div class="turn-body">好きな ε を出させてみよう（とても小さくてもよい）
+          <div class="chips" id="sEps">${S_EPS.map(v => `<button type="button" data-v="${v}" class="${!S.reverse && v === S.eps ? 'on' : ''}">${numText(v)}</button>`).join('')}</div>
+          <div class="row"><input type="text" id="sIn" inputmode="decimal" placeholder="例 0.000000003"><button class="btn" id="sSet">この ε を出させる</button></div>${S.customErr}</div></div>
+        <div class="turn"><span class="who d">あなた</span><div class="turn-body"><button class="btn go" id="sureBtn">必勝法で答える（δ ＝ ε の4分の1）</button></div></div>
+        <div id="status"></div>
+        <div class="turn"><span class="who j">ためす</span><div class="turn-body"><button class="btn blue" id="revBtn">順番を逆にすると？（あなたが先に δ を決める）</button></div></div>`;
+    }else if(sc === 3){
+      html = `<div class="turn"><span class="who e">相手</span><div class="turn-body">「値段を 50円 から <span class="big ce">ε = ${B.eps}</span> 円以内にして」</div></div>
+        <div class="turn"><span class="who d">あなた</span><div class="turn-body">${slider(B.s)}<div id="dText"></div>
+          ${B.eps === 10 ? `<div class="row"><button class="btn blue" id="zoomBtn" ${B.zoom >= 3 ? 'disabled' : ''}>横に10倍拡大して、もっと小さい δ を試す</button></div>` : ''}</div></div>
+        <div id="status"></div>`;
     }
-    return html;
-  }
+    $('controls').innerHTML = html;
 
-  function panelStage5(){
-    return `<p class="stage-head">ゲームと記号の対応</p>
-      <p class="stage-text">2つのゲームは、同じ形をしています。「相手がどんなに厳しい ε を出しても、あなたは必ず勝てる」。これを記号で1行に書いたのが、「大学ではこう書く」の欄の式です。</p>
-      <table class="map">
-        <tr><td>相手が、<b>どんな</b>誤差 ε を出してきても</td><td class="sym">∀ε &gt; 0</td></tr>
-        <tr><td>あなたは、勝てる N（ゲーム①）や δ（ゲーム②）を<b>見つけられる</b></td><td class="sym">① ∃N<br>② ∃δ &gt; 0</td></tr>
-        <tr><td>① N から先の<b>すべての</b> n で<br>② 範囲の中の<b>すべての</b> x で</td><td class="sym">① ∀n ≧ N<br>② ∀x</td></tr>
-        <tr><td>誤差が ε より小さい（勝ち）</td><td class="sym">① |aₙ − √2| &lt; ε<br>② |x² − 2| &lt; ε</td></tr>
-      </table>
-      <div class="explain"><p><b>∀</b> は All（すべて）の A をひっくり返した記号で「どんな〜でも」。<b>∃</b> は Exist（存在する）の E をひっくり返した記号で「ある〜が見つかる」。</p>
-      <p>「限りなく近づく」という言葉の代わりに、<b>ゲームの勝ち方</b>として言い切る。こうすると、だれが読んでも意味が1つに決まります。大学1年生の「微分積分学」や「解析学」で、最初に出会う考え方です。</p>
-      <p>実は「√2 はどれくらい？」で 1.4142 ＜ √2 ＜ 1.4143 まで追いつめたとき、みなさんは <b>ε = 0.0001 のゲームに N = 4 で勝っていた</b>のです。</p></div>`;
-  }
-
-  function renderPanel(){
-    const s = st.s;
-    $('panel').innerHTML = s === 0 ? panelStage0() : s <= 2 ? panelGame1() : s <= 4 ? panelGame2() : panelStage5();
-    const on = (id, fn) => { const el = $(id); if(el) el.addEventListener('click', fn); };
-    on('addBtn', () => { if(st.shown < 6){ st.shown++; render(); } });
-    document.querySelectorAll('#epsChips button').forEach(b => b.addEventListener('click', () => { st.eps1 = +b.dataset.v; st.custom1 = false; st.N = null; render(); }));
-    document.querySelectorAll('#nChips button').forEach(b => b.addEventListener('click', () => { st.N = +b.dataset.n; if(win1()) st.won1 = true; render(); }));
-    document.querySelectorAll('#epsChips2 button').forEach(b => b.addEventListener('click', () => { st.eps2 = +b.dataset.v; st.custom2 = false; st.delta = null; render(); }));
-    document.querySelectorAll('#dChips button').forEach(b => b.addEventListener('click', () => { st.delta = +b.dataset.v; if(win2()) st.won2 = true; render(); }));
-    on('sureN', () => { st.N = sureN(st.eps1); render(); });
-    on('sureD', () => { st.delta = Math.min(1, st.eps2 / 4); render(); });
-    on('epsSet1', () => {
-      const v = Number(String($('epsIn1').value).trim());
-      if(!(v > 0 && v < 1) || v < 1e-9){ $('epsWarn1').innerHTML = '<div class="warn">0 より大きく 1 未満の数を入れてください（0.000000001 まで）。</div>'; return; }
-      st.eps1 = v; st.custom1 = true; st.N = null; render();
+    const sl = $('dSlider');
+    if(sl) sl.addEventListener('input', () => {
+      const s = +sl.value / 100;
+      if(sc === 1) A.s = s; else B.s = s;
+      if(sc === 1){ const c = cur(); if(judge(c.F, c.eps, c.delta).win) A.rec[A.round] = c.delta; }
+      live();
     });
-    on('epsSet2', () => {
-      const v = Number(String($('epsIn2').value).trim());
-      if(!(v > 0 && v <= 1) || v < 1e-9){ $('epsWarn2').innerHTML = '<div class="warn">0 より大きく 1 以下の数を入れてください（0.000000001 まで）。</div>'; return; }
-      st.eps2 = v; st.custom2 = true; st.delta = null; render();
+    document.querySelectorAll('#sEps button').forEach(b => b.addEventListener('click', () => { S.eps = +b.dataset.v; S.delta = null; S.reverse = false; S.customErr = ''; render(); }));
+    if($('sSet')) $('sSet').addEventListener('click', () => {
+      const v = Number(String($('sIn').value).trim());
+      if(!(v > 0 && v <= 1) || v < 1e-9){ S.customErr = '<div class="warn">0 より大きく 1 以下の数を入れてください（0.000000001 まで）。</div>'; render(); return; }
+      S.eps = v; S.delta = null; S.reverse = false; S.customErr = ''; render();
     });
+    if($('sureBtn')) $('sureBtn').addEventListener('click', () => { if(S.reverse){ S.reverse = false; S.eps = 0.01; } S.delta = S.eps / 4; S.used = true; render(); });
+    if($('revBtn')) $('revBtn').addEventListener('click', () => { S.reverse = true; S.delta = 0.01; S.eps = 0.001; render(); });
+    if($('zoomBtn')) $('zoomBtn').addEventListener('click', () => { if(B.zoom < 3){ B.zoom++; render(); } });
   }
 
-  // ===== ステップ =====
-  const canNext = () => st.s < LAST && !(st.s === 1 && !st.won1) && !(st.s === 3 && !st.won2) && !(st.s === 0 && st.shown < 3);
-  function renderSteps(){
-    $('steps').innerHTML = STAGES.map((t, i) => {
-      const cls = ['step'];
-      if(i > st.reach) cls.push('dim');
-      if(i === st.s) cls.push('now');
-      if(i < st.reach || (i === 1 && st.won1) || (i === 3 && st.won2)) cls.push('done');
-      return `<div class="${cls.join(' ')}" data-i="${i}"><div class="step-num">${i + 1}</div><div class="step-body">${t.body}</div></div>`;
-    }).join('');
-    $('steps').querySelectorAll('.step').forEach(el => el.addEventListener('click', () => { const i = +el.dataset.i; if(i <= st.reach) goTo(i); }));
-    $('progress').textContent = `${st.s + 1} / ${STAGES.length}　${STAGES[st.s].label}`;
-    $('prevBtn').disabled = st.s === 0;
+  // ---- 動かすたびに更新するところ ----
+  function renderStatus(){
+    const box = $('status'); if(!box) return;
+    const c = cur(), F = c.F, sc = st.scene;
+    const dText = $('dText');
+    if(c.delta === null){
+      if(dText) dText.innerHTML = '';
+      box.innerHTML = `<div class="verdict wait">${sc === 2 ? '「必勝法で答える」を押してみよう。' : 'まずスライダーを左へ動かして、δ を小さくしてみよう。'}</div>`;
+      return;
+    }
+    const J = judge(F, c.eps, c.delta);
+    const k = Math.max(dg(c.eps), dg(c.delta)) + 1;
+    if(dText) dText.innerHTML = `<span class="big cd">δ = ${numText(c.delta)}</span>`;
+    let html = '';
+    if(F === FA){
+      html += `<div class="sub" style="margin-top:6px;">1辺 x：<span class="mono">${(R2 - c.delta).toFixed(k)} ＜ x ＜ ${(R2 + c.delta).toFixed(k)}</span><br>
+        そのときの面積 x²：<span class="mono">${J.lo.toFixed(k)} 〜 ${J.hi.toFixed(k)}</span><br>
+        許される面積：<span class="mono">${(2 - c.eps).toFixed(k)} 〜 ${(2 + c.eps).toFixed(k)}</span></div>`;
+    }else{
+      html += `<div class="sub" style="margin-top:6px;">重さ x：<span class="mono">${numText(200 - c.delta)} ＜ x ＜ ${numText(200 + c.delta)}</span> g<br>
+        そのときの値段：<b>30円</b>（200 g 未満）と <b>50円</b>（200 g 以上）<br>許される値段：${50 - B.eps}〜${50 + B.eps}円</div>`;
+    }
+    if(sc === 1){
+      if(J.win){
+        html += `<div class="verdict win">勝ち！ δ = ${numText(c.delta)} なら、帯の中のどの x でも面積は 2 から ${numText(c.eps)} 以内。</div>`;
+        html += A.round < 3 ? `<div class="row"><button class="btn primary" id="nextRound">次のラウンドへ（相手は ε を 10分の1 にしてくる）</button></div>`
+                            : `<div class="verdict win" style="background:#fff;border:2px solid var(--ok);">4ラウンド全部勝った！ 「記録」を見てから「次へ」</div>`;
+      }else{
+        html += `<div class="verdict lose">負け… 面積が帯からはみ出す x がある。δ をもっと小さくしよう。</div>`;
+      }
+    }else if(sc === 2){
+      html += J.win ? `<div class="verdict win">勝ち！ ε = ${numText(c.eps)} に、δ = ${numText(c.delta)} で即答できた。</div>`
+                    : `<div class="verdict lose">負け… あなたが先に δ = 0.01 と言ってしまったので、相手はそれを見て ε = 0.001 を出した。</div>`;
+    }else if(sc === 3){
+      if(B.eps === 30){
+        html += `<div class="verdict win">勝ち（30円 も 50円 も帯に入るので、どんな δ でも勝てる）。</div>
+          <div class="row"><button class="btn primary" id="eps10">相手が ε = 10 を出してきた</button></div>`;
+      }else{
+        html += `<div class="verdict lose">負け… 200 g のすぐ左は 30円。50円 から 10円 以内に入らない。</div>`;
+        if(!B.done) html += `<div class="row"><button class="btn primary" id="giveup">どんな δ でもダメ？ → 結論を見る</button></div>`;
+      }
+    }else{
+      html += `<div class="verdict win">勝ち（箱の上下からはみ出さない）</div>`;
+    }
+    box.innerHTML = html;
+    if($('nextRound')) $('nextRound').addEventListener('click', () => { A.round++; A.s = null; render(); });
+    if($('eps10')) $('eps10').addEventListener('click', () => { B.eps = 10; B.s = null; render(); });
+    if($('giveup')) $('giveup').addEventListener('click', () => { B.done = true; live(); });
+  }
+
+  // ---- 式（勝負の進み具合に合わせて光る） ----
+  function phase(){
+    const c = cur();
+    if(c.delta === null) return 'eps';
+    return judge(c.F, c.eps, c.delta).win ? 'win' : 'lose';
+  }
+  function formulaHTML(aT, fT, LT, ph){
+    const p2 = ph === 'eps' ? 'dim' : 'd';
+    const p3 = ph === 'eps' ? 'dim' : ph === 'lose' ? 'l' : 'w';
+    return `<div class="formula"><span class="fp e">∀ε &gt; 0</span>, <span class="fp ${p2}">∃δ &gt; 0</span>, <span class="fp ${p3}">∀x : |x − ${aT}| &lt; δ ⇒ |${fT} − ${LT}| &lt; ε</span></div>
+      <div class="reading"><span class="fp e">どんな ε &gt; 0 を出されても</span>、<span class="fp ${p2}">ある δ &gt; 0 を見つけられて</span>、<span class="fp ${p3}">x が ${aT} から δ 以内なら、どの x でも ${fT} は ${LT} から ε 以内</span></div>`;
+  }
+  function renderFormula(){
+    const sc = st.scene, ph = phase(), c = cur();
+    let html = '';
+    if(sc <= 2){
+      html = `<p class="formula-title">式で書くと（いまの勝負に合わせて光ります）</p>` + formulaHTML('√2', 'x²', '2', ph);
+      const note = ph === 'eps' ? `いま：相手が ε = ${numText(c.eps)} を出した（<b class="ce">∀ε</b> のところ）。次はあなたが δ を決める番（<b class="cd">∃δ</b>）。`
+        : ph === 'win' ? `δ = ${numText(c.delta)} なら、帯の中の<b>すべての</b> x で成り立つ（<b style="color:var(--ok)">⇒ の部分が OK</b>）。`
+        : `δ = ${numText(c.delta)} では、成り立たない x がある（<b style="color:var(--ng)">⇒ の部分がダメ</b>）。`;
+      html += `<div class="now-note">${note}</div>`;
+    }else if(sc === 3){
+      html = `<p class="formula-title">式で書くと</p>` + formulaHTML('200', 'f(x)', '50', B.done ? 'lose' : ph);
+      if(B.done){
+        html += `<div class="neg"><p class="formula-title">成り立たない。そのかわり、こちらが成り立つ（相手の必勝）</p>
+          <div class="formula"><span class="fp e">∃ε &gt; 0</span>, <span class="fp d">∀δ &gt; 0</span>, <span class="fp l">∃x : |x − 200| &lt; δ かつ |f(x) − 50| ≧ ε</span></div>
+          <div class="reading"><span class="fp e">ある ε（たとえば 10）を出せば</span>、<span class="fp d">どんな δ に対しても</span>、<span class="fp l">はみ出す x（200 g のすぐ左）が見つかる</span></div>
+          <div class="now-note">∀ と ∃ が入れかわっていることに注目。</div></div>`;
+      }
+    }else{
+      html = `<p class="formula-title">一般の形：f(x) が x = a で連続（x → a のとき f(x) → f(a)）</p>` + formulaHTML('a', 'f(x)', 'f(a)', 'win');
+    }
+    $('formula').innerHTML = html;
+  }
+
+  // ---- 説明 ----
+  function renderScene(){
+    const sc = st.scene;
+    let h = '';
+    if(sc === 0){
+      h = `<p class="scene-title">ルール：「近づく」かどうかを、勝負で決める</p>
+        <p>「x を √2 に近づけると x² は 2 に近づく」。でも「近づく」の感じ方は人それぞれです。そこで大学では、<b>相手との勝負</b>で決めます。</p>
+        <ol class="rules">
+          <li><span class="who e">相手</span> 「x² を 2 から <b class="ce">ε</b> 以内にして」と要求する → <b class="ce">オレンジの帯</b></li>
+          <li><span class="who d">あなた</span> 「x を √2 から <b class="cd">δ</b> 以内にすれば大丈夫」と答える → <b class="cd">青い帯</b></li>
+          <li>青い帯の中のグラフが<b>すべて</b>オレンジの帯に入れば、あなたの勝ち。図でいうと、グラフが<b>「箱」の左右から出て、上下からははみ出さない</b>こと。</li>
+        </ol>
+        <div class="key">相手が<b>どんなに厳しい ε</b> を出しても、あなたが必ず勝てるとき、はじめて「近づく」と認めます。</div>
+        <p class="sub" style="margin-top:10px;">ε はイプシロン、δ はデルタと読みます（ギリシャ文字の e と d）。</p>`;
+    }else if(sc === 1){
+      const all = A.rec.filter(v => v !== undefined).length === 4;
+      h = `<p class="scene-title">ゲーム：相手の要求は、どんどん厳しくなる</p>
+        <p>相手はラウンドごとに ε を <b>10分の1</b> にしてきます。そのたびに図は <b>10倍に拡大</b>されます。スライダーで δ を動かして、勝てる δ を見つけよう。</p>
+        ${all ? `<div class="key ok">4ラウンドとも勝てました。記録を見ると、勝てた δ はどのラウンドも ε の<b>0.3倍くらい</b>。そして拡大した図は、毎回<b>ほとんど同じ形</b>です。<br>――もしかして、<b>どんな ε にも勝てる決め方</b>がある？ →「次へ」</div>` : ''}`;
+    }else if(sc === 2){
+      h = `<p class="scene-title">必勝法：どんな ε にも、すぐ答えられる</p>
+        <p>δ を ε の4分の1（δ ＝ ${fracHTML('ε', '4')}）にすれば、<b>必ず勝てます</b>。ゲームで見つけた「0.3倍くらい」より少し小さめにして、安全にしたものです。相手にとんでもなく小さい ε を出させて、試してみよう。</p>
+        ${S.used ? `<div class="key ok">何万倍、何千万倍に拡大しても、同じ絵になって勝てる。つまり相手は<b>永遠に勝てない</b>。<br><b>これが「x² は 2 に近づく」の、大学での意味です。</b></div>` : ''}
+        ${S.reverse ? `<div class="key ng"><b>順番を逆にすると負ける。</b>あなたが先に δ を言ってしまうと、相手はそれを見て、もっと厳しい ε を出せます。だから順番は「<b class="ce">相手の ε が先</b>、<b class="cd">あなたの δ が後</b>」。δ は ε に合わせて変えてよい、というのがポイントです。</div>` : ''}
+        <details><summary>なぜ ${fracHTML('ε', '4')} で必ず勝てるの？（数学Ⅰの因数分解で説明できる）</summary>
+          <p><span class="mono">x² − 2 = (x − √2)(x + √2)</span> なので　|x² − 2| ＝ |x − √2| × |x + √2|。</p>
+          <p>x が √2 の近く（1 以内）なら、x + √2 は 4 より小さい（√2 + 1 + √2 ≒ 3.83）。だから |x − √2| ＜ δ のとき　|x² − 2| ＜ δ × 4。</p>
+          <p>δ ＝ ${fracHTML('ε', '4')} にすれば　|x² − 2| ＜ ${fracHTML('ε', '4')} × 4 ＝ ε。　どんな ε でもこの計算が通るので、必ず勝てます。</p>
+          <p class="sub">※正確には「δ は 1 と ${fracHTML('ε', '4')} の小さいほう」と決めます。ここでは ε ≦ 1 なので ${fracHTML('ε', '4')} のままで大丈夫です。</p>
+        </details>`;
+    }else if(sc === 3){
+      h = `<p class="scene-title">つながっていないグラフでは？</p>
+        <p>直売所で、トマトの値段を重さで決めることにしました。<b>200 g 以上は 1個 50円、200 g 未満は 30円</b>。</p>
+        <p>「重さを 200 g に近づけると、値段は 50円 に近づく」と言えるでしょうか？　同じ勝負をしてみよう。</p>
+        ${B.done ? `<div class="key ng">どんなに δ を小さくしても、200 g の<b>すぐ左</b>には 30円 のトマトがある。相手が ε = 10 を出したら、あなたは<b>絶対に勝てない</b>。<br>だから「近づく」とは言えません。グラフが x = 200 で<b>切れている（不連続）</b>ことを、この勝負は見逃しません。</div>` : ''}`;
+    }else{
+      h = `<p class="scene-title">大学ではこう書く</p>
+        <p>勝負のルールを、そのまま記号にしたのが下の式です。</p>
+        <table class="map">
+          <tr><td>相手が、<b>どんな</b> ε を出しても</td><td class="sym ce">∀ε &gt; 0</td></tr>
+          <tr><td>あなたは、勝てる δ を<b>見つけられる</b></td><td class="sym cd">∃δ &gt; 0</td></tr>
+          <tr><td>帯の中の<b>すべての</b> x で、はみ出さない</td><td class="sym" style="color:var(--ok)">∀x : … ⇒ …</td></tr>
+        </table>
+        <p class="sub" style="margin-top:6px;">∀ は All の A、∃ は Exist の E をひっくり返した記号です。</p>
+        <div class="key"><b>ε-δ のポイント</b><br>
+          ① <b>順番が命</b>：先に相手が ε、それを見てあなたが δ。式でも ∀ε が ∃δ より先に書いてある。<br>
+          ② 「近づく」という<b>動きの言葉を使わず</b>、「どんな要求にも応えられる」という<b>言い切りの文</b>になっている。<br>
+          ③ 相手に必勝の ε が<b>1つでもあれば</b>、「近づく」とは言えない（トマトの例）。</div>
+        <p style="margin-top:10px;">この書き方は19世紀にコーシーやワイエルシュトラスらが整えたもので、大学1年の「微分積分学」「解析学」の最初に学びます。微分も積分も、この土台の上に建っています。</p>
+        <p>「√2 はどれくらい？」で √2 を追いつめたのも、「誤差をどれだけ小さく要求されても、桁を増やせば応えられる」という、同じ形の勝負でした。</p>`;
+    }
+    $('scene').innerHTML = h;
+  }
+
+  function renderRecord(){
+    const box = $('record');
+    if(st.scene !== 1 && st.scene !== 2){ box.hidden = true; return; }
+    box.hidden = false;
+    let rows = '';
+    for(let i = 0; i < 4; i++){
+      const d = A.rec[i];
+      rows += `<tr><td>${i + 1}</td><td class="mono2 ce">${numText(A_EPS[i])}</td><td class="mono2 cd">${d === undefined ? '' : numText(d)}</td><td class="mono2">${d === undefined ? '' : '約 ' + (d / A_EPS[i]).toFixed(2) + ' 倍'}</td></tr>`;
+    }
+    box.innerHTML = `<p class="formula-title">記録（勝てた δ）</p><table class="tbl"><tr><th>ラウンド</th><th>相手の ε</th><th>あなたの δ</th><th>δ は ε の何倍？</th></tr>${rows}</table>`;
+  }
+
+  // ---- 場面の移動 ----
+  const canNext = () => st.scene < SCENES.length - 1 && (
+    st.scene === 0 ||
+    (st.scene === 1 && A.rec.filter(v => v !== undefined).length === 4) ||
+    (st.scene === 2 && S.used) ||
+    (st.scene === 3 && B.done));
+  function renderNav(){
+    $('pills').innerHTML = SCENES.map((t, i) => `<button class="pill${i <= st.reach ? ' reached' : ''}${i === st.scene ? ' now' : ''}" data-i="${i}" ${i > st.reach ? 'disabled' : ''}><span class="n">${i + 1}</span>${t}</button>`).join('');
+    $('pills').querySelectorAll('.pill').forEach(b => b.addEventListener('click', () => { const i = +b.dataset.i; if(i <= st.reach){ st.scene = i; render(); } }));
+    $('prevBtn').disabled = st.scene === 0;
     $('nextBtn').disabled = !canNext();
-    $('hint').textContent = st.s === 0 && st.shown < 3 ? '「次の桁をたす」を何回か押してみよう'
-      : st.s === 1 && !st.won1 ? 'まず1回、ゲーム①に勝ってみよう'
-      : st.s === 3 && !st.won2 ? 'まず1回、ゲーム②に勝ってみよう' : '';
+    $('nextBtn').title = canNext() ? '' : (st.scene === 1 ? '4ラウンド全部勝つと進めます' : st.scene === 2 ? '「必勝法で答える」を1回押すと進めます' : st.scene === 3 ? '結論まで見ると進めます' : '');
   }
 
-  function renderAnswer(){
-    const ans = $('answer');
-    if(st.s < LAST){ ans.classList.add('pending'); $('answerValue').textContent = '最後のステップまで進むと表示されます'; return; }
-    ans.classList.remove('pending');
-    $('answerValue').innerHTML = `<p style="margin:4px 0 0;font-weight:700;">ゲーム①　数列 aₙ が √2 に収束する（ε-N 論法）</p>
-      <div class="formal">∀ε &gt; 0, ∃N, ∀n ≧ N : |a<sub>n</sub> − √2| &lt; ε</div>
-      <p class="reading">どんな ε &gt; 0 に対しても、ある N が見つかって、n ≧ N ならいつでも |aₙ − √2| &lt; ε となる。</p>
-      <p style="margin:4px 0 0;font-weight:700;">ゲーム②　x → √2 のとき x² → 2（ε-δ 論法）</p>
-      <div class="formal">∀ε &gt; 0, ∃δ &gt; 0, ∀x : |x − √2| &lt; δ ⇒ |x² − 2| &lt; ε</div>
-      <p class="reading">どんな ε &gt; 0 に対しても、ある δ &gt; 0 が見つかって、|x − √2| &lt; δ ならいつでも |x² − 2| &lt; ε となる。</p>`;
-  }
+  function live(){ updateView(); renderStatus(); renderFormula(); renderScene(); renderRecord(); renderNav(); }
+  function render(){ renderControls(); live(); }
 
-  function goTo(i){ st.s = i; st.reach = Math.max(st.reach, i); render(); }
-  function render(){ drawFigure(); renderPanel(); renderSteps(); renderAnswer(); }
-
-  $('prevBtn').addEventListener('click', () => { if(st.s > 0) goTo(st.s - 1); });
-  $('nextBtn').addEventListener('click', () => { if(canNext()) goTo(st.s + 1); });
+  $('prevBtn').addEventListener('click', () => { if(st.scene > 0){ st.scene--; render(); } });
+  $('nextBtn').addEventListener('click', () => { if(canNext()){ st.scene++; st.reach = Math.max(st.reach, st.scene); render(); } });
 
   render();
 })();
