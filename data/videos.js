@@ -17,5 +17,50 @@ const VIDEO_DATA = [
     youtubeId: "DHRpKKKHah4",
     note: "ショート動画",
     added: "2026-09-24"
+  },
+  {
+    subject: "数学B",
+    unit: "統計的な推測",
+    order: 10,
+    title: "動画① 標本平均と中心極限定理",
+    youtubeId: "8u6fqF8siiY",
+    note: "プリント①と対応",
+    added: "2026-10-21"
+  },
+  {
+    subject: "数学B",
+    unit: "統計的な推測",
+    order: 20,
+    title: "動画② 統計的な推定",
+    youtubeId: "E4C_0u4roZ8",
+    note: "プリント②と対応",
+    added: "2026-10-21"
+  },
+  {
+    subject: "数学B",
+    unit: "統計的な推測",
+    order: 30,
+    title: "動画③ 統計的な検定の考え方",
+    youtubeId: "sB36o_EyUvY",
+    note: "プリント③と対応",
+    added: "2026-10-21"
+  },
+  {
+    subject: "数学B",
+    unit: "統計的な推測",
+    order: 40,
+    title: "動画④ 正規分布を使った検定とp値",
+    youtubeId: "q0Elbn9IXYE",
+    note: "プリント④と対応",
+    added: "2026-10-21"
+  },
+  {
+    subject: "数学B",
+    unit: "統計的な推測",
+    order: 50,
+    title: "動画⑤ 第一種の過誤と第二種の過誤",
+    youtubeId: "nmZoousLt2s",
+    note: "プリント⑤と対応",
+    added: "2026-10-21"
   }
 ];

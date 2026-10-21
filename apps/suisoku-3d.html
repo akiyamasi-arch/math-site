@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>推測統計を3Dで見る｜数学学習サイト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
+<style>
+  :root{
+    --orange-50:#FFEEE2; --orange-100:#FFDFCA; --orange-400:#FF8D44;
+    --orange-700:#E25100; --orange-800:#C74700; --orange-900:#AC3E00;
+    --ink:#1E293B; --sub:#475569; --line:#D9DEE6; --line-strong:#B9C2CF;
+    --bg:#FBFBFA; --card:#FFFFFF; --focus:#FFD866;
+    --pink:#d6336c;
+    --sp-1:8px; --sp-2:16px; --sp-3:24px; --sp-4:32px; --sp-6:48px;
+    --radius-md:8px; --radius-pill:999px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.7;}
+  button:focus-visible, input:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+  .brand-bar{height:6px;background:var(--orange-700);}
+  .site-header{background:var(--card);border-bottom:1px solid var(--line);padding:var(--sp-2);}
+  .site-header .inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;}
+  .site-title{margin:0;font-size:18px;font-weight:700;}
+  .site-title a{color:var(--ink);text-decoration:none;}
+  .back-link{font-size:14px;font-weight:700;}
+  .wrap{max-width:1280px;margin:0 auto;padding:var(--sp-3) var(--sp-2) var(--sp-6);}
+  h1{margin:0 0 4px;font-size:26px;line-height:1.4;}
+  .lead{margin:0 0 var(--sp-2);color:var(--sub);font-size:15px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--sp-2) var(--sp-3);}
+  .section-title{font-size:13px;font-weight:700;color:var(--sub);margin:0 0 var(--sp-1);}
+  .btn{border:1px solid var(--line);background:#f8fafc;color:var(--ink);padding:8px 14px;border-radius:var(--radius-pill);font-size:14px;cursor:pointer;font-family:inherit;}
+  .btn:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .btn:disabled{opacity:.35;cursor:default;}
+  .btn.on{background:var(--orange-700);border-color:var(--orange-700);color:#fff;}
+
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:var(--sp-2);}
+  .tab{border:1.5px solid var(--line-strong);background:#fff;padding:10px 18px;border-radius:var(--radius-md);font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--sub);}
+  .tab .pg{font-weight:400;font-size:12px;margin-left:6px;}
+  .tab.active{border-color:var(--orange-700);background:var(--orange-50);color:var(--orange-900);}
+
+  .main-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:var(--sp-2);align-items:start;}
+  @media (max-width:980px){ .main-grid{grid-template-columns:1fr;} }
+  .stage{padding:0;overflow:hidden;position:relative;}
+  .stage canvas{display:block;width:100%;touch-action:none;cursor:grab;}
+  .stage canvas:active{cursor:grabbing;}
+  .stage-bar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid var(--line);font-size:13px;color:var(--sub);}
+  .stage-bar .btns{display:flex;gap:8px;flex-wrap:wrap;}
+
+  .stepper{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:var(--sp-2);padding-bottom:12px;border-bottom:1px dashed var(--line);}
+  .stepper .progress{font-size:13px;font-weight:700;color:var(--sub);}
+  .stepper .btn{font-size:15px;padding:10px 18px;}
+  #nextBtn{background:var(--orange-700);color:#fff;border-color:var(--orange-700);}
+  #nextBtn:hover{background:var(--orange-800);}
+  #nextBtn:disabled{background:#f8fafc;color:var(--ink);border-color:var(--line);}
+  .steps{display:flex;flex-direction:column;gap:6px;}
+  .step{display:flex;gap:10px;padding:8px;margin:0 -8px;border-radius:var(--radius-md);cursor:pointer;}
+  .step:hover{background:#f8fafc;}
+  .step.dim{opacity:.4;}
+  .step.active{background:var(--orange-50);cursor:default;}
+  .step-num{flex:none;width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+  .step.dim .step-num{background:#cbd5e1;}
+  .step.active .step-num{background:var(--orange-700);}
+  .step-title{font-weight:700;font-size:15px;}
+  .step-body{display:none;font-size:15px;line-height:1.8;margin-top:6px;}
+  .step.active .step-body{display:block;}
+  .step-body p{margin:0 0 8px;}
+  .step-body b{color:var(--orange-900);}
+  .formula{background:#fff;border:1px solid var(--orange-100);border-radius:var(--radius-md);padding:8px 12px;margin:8px 0;font-size:16px;}
+  .formula .row{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin:4px 0;}
+  .theorem{border:1.5px dashed var(--pink);background:#fff5f8;border-radius:var(--radius-md);padding:8px 12px;margin:8px 0;}
+  .note{font-size:13px;color:var(--sub);}
+  .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25;margin:0 2px;}
+  .frac .num, .frac .den{padding:0 4px;white-space:nowrap;}
+  .frac .bar{display:block;width:100%;height:2px;background:currentColor;margin:2px 0;}
+  .ov{text-decoration:overline;}
+  table.words{border-collapse:collapse;width:100%;font-size:13px;margin-top:6px;background:#fff;}
+  table.words th, table.words td{border:1px solid var(--line);padding:4px 6px;vertical-align:middle;}
+  table.words th{background:#f1f5f9;}
+  .nbtns{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;}
+  input[type=range]{width:100%;accent-color:var(--orange-700);}
+</style>
+</head>
+<body>
+<div class="brand-bar"></div>
+<header class="site-header">
+  <div class="inner">
+    <p class="site-title"><a href="../index.html">数学学習サイト</a></p>
+    <a class="back-link" href="../unit.html?s=mathB&u=tokei-suisoku">← 単元ページに戻る</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <h1>推測統計を3Dで見る </h1>
+  <p class="lead">「次へ」を押すと、図が1段階ずつ動きます。図はドラッグすると回転できます。</p>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="main-grid">
+    <div class="card stage">
+      <canvas id="cv"></canvas>
+      <div class="stage-bar">
+        <span>ドラッグで回転・ホイール／ピンチで拡大縮小</span>
+        <span class="btns">
+          <button class="btn" id="replayBtn">↻ この段階をもう一度</button>
+          <button class="btn" id="viewBtn">視点を戻す</button>
+          <button class="btn" id="autoBtn">▶ 通しで自動再生</button>
+        </span>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-title">考え方のステップ</p>
+      <div class="stepper">
+        <button class="btn" id="prevBtn">◀ 前へ</button>
+        <span class="progress" id="progress"></span>
+        <button class="btn" id="nextBtn">次へ ▶</button>
+      </div>
+      <div class="steps" id="steps"></div>
+      <p class="note" style="margin:12px 0 0">※ 図の数値は説明用に作ったデータ（シミュレーション）です。</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $ = id => document.getElementById(id);
+const FONT = '"Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif';
+const fr = (n, d) => `<span class="frac"><span class="num">${n}</span><span class="bar"></span><span class="den">${d}</span></span>`;
+const XB = '<span class="ov">X</span>';
+
+// ================= 乱数・統計 =================
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function gauss(r){ let u=0; while(u===0)u=r(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*r()); }
+const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
+const npdf = (x,m,s) => Math.exp(-0.5*((x-m)/s)**2)/(s*Math.sqrt(2*Math.PI));
+const mean = a => a.reduce((s,v)=>s+v,0)/a.length;
+function pickIdx(r, N, n){ const s=new Set(); while(s.size<n) s.add(Math.floor(r()*N)); return [...s]; }
+
+// ---- 第1章：A市の20歳男子240人の身長（仮のデータ）----
+const N1 = 240, H = v => (v-171)*0.5;
+const r1 = mulberry32(7);
+const POP1 = Array.from({length:N1}, () => ({v: clamp(171+6*gauss(r1),153,189)}));
+const MU1 = mean(POP1.map(p=>p.v));
+const SD1 = Math.sqrt(mean(POP1.map(p=>(p.v-MU1)**2)));
+POP1.forEach(p=>{
+  const rad = 6.2*Math.sqrt(r1()), ang = r1()*Math.PI*2;
+  p.cloud = {x: rad*Math.cos(ang), z: rad*Math.sin(ang)*0.8, y: 0.42 + (1-(rad/6.2)**2)*2.6*r1()};
+});
+(function(){ // 母集団分布（2cmごとの山）での位置
+  const byBin = {};
+  POP1.map((p,i)=>i).sort((a,b)=>POP1[a].v-POP1[b].v).forEach(i=>{
+    const b = Math.floor((POP1[i].v-150)/2); (byBin[b]=byBin[b]||[]).push(i);
+  });
+  Object.keys(byBin).forEach(b=>byBin[b].forEach((i,k)=>{
+    POP1[i].hist = {x: H(151+2*b), z: -1.3+(k%4)*0.86, y: 0.42+Math.floor(k/4)*0.84};
+    POP1[i].bin = +b;
+  }));
+})();
+const SAMP1 = Array.from({length:240}, () => { const idx=pickIdx(r1,N1,10); return {idx, m: mean(idx.map(i=>POP1[i].v))}; });
+
+// ---- 第2章：へそくり額（仮のデータ・左右非対称）----
+const N2 = 240, G = v => (v-150)*0.045;
+const r2 = mulberry32(11);
+const POP2 = Array.from({length:N2}, () => ({v: clamp(-50*(Math.log(r2()+1e-9)+Math.log(r2()+1e-9)), 2, 395)}));
+const MU2 = mean(POP2.map(p=>p.v));
+const SD2 = Math.sqrt(mean(POP2.map(p=>(p.v-MU2)**2)));
+(function(){
+  const byBin = {};
+  POP2.map((p,i)=>i).sort((a,b)=>POP2[a].v-POP2[b].v).forEach(i=>{
+    const b = Math.floor(POP2[i].v/20); (byBin[b]=byBin[b]||[]).push(i);
+  });
+  Object.keys(byBin).forEach(b=>byBin[b].forEach((i,k)=>{
+    POP2[i].hist = {x: G(10+20*b), z: -1.2+(k%4)*0.8, y: 0.39+Math.floor(k/4)*0.8};
+  }));
+})();
+const gammaPdf = v => v/2500*Math.exp(-v/50);
+let ch2N = 20;
+const samp2Cache = {};
+function samp2(n){
+  if(!samp2Cache[n]){ const r=mulberry32(1000+n);
+    samp2Cache[n] = Array.from({length:300}, () => { const idx=pickIdx(r,N2,n); return {idx, m: mean(idx.map(i=>POP2[i].v))}; }); }
+  return samp2Cache[n];
+}
+
+// ---- サイコロ ----
+const D = v => (v-3.5)*2.2;
+const rd = mulberry32(5);
+const SAMPD = Array.from({length:300}, () => { const rolls=Array.from({length:100},()=>1+Math.floor(rd()*6)); return {rolls, m: mean(rolls)}; });
+const SD_DIE = Math.sqrt(35/12);
+
+// ================= 3D表示のしくみ =================
+const cv = $('cv'), g = cv.getContext('2d');
+let W=800, Hc=500, DPR=1, F=600;
+function resize(){
+  DPR = Math.min(window.devicePixelRatio||1, 2);
+  W = cv.clientWidth; Hc = Math.round(W < 600 ? W*1.05 : W*0.7);
+  cv.style.height = Hc+'px'; cv.width = W*DPR; cv.height = Hc*DPR;
+  F = Math.min(W*0.78, Hc*1.25);
+}
+window.addEventListener('resize', resize);
+
+const now = () => performance.now()/1000;
+const ease = {
+  io: k => k<.5 ? 4*k*k*k : 1-Math.pow(-2*k+2,3)/2,
+  in: k => k*k,
+  out: k => 1-(1-k)*(1-k),
+  back: k => { const c=1.7; return 1+(c+1)*Math.pow(k-1,3)+c*Math.pow(k-1,2); }
+};
+
+// カメラ
+let cam = {tx:0,ty:2,tz:0,yaw:.4,pitch:.35,dist:24};
+let camFrom = {...cam}, camTo = {...cam}, camT0 = 0, camDur = 1.6;
+let user = {yaw:0,pitch:0,zoom:1}, userTo = {yaw:0,pitch:0,zoom:1};
+let basis = null;
+function setCam(c){ camFrom = {...cam}; camTo = {...camTo, ...c}; camT0 = now(); userTo = {yaw:0,pitch:0,zoom:1}; }
+function updateCam(t){
+  const k = ease.io(clamp((t-camT0)/camDur,0,1));
+  for(const key in camTo) cam[key] = camFrom[key] + (camTo[key]-camFrom[key])*k;
+  for(const key in user) user[key] += (userTo[key]-user[key])*0.12;
+  const yaw = cam.yaw + user.yaw + Math.sin(t*0.25)*0.04;
+  const pitch = clamp(cam.pitch + user.pitch, 0.05, 1.35);
+  const dist = cam.dist * user.zoom * 0.8;
+  const cp = Math.cos(pitch);
+  const pos = {x: cam.tx + dist*cp*Math.sin(yaw), y: cam.ty + dist*Math.sin(pitch), z: cam.tz + dist*cp*Math.cos(yaw)};
+  let f = {x: cam.tx-pos.x, y: cam.ty-pos.y, z: cam.tz-pos.z};
+  const fl = Math.hypot(f.x,f.y,f.z); f = {x:f.x/fl, y:f.y/fl, z:f.z/fl};
+  let r = {x:-f.z, y:0, z:f.x}; const rl = Math.hypot(r.x,r.z); r = {x:r.x/rl, y:0, z:r.z/rl};
+  const u = {x: r.y*f.z - r.z*f.y, y: r.z*f.x - r.x*f.z, z: r.x*f.y - r.y*f.x};
+  basis = {pos, f, r, u};
+}
+function P(x,y,z){
+  const b = basis, vx=x-b.pos.x, vy=y-b.pos.y, vz=z-b.pos.z;
+  const zc = vx*b.f.x+vy*b.f.y+vz*b.f.z;
+  if(zc < 0.5) return null;
+  const xc = vx*b.r.x+vy*b.r.y+vz*b.r.z, yc = vx*b.u.x+vy*b.u.y+vz*b.u.z;
+  return {x: W/2 + xc*F/zc, y: Hc*(Hc>W*0.9?0.6:0.54) - yc*F/zc, d: zc, s: F/zc};
+}
+
+// ---- オブジェクト（位置などを時間でなめらかに変化させる）----
+const objs = new Map();
+function curVals(ob, t){
+  const k0 = ob.dur<=0 ? 1 : clamp((t-ob.t0)/ob.dur,0,1), k = ob.ez(k0), v = {};
+  for(const key in ob.to){ const a = ob.from[key] ?? ob.to[key]; v[key] = a + (ob.to[key]-a)*k; }
+  return v;
+}
+let keepSet = null;
+function place(id, props, o={}){
+  const t = now();
+  const num = {}, stat = {};
+  for(const k in props) (typeof props[k]==='number' ? num : stat)[k] = props[k];
+  if(num.a === undefined) num.a = 1;
+  let ob = objs.get(id);
+  if(!ob){
+    ob = {id};
+    ob.from = o.from ? {...num, ...o.from} : {...num, a:0};
+    objs.set(id, ob);
+  } else {
+    ob.from = curVals(ob, t);
+  }
+  Object.assign(ob, stat);
+  ob.to = {...ob.from, ...num};
+  ob.t0 = t + (o.delay||0); ob.dur = o.dur ?? 1.0; ob.ez = ease[o.ease||'io'];
+  ob.dieAt = null;
+  if(keepSet) keepSet.add(id);
+  return ob;
+}
+function kill(id){ objs.delete(id); }
+function fadeOut(id, dur=0.5){ const ob=objs.get(id); if(!ob) return; place(id,{a:0},{dur}); ob.dieAt = now()+dur; }
+
+// ---- 描画 ----
+function hexRgb(h){ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
+function hslRgb(h,s,l){ s/=100; l/=100; const k=n=>(n+h/30)%12, a=s*Math.min(l,1-l), f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1))); return [f(0)*255,f(8)*255,f(4)*255]; }
+const rgbs = (c,m=1,a=1) => `rgba(${Math.round(Math.min(255,c[0]*m))},${Math.round(Math.min(255,c[1]*m))},${Math.round(Math.min(255,c[2]*m))},${a})`;
+const C_LO = hexRgb("4f7cff"), C_MID = hexRgb("ffc23d"), C_HI = hexRgb("e8385a");
+const mix = (a,b,t) => a.map((x,i)=>x+(b[i]-x)*t);
+const heightColor = v => { const t = clamp((v-158)/26,0,1); return t<.5 ? mix(C_LO,C_MID,t*2) : mix(C_MID,C_HI,(t-.5)*2); };
+const moneyColor = v => hslRgb(265 + clamp(v/260,0,1)*70, 60, 58);
+const GOLD = hexRgb('f2a900'), IVORY = hexRgb('f6f0e4'), PINK = '#d6336c';
+
+const LIGHT = (()=>{ const l=[0.45,1,0.6], n=Math.hypot(...l); return l.map(x=>x/n); })();
+const FACES = [
+  {n:[-1,0,0],i:[0,2,6,4]},{n:[1,0,0],i:[1,3,7,5]},
+  {n:[0,-1,0],i:[0,1,5,4]},{n:[0,1,0],i:[2,3,7,6]},
+  {n:[0,0,-1],i:[0,1,3,2]},{n:[0,0,1],i:[4,5,7,6]}
+];
+function drawBox(v, col){
+  const hw=v.w/2, hh=v.h/2, hd=v.d/2, c=[];
+  for(let i=0;i<8;i++){ const p=P(v.x+((i&1)?hw:-hw), v.y+((i&2)?hh:-hh), v.z+((i&4)?hd:-hd)); if(!p) return; c.push(p); }
+  const cp = basis.pos;
+  g.globalAlpha = v.a;
+  FACES.forEach(fc=>{
+    const fx=v.x+fc.n[0]*hw, fy=v.y+fc.n[1]*hh, fz=v.z+fc.n[2]*hd;
+    if((cp.x-fx)*fc.n[0]+(cp.y-fy)*fc.n[1]+(cp.z-fz)*fc.n[2] <= 0) return;
+    const br = 0.62 + 0.45*Math.max(0, fc.n[0]*LIGHT[0]+fc.n[1]*LIGHT[1]+fc.n[2]*LIGHT[2]);
+    g.beginPath(); fc.i.forEach((k,j)=> j? g.lineTo(c[k].x,c[k].y) : g.moveTo(c[k].x,c[k].y)); g.closePath();
+    g.fillStyle = rgbs(col, br); g.fill();
+    g.strokeStyle = rgbs(col, 0.7, 0.5); g.lineWidth = 0.8; g.stroke();
+  });
+  g.globalAlpha = 1;
+}
+function drawBall(v, col){
+  const p = P(v.x,v.y,v.z); if(!p) return;
+  const R = v.r*p.s; if(R<0.3) return;
+  g.globalAlpha = v.a;
+  const gr = g.createRadialGradient(p.x-R*0.35, p.y-R*0.4, R*0.1, p.x, p.y, R);
+  gr.addColorStop(0, rgbs(col,1.45)); gr.addColorStop(0.55, rgbs(col,1)); gr.addColorStop(1, rgbs(col,0.62));
+  g.fillStyle = gr; g.beginPath(); g.arc(p.x,p.y,R,0,Math.PI*2); g.fill();
+  g.globalAlpha = 1;
+}
+function drawShadow(x,y,z,rad,a){
+  const p = P(x,0.01,z); if(!p) return;
+  const R = rad*p.s*(1+y*0.04), sq = Math.max(0.15, Math.sin(clamp(cam.pitch+user.pitch,0.05,1.35)));
+  g.globalAlpha = a*0.16/(1+y*0.12);
+  g.fillStyle = '#0f172a'; g.beginPath(); g.ellipse(p.x,p.y,R,R*sq,0,0,Math.PI*2); g.fill();
+  g.globalAlpha = 1;
+}
+function richParts(text){
+  const parts=[], re=/\{([^|}]*)\|([^}]*)\}/g; let last=0, m;
+  while((m=re.exec(text))){ if(m.index>last) parts.push({t:text.slice(last,m.index)}); parts.push({n:m[1],d:m[2]}); last=re.lastIndex; }
+  if(last<text.length) parts.push({t:text.slice(last)});
+  return parts;
+}
+function drawRich(text, x, y, size, color, bg, a){
+  const parts = richParts(text), fs = size*0.78;
+  const fontA = `700 ${size}px ${FONT}`, fontB = `700 ${fs}px ${FONT}`;
+  const ws = parts.map(p=>{
+    if(p.t!=null){ g.font=fontA; return g.measureText(p.t).width; }
+    g.font=fontB; return Math.max(g.measureText(p.n).width, g.measureText(p.d).width)+size*0.35;
+  });
+  const w = ws.reduce((s,v)=>s+v,0), hasF = parts.some(p=>p.n!=null), h = hasF ? size*2.2 : size*1.45, pad = size*0.45;
+  g.globalAlpha = a;
+  if(bg){
+    g.fillStyle = 'rgba(255,255,255,0.9)'; g.strokeStyle = bg===true ? 'rgba(148,163,184,0.6)' : bg; g.lineWidth = bg===true?1:2;
+    g.beginPath(); g.roundRect(x-w/2-pad, y-h/2, w+pad*2, h, size*0.5); g.fill(); g.stroke();
+  }
+  g.fillStyle = color; g.textBaseline = 'middle';
+  let cx = x - w/2;
+  parts.forEach((p,i)=>{
+    if(p.t!=null){ g.font=fontA; g.textAlign='left'; g.fillText(p.t, cx, y+size*0.04); }
+    else { g.font=fontB; g.textAlign='center'; const mid=cx+ws[i]/2;
+      g.fillText(p.n, mid, y-fs*0.62); g.fillText(p.d, mid, y+fs*0.68);
+      g.fillRect(cx+size*0.12, y-Math.max(1,size*0.035), ws[i]-size*0.24, Math.max(1.5,size*0.07)); }
+    cx += ws[i];
+  });
+  g.globalAlpha = 1;
+}
+function curvePts(ob, v){
+  const pts = [], n = 90, v1 = v.v0 + (v.v1-v.v0)*clamp(v.p,0,1);
+  for(let i=0;i<=n;i++){ const x = v.v0+(v1-v.v0)*i/n; const p = P(ob.X(x), ob.f(x), v.z); if(p) pts.push({p, x}); }
+  return pts;
+}
+function drawCurve(ob, v){
+  if(v.p<=0.001) return;
+  const pts = curvePts(ob, v); if(pts.length<2) return;
+  g.globalAlpha = v.a;
+  if(ob.fill){
+    g.beginPath(); pts.forEach((q,i)=> i? g.lineTo(q.p.x,q.p.y) : g.moveTo(q.p.x,q.p.y));
+    for(let i=pts.length-1;i>=0;i--){ const b=P(ob.X(pts[i].x), 0, v.z); if(b) g.lineTo(b.x,b.y); }
+    g.closePath(); g.fillStyle = ob.fill; g.fill();
+  }
+  g.beginPath(); pts.forEach((q,i)=> i? g.lineTo(q.p.x,q.p.y) : g.moveTo(q.p.x,q.p.y));
+  g.strokeStyle = ob.color; g.lineWidth = (ob.width||3.5)*Math.min(1.4,W/800); g.lineJoin='round'; g.stroke();
+  g.globalAlpha = 1;
+}
+function drawLine(ob, v){
+  const a = P(v.x,v.y,v.z), b = P(v.x2,v.y2,v.z2); if(!a||!b) return;
+  g.globalAlpha = v.a; g.strokeStyle = ob.color||'#475569'; g.lineWidth = ob.width||2;
+  g.setLineDash(ob.dash ? [6,5] : []);
+  g.beginPath(); g.moveTo(a.x,a.y); g.lineTo(b.x,b.y); g.stroke(); g.setLineDash([]);
+  if(ob.arrow){ const ang=Math.atan2(b.y-a.y,b.x-a.x), s=9;
+    [[a,ang+Math.PI],[b,ang]].forEach(([q,an])=>{ g.beginPath(); g.moveTo(q.x,q.y); g.lineTo(q.x-s*Math.cos(an-0.45), q.y-s*Math.sin(an-0.45)); g.moveTo(q.x,q.y); g.lineTo(q.x-s*Math.cos(an+0.45), q.y-s*Math.sin(an+0.45)); g.stroke(); }); }
+  g.globalAlpha = 1;
+}
+function drawArc(ob, v){
+  if(v.p<=0.001) return;
+  g.globalAlpha = v.a; g.strokeStyle = ob.color||PINK; g.lineWidth = 3; g.setLineDash([7,6]);
+  g.beginPath(); let first = true;
+  for(let i=0;i<=40*v.p;i++){ const t=i/40, mt=1-t;
+    const x = mt*mt*v.x + 2*mt*t*(v.x+v.x2)/2 + t*t*v.x2, y = mt*mt*v.y + 2*mt*t*(Math.max(v.y,v.y2)+ob.lift) + t*t*v.y2, z = mt*mt*v.z + 2*mt*t*(v.z+v.z2)/2 + t*t*v.z2;
+    const p = P(x,y,z); if(!p) continue; first ? g.moveTo(p.x,p.y) : g.lineTo(p.x,p.y); first=false; }
+  g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
+}
+function drawRing(ob, v){
+  g.globalAlpha = v.a; g.beginPath();
+  for(let i=0;i<=48;i++){ const an=i/48*Math.PI*2, p=P(v.x+v.r*Math.cos(an), 0.02, v.z+v.r*Math.sin(an)); if(!p) continue; i? g.lineTo(p.x,p.y) : g.moveTo(p.x,p.y); }
+  g.closePath(); g.fillStyle = 'rgba(56,189,248,0.12)'; g.fill(); g.strokeStyle = ob.color||'#38bdf8'; g.lineWidth = 3; g.stroke();
+  g.globalAlpha = 1;
+}
+function drawFloor(){
+  const X0=-15, X1=15, Z0=-8, Z1=11;
+  const cs = [P(X0,0,Z0),P(X1,0,Z0),P(X1,0,Z1),P(X0,0,Z1)];
+  if(cs.every(Boolean)){ g.beginPath(); cs.forEach((p,i)=> i? g.lineTo(p.x,p.y):g.moveTo(p.x,p.y)); g.closePath(); g.fillStyle='rgba(255,255,255,0.75)'; g.fill(); }
+  g.strokeStyle = 'rgba(100,116,139,0.13)'; g.lineWidth = 1;
+  for(let x=X0;x<=X1;x+=1.5){ const a=P(x,0,Z0), b=P(x,0,Z1); if(a&&b){ g.beginPath(); g.moveTo(a.x,a.y); g.lineTo(b.x,b.y); g.stroke(); } }
+  for(let z=Z0;z<=Z1;z+=1.5){ const a=P(X0,0,z), b=P(X1,0,z); if(a&&b){ g.beginPath(); g.moveTo(a.x,a.y); g.lineTo(b.x,b.y); g.stroke(); } }
+}
+
+function frame(){
+  const t = now();
+  runScripts(t);
+  updateCam(t);
+  g.setTransform(DPR,0,0,DPR,0,0);
+  const bgGr = g.createLinearGradient(0,0,0,Hc); bgGr.addColorStop(0,'#e8eef8'); bgGr.addColorStop(1,'#fdf4ea');
+  g.fillStyle = bgGr; g.fillRect(0,0,W,Hc);
+  drawFloor();
+  const solids = [], overlay = [], labels = [], floorItems = [];
+  for(const [id, ob] of objs){
+    if(ob.dieAt && t > ob.dieAt){ objs.delete(id); continue; }
+    const v = curVals(ob, t); if(v.a <= 0.003) continue;
+    if(ob.type==='label') labels.push([ob,v]);
+    else if(ob.type==='ring') floorItems.push([ob,v]);
+    else if(ob.overlay) overlay.push([ob,v]);
+    else {
+      let c;
+      if(ob.type==='curve') c = [ob.X((v.v0+v.v1)/2), 1, v.z];
+      else if(ob.type==='line'||ob.type==='arc') c = [(v.x+v.x2)/2,(v.y+v.y2)/2,(v.z+v.z2)/2];
+      else c = [v.x,v.y,v.z];
+      const p = P(c[0],c[1],c[2]); if(!p) continue;
+      solids.push([ob,v,p.d]);
+    }
+  }
+  floorItems.forEach(([ob,v])=>drawRing(ob,v));
+  solids.forEach(([ob,v])=>{ if(ob.type==='ball') drawShadow(v.x,v.y,v.z,v.r,v.a); else if(ob.type==='box' && v.h>0.01) drawShadow(v.x,v.y-v.h/2,v.z,Math.max(v.w,v.d)*0.6,v.a*0.8); });
+  solids.sort((a,b)=>b[2]-a[2]);
+  for(const [ob,v] of solids){
+    if(ob.type==='ball') drawBall(v, ob.color);
+    else if(ob.type==='box'){ if(v.h>0.01) drawBox(v, ob.color); }
+    else if(ob.type==='curve') drawCurve(ob,v);
+    else if(ob.type==='line') drawLine(ob,v);
+    else if(ob.type==='arc') drawArc(ob,v);
+  }
+  overlay.forEach(([ob,v])=> ob.type==='curve' ? drawCurve(ob,v) : ob.type==='line' ? drawLine(ob,v) : null);
+  const sc = clamp(W/820, 0.72, 1.25);
+  labels.forEach(([ob,v])=>{ const p = P(v.x,v.y,v.z); if(p) drawRich(ob.text, p.x, p.y, (ob.size||15)*sc, ob.color||'#1e293b', ob.bg, v.a); });
+  requestAnimationFrame(frame);
+}
+
+// ---- 段階内の予定（時間差で起きること）----
+let scripts = [], stepT0 = 0, token = 0;
+function at(sec, fn){ scripts.push({time: stepT0+sec, fn, tk: token}); }
+function runScripts(t){
+  if(!scripts.length) return;
+  const due = scripts.filter(s=>s.time<=t && s.tk===token);
+  scripts = scripts.filter(s=>s.time>t && s.tk===token);
+  due.forEach(s=>s.fn());
+}
+
+// ================= 図の部品 =================
+function label(id, x,y,z, text, o={}, po={}){ place(id, {type:'label', x,y,z, text, size:o.size||15, color:o.color||'#1e293b', bg:o.bg===undefined?true:o.bg}, {dur:.6, ...po}); }
+function line(id, x,y,z, x2,y2,z2, o={}, po={}){ place(id, {type:'line', x,y,z,x2,y2,z2, color:o.color||'#475569', width:o.width||2, dash:!!o.dash, arrow:!!o.arrow, overlay:!!o.overlay}, {dur:.6, ...po}); }
+function curve(id, f, v0, v1, X, z, o={}, po={}){
+  place(id, {type:'curve', f, v0, v1, X, z, p:1, color:o.color||PINK, fill:o.fill||null, width:o.width||3.5, overlay:o.overlay!==false}, {from:{p:0,a:1,z}, dur:o.dur||1.6, ...po});
+}
+function axis(pref, vals, X, z, unit, fmt=v=>v, z0=null, z1=null){
+  line(pref+"ax", X(vals[0])-0.6,0.02,z, X(vals[vals.length-1])+0.6,0.02,z, {color:"#64748b", width:2});
+  vals.forEach(v=>{
+    line(pref+"k"+v, X(v),0.02,z-0.25, X(v),0.02,z+0.25, {color:"#64748b", width:1.5});
+    if(z0!==null) line(pref+"g"+v, X(v),0.015,z0, X(v),0.015,z1, {color:"rgba(100,116,139,0.45)", width:1.2, dash:true});
+    label(pref+'t'+v, X(v),0,z+1.0, String(fmt(v)), {size:12, color:'#475569', bg:false});
+  });
+  label(pref+'u', X(vals[vals.length-1])+1.6,0,z+1.0, unit, {size:12, color:'#475569', bg:false});
+}
+function pole(id, x, z, h, text, o={}){
+  line(id, x,0,z, x,h,z, {color:o.color||'#0f172a', width:2, dash:true, overlay:true});
+  if(text) label(id+'L', x, h+0.7, z, text, {size:o.size||14, color:o.color||'#0f172a'});
+}
+
+// 母集団（身長）の球
+function pop1(mode, o={}){
+  POP1.forEach((p,i)=>{
+    const pos = mode==='hist' ? p.hist : p.cloud;
+    const spawn = o.spawn ? {from:{...pos, y:pos.y+10+Math.random()*4, r:0.4, a:0}, delay: Math.random()*1.4, dur:1.1, ease:'out'} : {};
+    const delay = mode==='hist' && !o.spawn ? 0.15 + (p.bin-1)*0.07 + (p.hist.y)*0.03 : (spawn.delay||0);
+    place('p'+i, {type:'ball', color: heightColor(p.v), x:pos.x, y:pos.y, z:pos.z, r:0.4, a:o.a??1}, {dur: o.dur||1.3, ...spawn, delay});
+  });
+}
+const popCurve1 = v => N1*npdf(v,MU1,SD1)*2/4*0.84 + 0.3;
+function popDist1(show=true, az=2.7){
+  axis("ax1", [155,160,165,170,175,180,185,190], H, az, "cm", v=>v, -2.6, Math.max(6.8,az));
+  if(show){
+    curve('pc1', popCurve1, 152, 190, H, -1.9, {color:PINK, width:4});
+    pole('mu1', H(MU1), -1.9, 9.2, `母平均 μ ＝ ${MU1.toFixed(1)} cm`);
+  }
+}
+const RING_Z = 7.2;
+function sampleBalls(pref, s, cx, cz, rad, o={}){
+  s.idx.forEach((pi,k)=>{
+    const an = k/s.idx.length*Math.PI*2 - Math.PI/2, src = POP1[pi].hist;
+    place(pref+k, {type:'ball', color:heightColor(POP1[pi].v), x:cx+rad*Math.cos(an), y:0.45, z:cz+rad*Math.sin(an)*0.8, r:0.42},
+      {from:{...src, r:0.4, a:1}, delay:(o.delay||0)+k*0.1, dur:1.1});
+  });
+}
+
+// ================= ステップの中身 =================
+const CH1 = {
+  title:'① 母集団と標本平均',
+  steps:[
+  { title:'母集団 ― 調べたい集団全体',
+    body:()=>`<p>調べたい集団全体を<b>母集団</b>、その1つ1つを<b>要素</b>、要素の個数 <i>N</i> を<b>母集団の大きさ</b>といいます。</p>
+      <p>図の球は「A市の20歳男子 ${N1}人」。色が身長を表します（青＝低い → 赤＝高い）。</p>
+      <div class="formula"><div class="row">母平均　μ ＝ ${fr('<i>x</i><sub>1</sub>＋<i>x</i><sub>2</sub>＋…＋<i>x<sub>N</sub></i>','<i>N</i>')}</div>
+      <div class="row">母分散　σ² ＝ ${fr('(<i>x</i><sub>1</sub>−μ)²＋…＋(<i>x<sub>N</sub></i>−μ)²','<i>N</i>')}</div></div>
+      <p class="note">実際の調査では、母平均・母分散は分からないのがふつう。それを推定するのが統計学の大きな役割です。</p>`,
+    cam:{tx:0,ty:1.5,tz:0,yaw:.55,pitch:.42,dist:21},
+    build(){
+      pop1('cloud', {spawn: !objs.has('p0')});
+      label('t_pop', 0, 5.2, 0, `母集団（N ＝ ${N1} 人）`, {size:18, color:'#0f172a', bg:'#f59e0b'});
+      [[3,'x₁'],[50,'x₂'],[120,'x₃'],[200,'x₂₄₀']].forEach(([i,s],k)=>{ const c=POP1[i].cloud; label('xl'+k, c.x, c.y+1.1, c.z, s, {size:13, color:'#334155'}, {delay:1.8}); });
+    }
+  },
+  { title:'1人を無作為に抜き出すと…',
+    body:()=>`<p>母集団から1人を<b>無作為に</b>抜き出し、その身長を <i>X</i> とします。</p>
+      <p>抜き出すたびに値が変わります。サイコロの目と同じように、<i>X</i> は<b>確率変数</b>です。</p>
+      <p class="note">「↻ この段階をもう一度」で、何度でも抜き出せます。</p>`,
+    cam:{tx:3,ty:1.8,tz:0,yaw:.3,pitch:.36,dist:23},
+    build(){
+      pop1('cloud', {a:0.5});
+      place('ped', {type:'ring', x:9, z:0, r:1.5, color:'#e25100'}, {dur:.6});
+      label('t_x', 9, 6.3, 0, '抜き出した1人の値 X', {size:14, color:'#e25100'});
+      const picks = [17, 131, 88].map(k=>(k+Math.floor(Math.random()*40))%N1);
+      picks.forEach((pi,j)=>{
+        at(0.4+j*2.4, ()=>{
+          if(j>0){ const q=picks[j-1], c=POP1[q].cloud; place('p'+q, {x:c.x,y:c.y,z:c.z,r:0.4,a:0.5},{dur:.9}); }
+          const c = POP1[pi].cloud;
+          place('p'+pi, {x:9, y:2.2, z:0, r:1.0, a:1}, {dur:1.2, ease:'io'});
+          place('arcX', {type:'arc', x:c.x,y:c.y,z:c.z, x2:9,y2:2.2,z2:0, lift:4, p:1, color:PINK}, {from:{p:0,a:1}, dur:1.0});
+          label('t_xv', 9, 4.4, 0, `X ＝ ${POP1[pi].v.toFixed(1)} cm`, {size:18, color:PINK, bg:PINK}, {from:{a:0}, delay:0.9, dur:.4});
+        });
+      });
+      at(7.4, ()=> label('t_rv', 9, -1.6, 0, '値が毎回変わる → 確率変数', {size:14, color:'#0f172a', bg:'#f59e0b'}));
+    }
+  },
+  { title:'母集団分布 ― X の確率分布',
+    body:()=>`<p>確率変数 <i>X</i> には確率分布が考えられます。これを<b>母集団分布</b>といいます。</p>
+      <p>球を身長の順に並べて積み上げると、分布の形（山）が見えてきます。</p>
+      <p>母集団分布の<b>期待値は母平均 μ</b>、<b>分散は母分散 σ²</b> と一致します。</p>`,
+    cam:{tx:0,ty:3,tz:0,yaw:.38,pitch:.3,dist:25},
+    build(){
+      pop1('hist');
+      at(2.6, ()=>popDist1());
+      at(3.4, ()=>label('t_pd', H(183), 7.2, -1.9, '母集団分布', {size:16, color:PINK, bg:PINK}));
+    }
+  },
+  { title:'標本を抽出して標本平均を求める',
+    body:()=>`<p>母集団から <i>n</i> 個の要素を無作為に抽出したもの {<i>X</i><sub>1</sub>, <i>X</i><sub>2</sub>, …, <i>X<sub>n</sub></i>} を<b>標本</b>、<i>n</i> を<b>標本の大きさ</b>といいます。ここでは <i>n</i> ＝ 10。</p>
+      <div class="formula"><div class="row">標本平均　${XB} ＝ ${fr('<i>X</i><sub>1</sub>＋<i>X</i><sub>2</sub>＋…＋<i>X<sub>n</sub></i>','<i>n</i>')}</div></div>
+      <p><i>X</i><sub>1</sub>, …, <i>X</i><sub>10</sub> の1つ1つが確率変数です。</p>`,
+    cam:{tx:0,ty:2,tz:3.5,yaw:.12,pitch:.45,dist:22},
+    build(){
+      pop1('hist', {a:0.3}); popDist1();
+      const s = SAMP1[0];
+      place('ring0', {type:'ring', x:0, z:RING_Z, r:3.0}, {dur:.6});
+      sampleBalls('sa0_', s, 0, RING_Z, 2.2);
+      label('t_smp', -4.8, 0.6, RING_Z+1.2, '標本（n ＝ 10）', {size:14, color:'#0369a1', bg:'#38bdf8'}, {delay:1.2});
+      [[0,'X₁'],[1,'X₂'],[9,'X₁₀']].forEach(([k,sname])=>{ const an=k/10*Math.PI*2-Math.PI/2; label('xs'+k, 2.2*Math.cos(an), 1.4, RING_Z+2.2*Math.sin(an)*0.8, sname, {size:13, color:'#334155'}, {delay:2.0}); });
+      label('m0', 0, 3.3, RING_Z, `標本平均 X̄ ＝ ${s.m.toFixed(1)} cm`, {size:18, color:'#e25100', bg:'#e25100'}, {delay:2.6});
+    }
+  },
+  { title:'標本平均も確率変数',
+    body:()=>`<p>標本を取り直すと、選ばれる人が変わるので、標本平均 ${XB} の値も変わります。</p>
+      <p>つまり <b>${XB} も確率変数</b>です。（本の図の「170.3」「168.6」「172.1」…にあたります）</p>`,
+    cam:{tx:0,ty:2,tz:4,yaw:0,pitch:.48,dist:28},
+    build(){
+      pop1('hist', {a:0.3}); popDist1();
+      [-9,-3,3,9].forEach((cx,j)=>{
+        const s = SAMP1[j];
+        place('ring'+j, {type:'ring', x:cx, z:RING_Z, r:2.3}, {dur:.6, delay:j*1.6});
+        sampleBalls('sa'+j+'_', s, cx, RING_Z, 1.6, {delay:0.2+j*1.6});
+        label('n'+j, cx, -0.2, RING_Z+3.0, `標本${j+1}`, {size:13, color:'#0369a1', bg:false}, {delay:j*1.6});
+        label('m'+j, cx, 3.0, RING_Z, `X̄ ＝ ${s.m.toFixed(1)}`, {size:16, color:'#e25100', bg:'#e25100'}, {delay:1.5+j*1.6});
+      });
+    }
+  },
+  { title:'標本分布 ― 標本平均の分布',
+    body:()=>`<p>標本の抽出を ${SAMP1.length} 回くり返し、標本平均 ${XB} を金色のブロックにして、値の位置に積み上げます。</p>
+      <p>${XB} の確率分布を<b>標本平均の標本分布</b>といいます。</p>
+      <p>比べてみると…　中心はどちらも<b>母平均 μ</b> のあたり。でも標本分布のほうが<b>幅がずっと狭い</b>。<br>→ 次の章「中心極限定理」へ。</p>`,
+    cam:{tx:0,ty:3,tz:2.5,yaw:.18,pitch:.45,dist:27},
+    build(){ buildSampDist1(false); }
+  },
+  { title:'言葉と記号の確認',
+    body:()=>`<table class="words"><tr><th>言葉</th><th>意味</th><th>記号</th></tr>
+      <tr><td>母平均</td><td>母集団の平均値</td><td>μ</td></tr>
+      <tr><td>母分散</td><td>母集団の分散</td><td>σ²</td></tr>
+      <tr><td>期待値</td><td>確率分布から計算する平均</td><td>μ</td></tr>
+      <tr><td>平均値</td><td>資料（データ）から計算する値</td><td><span class="ov"><i>x</i></span></td></tr>
+      <tr><td>変量の分散</td><td>資料から計算する分散</td><td><i>s</i>²</td></tr>
+      <tr><td>標本平均</td><td>標本から求める<b>確率変数</b>。平均値と混同しやすいので注意</td><td>${XB}</td></tr></table>
+      <p class="note" style="margin-top:6px">母集団の値（決まっているが分からない）にはギリシャ文字、確率変数には大文字を使うのが一般的です。</p>`,
+    cam:{tx:0,ty:3,tz:2.5,yaw:.12,pitch:.45,dist:27},
+    build(){
+      buildSampDist1(true);
+      label("sym1", H(160), 7.5, -1.9, '母集団：μ（母平均）, σ²（母分散）', {size:14, color:PINK, bg:PINK});
+      label("sym2", H(158), 1.5, 6.5, '標本平均：X̄（確率変数）', {size:14, color:'#b45309', bg:'#f2a900'});
+    }
+  }]
+};
+function buildSampDist1(instant){
+  pop1("hist", {a:0.75}); popDist1(true, 7.4);
+  label('t_pd', H(183), 7.2, -1.9, '母集団分布', {size:16, color:PINK, bg:PINK});
+  const Z = 5.5, k = 0.11, counts = {};
+  for(let b=160;b<=182;b++) place('c1_'+b, {type:'box', color:GOLD, x:H(b), y:0, z:Z, w:0.44, h:0, d:1.3}, {dur:.5});
+  const finish = ()=>{
+    curve('sc1', v=>SAMP1.length*npdf(v,MU1,SD1/Math.sqrt(10))*1*k+0.05, 162, 180, H, Z-0.7, {color:'#b45309', width:4});
+    pole('mu1b', H(MU1), Z, 8.5, '', {});
+    label('t_sd', H(177), 5.2, Z, '標本平均 X̄ の分布（標本分布）', {size:15, color:'#b45309', bg:'#f2a900'});
+    label("t_cmp", H(185), 11, 5.5, '中心は同じ μ・幅はせまい', {size:16, color:'#0f172a', bg:'#f59e0b'});
+  };
+  if(instant){
+    SAMP1.forEach(s=>{ const b=Math.round(s.m); counts[b]=(counts[b]||0)+1; });
+    Object.keys(counts).forEach(b=>place('c1_'+b, {h:counts[b]*k, y:counts[b]*k/2}, {dur:.6}));
+    label("cnt", H(187), 7.5, Z, `標本平均の個数：${SAMP1.length}`, {size:13, color:'#334155'});
+    finish(); return;
+  }
+  SAMP1.forEach((s,i)=>{
+    const t = i<8 ? 0.4+i*0.45 : 4.0+(i-8)*0.014;
+    const b = Math.round(s.m), x = H(b);
+    at(t, ()=>{
+      const top = (counts[b]||0)*k;
+      place('dr'+i, {type:'box', color:GOLD, x, y:top+0.15, z:Z, w:0.3, h:0.3, d:0.3}, {from:{x, y:12, z:Z, w:0.3,h:0.3,d:0.3, a:1}, dur:0.55, ease:'in'});
+      if(i<8) label('drl', x, 13.2, Z, `X̄ ＝ ${s.m.toFixed(1)}`, {size:14, color:'#b45309', bg:'#f2a900'}, {dur:.2});
+      if(i===8) fadeOut('drl', .3);
+    });
+    at(t+0.55, ()=>{
+      kill('dr'+i); counts[b]=(counts[b]||0)+1;
+      place('c1_'+b, {h:counts[b]*k, y:counts[b]*k/2}, {dur:.18});
+      label("cnt", H(187), 7.5, Z, `標本平均の個数：${i+1}`, {size:13, color:'#334155'}, {dur:0});
+    });
+  });
+  at(8.2, finish);
+}
+
+// ---- 第2章 ----
+function pop2(o={}){
+  POP2.forEach((p,i)=>{
+    const h = p.hist;
+    place('q'+i, {type:'box', color:moneyColor(p.v), x:h.x, y:h.y, z:h.z, w:0.74,h:0.74,d:0.74, a:o.a??1},
+      o.spawn ? {from:{x:h.x, y:h.y+12, z:h.z, w:.74,h:.74,d:.74, a:1}, delay:(h.x+7)*0.09+h.y*0.04, dur:0.9, ease:'in'} : {dur:1});
+  });
+}
+const popCurve2 = v => N2*gammaPdf(v)*20/4*0.8 + 0.3;
+function popDist2(az=2.6){
+  axis("ax2", [0,50,100,150,200,250,300,350,400], G, az, "万円", v=>v, -2.3, Math.max(6.8,az));
+  curve('pc2', popCurve2, 1, 400, G, -1.7, {color:PINK, width:4});
+  pole('mu2', G(MU2), -1.7, 9.4, `母平均 μ ≈ ${MU2.toFixed(0)} 万円`);
+}
+function nButtons(){
+  return `<div class="nbtns">${[2,5,20,50].map(n=>`<button class="btn ${n===ch2N?'on':''}" data-n="${n}">n ＝ ${n}</button>`).join('')}</div>`;
+}
+function buildSampDist2(){
+  pop2({a:0.55}); popDist2(7.4);
+  const Z = 5.6, k = 0.185, counts = {}, S = samp2(ch2N), sd = SD2/Math.sqrt(ch2N);
+  for(let b=0;b<80;b++) place('c2_'+b, {type:'box', color:GOLD, x:G(b*5+2.5), y:0, z:Z, w:0.2, h:0, d:1.3}, {dur:.4});
+  S.forEach((s,i)=>{
+    const t = i<5 ? 0.4+i*0.4 : 2.6+(i-5)*0.012;
+    const b = Math.floor(s.m/5), x = G(b*5+2.5);
+    at(t, ()=>{
+      const top = (counts[b]||0)*k;
+      place('dr'+i, {type:'box', color:GOLD, x, y:top+0.12, z:Z, w:0.24,h:0.24,d:0.24}, {from:{x, y:12, z:Z, w:.24,h:.24,d:.24, a:1}, dur:0.5, ease:'in'});
+    });
+    at(t+0.5, ()=>{
+      kill('dr'+i); counts[b]=(counts[b]||0)+1;
+      place('c2_'+b, {h:counts[b]*k, y:counts[b]*k/2}, {dur:.15});
+      label("cnt", G(280), 8.5, Z, `n ＝ ${ch2N} の標本平均：${i+1} 個`, {size:13, color:'#334155'}, {dur:0});
+    });
+  });
+  at(7, ()=>{
+    curve('sc2', v=>S.length*npdf(v,MU2,sd)*5*k+0.05, Math.max(1,MU2-4*sd), MU2+4*sd, G, Z-0.7, {color:'#b45309', width:4});
+    pole('mu2b', G(MU2), Z, 8, '', {});
+    label('t_n', G(MU2)+(ch2N>=20?4.2:5.5), 5.5, Z, ch2N>=20 ? '左右対称の山（正規分布）に近い！' : 'まだ少し右にかたよっている', {size:15, color:'#b45309', bg:'#f2a900'});
+  });
+}
+const diceTowers = (o={}) => {
+  for(let v=1;v<=6;v++) for(let j=0;j<6;j++)
+    place(`d${v}_${j}`, {type:'box', color:IVORY, x:D(v), y:0.5+j*1.0, z:0, w:0.92,h:0.92,d:0.92, a:o.a??1},
+      o.spawn ? {from:{x:D(v), y:12+j, z:0, w:.92,h:.92,d:.92, a:1}, delay:v*0.12+j*0.1, dur:.8, ease:'in'} : {dur:.8});
+  for(let v=1;v<=6;v++) label('dn'+v, D(v), 6.9, 0, String(v), {size:18, color:'#b91c1c', bg:'#fca5a5'}, {delay:o.spawn?1.4:0});
+  axis("axd", [1,2,3,4,5,6], D, o.az||2.2, "目", v=>v, -0.8, 6.3);
+  pole('mud', D(3.5), 0, 8.4, '母平均 3.5');
+};
+function ridge(id, n, z, o={}){
+  const sdw = SD_DIE/Math.sqrt(n);
+  const f = v => 7.54*npdf(v,3.5,sdw)/2.2;
+  curve(id, f, 3.5-Math.min(3.2,4.2*sdw), 3.5+Math.min(3.2,4.2*sdw), D, z, {color:o.color||PINK, fill:o.fill||'rgba(214,51,108,0.22)', width:3.5, overlay:false, dur:o.dur||1.4}, o.po||{});
+  return f;
+}
+
+const CH2 = {
+  title:'② 中心極限定理と大数の法則',
+  steps:[
+  { title:'母集団の形はいろいろ',
+    body:()=>`<p>今度の母集団は「サラリーマン世帯の主婦 ${N2}人のへそくり額」（仮のデータ）。</p>
+      <p>少ない人が多く、ごく一部に多額の人がいるので、<b>母集団分布は左右非対称</b>です。</p>`,
+    cam:{tx:1.5,ty:2.5,tz:0,yaw:.4,pitch:.3,dist:25},
+    build(){
+      pop2({spawn:true});
+      at(2.4, popDist2);
+      at(3.2, ()=>label('t_pd2', G(260), 5, -1.7, '母集団分布（右にすそが長い）', {size:15, color:PINK, bg:PINK}));
+    }
+  },
+  { title:'標本を取り、標本平均を求める',
+    body:()=>`<p>この母集団から <i>n</i> 人を無作為に抽出して、標本平均 ${XB} を求めます。</p>
+      <p>取り直すたびに ${XB} の値は変わります。</p>
+      <p>標本の大きさ：</p>${nButtons()}`,
+    cam:{tx:0,ty:2,tz:3,yaw:.15,pitch:.42,dist:24},
+    build(){
+      pop2({a:0.35}); popDist2();
+      place('ring2', {type:'ring', x:0, z:6.5, r:3.2}, {dur:.6});
+      const S = samp2(ch2N);
+      [0,1].forEach(j=>{
+        at(0.2+j*3.4, ()=>{
+          objs.forEach((ob,id)=>{ if(id.startsWith('sb_')) fadeOut(id,.4); });
+          S[j].idx.forEach((pi,k)=>{
+            const n=S[j].idx.length, lay = n>12 ? (k%2) : 0, rr = lay ? 1.3 : 2.5, an = k/n*Math.PI*2, src = POP2[pi].hist;
+            place(`sb_${j}_${k}`, {type:'box', color:moneyColor(POP2[pi].v), x:rr*Math.cos(an), y:0.3, z:6.5+rr*Math.sin(an)*0.8, w:.55,h:.55,d:.55},
+              {from:{...src, w:.74,h:.74,d:.74, a:1}, delay:k*(1/n), dur:1.0});
+          });
+          label("m2", 0, 3.6, 6.5, `標本${j+1}（n ＝ ${ch2N}）：X̄ ＝ ${S[j].m.toFixed(1)} 万円`, {size:16, color:'#e25100', bg:'#e25100'}, {delay:1.8, from:{a:0}});
+        });
+      });
+    }
+  },
+  { title:'中心極限定理',
+    body:()=>`<p>標本平均を300回集めて積み上げます。母集団は左右非対称なのに…</p>
+      <div class="theorem"><b style="color:var(--pink)">中心極限定理</b><br>
+      母平均 μ、母分散 σ² の母集団から大きさ <i>n</i> の標本を抽出する。<i>n</i> が大きければ、${XB} の分布は<br>
+      <span class="row" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">期待値 μ、分散 ${fr('σ²','<i>n</i>')}（標準偏差 ${fr('σ','√<i>n</i>')}）の正規分布</span>で近似できる。</div>
+      <p>標本の大きさを変えて比べてみよう：</p>${nButtons()}
+      <p class="note"><i>n</i> が小さいと母集団のかたよりが残り、<i>n</i> が大きいほど左右対称でせまい山になります。</p>`,
+    cam:{tx:1,ty:2.5,tz:2.5,yaw:.18,pitch:.42,dist:26},
+    build(){ buildSampDist2(); }
+  },
+  { title:'サイコロの目という母集団',
+    body:()=>`<p>正しく作られたサイコロを限りなく振ったときの目の集まりを「母集団」と考えます。</p>
+      <p>どの目も同じ確率なので、母集団分布は平らな形。<br>母平均 3.5、母分散 ${fr('35','12')}。</p>
+      <p>100回振って出た目 {<i>X</i><sub>1</sub>, …, <i>X</i><sub>100</sub>} は、<b>大きさ100の標本</b>です。</p>`,
+    cam:{tx:0,ty:2.5,tz:2.5,yaw:.28,pitch:.36,dist:24},
+    build(){
+      diceTowers({spawn: !objs.has('d1_0')});
+      [-6,0,6].forEach((cx,j)=>{
+        at(1.6+j*1.7, ()=>{
+          place('rd'+j, {type:'ring', x:cx, z:6.5, r:2.0}, {dur:.4});
+          const s = SAMPD[j];
+          for(let k=0;k<14;k++){ const v=s.rolls[k], an=k/14*Math.PI*2;
+            place(`db${j}_${k}`, {type:'box', color:IVORY, x:cx+1.3*Math.cos(an), y:0.25, z:6.5+1.3*Math.sin(an)*0.8, w:.42,h:.42,d:.42},
+              {from:{x:D(v), y:5.5, z:0, w:.9,h:.9,d:.9, a:1}, delay:k*0.04, dur:.8}); }
+          label('dm'+j, cx, 2.6, 6.5, `100回の平均 ＝ ${s.m.toFixed(2)}`, {size:15, color:'#e25100', bg:'#e25100'}, {delay:.9, from:{a:0}});
+        });
+      });
+    }
+  },
+  { title:'サイコロの標本平均の分布',
+    body:()=>`<p>「100回振って平均を出す」を300回くり返し、平均値を積み上げます。</p>
+      <div class="formula"><div class="row">${XB} ＝ ${fr('<i>X</i><sub>1</sub>＋<i>X</i><sub>2</sub>＋…＋<i>X</i><sub>100</sub>','100')} の分布は</div>
+      <div class="row">期待値 3.5（＝母平均）、分散 ${fr(fr('35','12'),'100')} の正規分布で近似できる</div></div>
+      <p>平らな母集団から、<b>3.5 のまわりに集まった細い山</b>ができます。</p>`,
+    cam:{tx:0,ty:2.5,tz:2.5,yaw:.2,pitch:.36,dist:21},
+    build(){
+      diceTowers({a:0.5, az:6.5});
+      const Z = 5, k = 0.2, counts = {};
+      for(let b=58;b<=82;b++) place('cd_'+b, {type:'box', color:GOLD, x:D(b*0.05), y:0, z:Z, w:0.1, h:0, d:1.3}, {dur:.4});
+      SAMPD.forEach((s,i)=>{
+        const t = i<5 ? 0.4+i*0.4 : 2.6+(i-5)*0.012, b = Math.round(s.m/0.05), x = D(b*0.05);
+        at(t, ()=>{ const top=(counts[b]||0)*k;
+          place('dr'+i, {type:'box', color:GOLD, x, y:top+0.1, z:Z, w:.2,h:.2,d:.2}, {from:{x,y:12,z:Z,w:.2,h:.2,d:.2,a:1}, dur:.5, ease:'in'}); });
+        at(t+0.5, ()=>{ kill('dr'+i); counts[b]=(counts[b]||0)+1; place('cd_'+b, {h:counts[b]*k, y:counts[b]*k/2}, {dur:.15}); });
+      });
+      at(7, ()=>{
+        curve('scd', v=>SAMPD.length*npdf(v,3.5,SD_DIE/10)*0.05*k+0.05, 2.9, 4.1, D, Z-0.7, {color:'#b45309', width:4});
+        pole("mudb", D(3.5), Z, 9, "");
+        label("t_dd", D(3.5)+3.2, 6, Z, '期待値 3.5 ＝ 母平均', {size:15, color:'#b45309', bg:'#f2a900'});
+      });
+    }
+  },
+  { title:'大数の法則',
+    body:()=>`<p>標本平均 ${XB} の分散は ${fr('σ²','<i>n</i>')} なので、<b>標本の大きさ <i>n</i> を大きくするほど、分布は μ のまわりに集まって</b>いきます。</p>
+      <p>究極的には、<i>n</i> が十分大きいと ${XB} は母平均 μ に限りなく近づく。これを<b>大数の法則</b>といいます。</p>
+      <p>「母集団をよく知るには、できるだけ大きな標本を取ればよい」という経験則を保証しています。</p>`,
+    cam:{tx:0,ty:3,tz:0,yaw:.5,pitch:.38,dist:26},
+    build(){
+      axis('axl', [1,2,3,4,5,6], D, 7.5, '');
+      [[4,5],[25,0],[100,-5]].forEach(([n,z],j)=>{
+        at(0.3+j*1.6, ()=>{
+          const f = ridge('rg'+j, n, z);
+          const sdw = SD_DIE/Math.sqrt(n), top = f(3.5);
+          label('rn'+j, D(3.5)-5.2, 1.2, z, `n ＝ ${n}`, {size:16, color:PINK, bg:PINK});
+          line('rw'+j, D(3.5), top*0.6, z, D(3.5+sdw), top*0.6, z, {color:'#0f172a', width:2, arrow:true, overlay:true}, {delay:1});
+          label('rs'+j, D(3.5+sdw)+1.2, top*0.6, z, '{σ|√n}', {size:13, color:'#0f172a'}, {delay:1});
+        });
+      });
+      line('mul', D(3.5),0.03,-7, D(3.5),0.03,8, {color:'#0f172a', width:2, dash:true});
+      label('mulL', D(3.5), 0, -7.8, 'μ（母平均）', {size:14, color:'#0f172a'});
+      at(5.4, ()=>label("lln", D(3.5), 12.5, -5, 'n を大きくすると μ のまわりに集中する', {size:16, color:'#0f172a', bg:'#f59e0b'}));
+    }
+  },
+  { title:'自分で n を動かしてみよう',
+    body:()=>`<p>スライダーで標本の大きさ <i>n</i> を変えてみましょう（サイコロの例）。</p>
+      <p style="font-size:20px;font-weight:700">n ＝ <span id="nval">${sliderN}</span></p>
+      <input type="range" id="nslider" min="1" max="200" value="${sliderN}">
+      <div class="formula"><div class="row">${XB} の標準偏差 ＝ ${fr('σ','√<i>n</i>')} ＝ ${fr('1.71','√<i>n</i>')} ≈ <b id="sdval">${(SD_DIE/Math.sqrt(sliderN)).toFixed(3)}</b></div></div>
+      <p class="note"><i>n</i> を4倍にすると、山の幅（標準偏差）は半分になります。</p>`,
+    cam:{tx:0,ty:2,tz:0,yaw:.2,pitch:.3,dist:17},
+    build(){
+      axis('axl', [1,2,3,4,5,6], D, 2.5, '');
+      line('mul', D(3.5),0.03,-3, D(3.5),0.03,3, {color:'#0f172a', width:2, dash:true});
+      drawSliderRidge(true);
+    }
+  }]
+};
+let sliderN = 10;
+function drawSliderRidge(first){
+  const n = sliderN, sdw = SD_DIE/Math.sqrt(n), f = v => 7.54*npdf(v,3.5,sdw)/2.2, half = Math.min(3.2,4.2*sdw);
+  const ob = place('rgS', {type:'curve', f, v0:3.5-half, v1:3.5+half, X:D, z:0, p:1, color:PINK, fill:'rgba(214,51,108,0.25)', width:4, overlay:false}, first ? {from:{p:0,a:1,z:0}, dur:1.2} : {dur:0});
+  const top = f(3.5);
+  line('rwS', D(3.5), top*0.6, 0, D(3.5+sdw), top*0.6, 0, {color:'#0f172a', width:2, arrow:true, overlay:true}, {dur:first?.6:0});
+  label('rsS', D(3.5+sdw)+1.1, top*0.6, 0, '{σ|√n}', {size:13, color:'#0f172a'}, {dur:first?.6:0});
+  label('rnS', D(3.5)-4.5, 2, 0, `n ＝ ${n}`, {size:17, color:PINK, bg:PINK}, {dur:first?.6:0});
+}
+
+// ================= 画面の操作 =================
+const CHS = [CH1, CH2];
+let ch = 0, lv = 0, autoTimer = null;
+
+function renderTabs(){
+  $('tabs').innerHTML = CHS.map((c,i)=>`<button class="tab ${i===ch?'active':''}" data-ch="${i}">${c.title}</button>`).join('');
+}
+function renderSteps(){
+  const steps = CHS[ch].steps;
+  $('steps').innerHTML = steps.map((s,i)=>`<div class="step ${i>lv?'dim':''} ${i===lv?'active':''}" data-i="${i}">
+    <span class="step-num">${i+1}</span><div><div class="step-title">${s.title}</div><div class="step-body">${i===lv?s.body():''}</div></div></div>`).join('');
+  $('progress').textContent = `${lv+1} ／ ${steps.length}`;
+  $('prevBtn').disabled = lv===0 && ch===0;
+  $('nextBtn').disabled = lv===steps.length-1 && ch===CHS.length-1;
+  $('nextBtn').textContent = lv===steps.length-1 && ch<CHS.length-1 ? '次の章へ ▶' : '次へ ▶';
+  const sl = $('nslider');
+  if(sl) sl.addEventListener('input', ()=>{ sliderN = +sl.value; $('nval').textContent = sliderN; $('sdval').textContent = (SD_DIE/Math.sqrt(sliderN)).toFixed(3); drawSliderRidge(false); });
+}
+function go(newCh, newLv){
+  const chChanged = newCh !== ch;
+  ch = newCh; lv = newLv; token++; scripts = []; stepT0 = now();
+  if(chChanged){ objs.clear(); }
+  keepSet = new Set();
+  const st = CHS[ch].steps[lv];
+  st.build();
+  const keep = keepSet; keepSet = null;
+  for(const id of [...objs.keys()]) if(!keep.has(id)) fadeOut(id, .5);
+  setCam(st.cam);
+  renderTabs(); renderSteps();
+}
+function next(){ const n = CHS[ch].steps.length; if(lv<n-1) go(ch, lv+1); else if(ch<CHS.length-1) go(ch+1, 0); }
+function prev(){ if(lv>0) go(ch, lv-1); else if(ch>0) go(ch-1, CHS[ch-1].steps.length-1); }
+
+$('nextBtn').onclick = ()=>{ stopAuto(); next(); };
+$('prevBtn').onclick = ()=>{ stopAuto(); prev(); };
+$('replayBtn').onclick = ()=>{ if(ch===0 && lv===0) objs.clear(); if(ch===1 && (lv===0||lv===3)) objs.clear(); go(ch, lv); };
+$('viewBtn').onclick = ()=>{ userTo = {yaw:0,pitch:0,zoom:1}; };
+$('tabs').onclick = e=>{ const b = e.target.closest('[data-ch]'); if(b){ stopAuto(); go(+b.dataset.ch, 0); } };
+$('steps').onclick = e=>{
+  const nb = e.target.closest('[data-n]');
+  if(nb){ ch2N = +nb.dataset.n; go(ch, lv); return; }
+  const s = e.target.closest('.step'); if(s && !s.classList.contains('active') && !e.target.closest('input')){ stopAuto(); go(ch, +s.dataset.i); }
+};
+function stopAuto(){ if(autoTimer){ clearInterval(autoTimer); autoTimer=null; $('autoBtn').textContent='▶ 通しで自動再生'; $('autoBtn').classList.remove('on'); } }
+$('autoBtn').onclick = ()=>{
+  if(autoTimer){ stopAuto(); return; }
+  $('autoBtn').textContent = '■ 自動再生を止める'; $('autoBtn').classList.add('on');
+  autoTimer = setInterval(()=>{ if($('nextBtn').disabled) stopAuto(); else next(); }, 10000);
+};
+
+// ドラッグで回転・ホイールで拡大縮小
+let drag = null; const pts = new Map();
+cv.addEventListener('pointerdown', e=>{ cv.setPointerCapture(e.pointerId); pts.set(e.pointerId,{x:e.clientX,y:e.clientY}); drag = {x:e.clientX, y:e.clientY}; });
+cv.addEventListener('pointermove', e=>{
+  if(!pts.has(e.pointerId)) return;
+  const prevP = pts.get(e.pointerId); pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pts.size===2){ const [a,b] = [...pts.values()]; const d1 = Math.hypot(a.x-b.x,a.y-b.y);
+    const other = [...pts.entries()].find(([id])=>id!==e.pointerId)[1]; const d0 = Math.hypot(prevP.x-other.x, prevP.y-other.y);
+    if(d0>0){ userTo.zoom = clamp(userTo.zoom*d0/d1, 0.45, 2); user.zoom = userTo.zoom; } return; }
+  const dx = e.clientX-prevP.x, dy = e.clientY-prevP.y;
+  userTo.yaw -= dx*0.008; userTo.pitch += dy*0.006; userTo.pitch = clamp(userTo.pitch, -0.6, 0.9);
+  user.yaw = userTo.yaw; user.pitch = userTo.pitch;
+});
+['pointerup','pointercancel'].forEach(ev=>cv.addEventListener(ev, e=>{ pts.delete(e.pointerId); }));
+cv.addEventListener('wheel', e=>{ e.preventDefault(); userTo.zoom = clamp(userTo.zoom*(e.deltaY>0?1.08:0.93), 0.45, 2); }, {passive:false});
+document.addEventListener('keydown', e=>{ if(e.target.tagName==='INPUT') return; if(e.key==='ArrowRight'){ stopAuto(); next(); } if(e.key==='ArrowLeft'){ stopAuto(); prev(); } });
+
+resize();
+go(0, 0);
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
