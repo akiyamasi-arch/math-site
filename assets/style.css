@@ -554,3 +554,32 @@ footer{
   font-size:13px;
   color:var(--sub);
 }
+
+/* プリントの一覧：コンパクトな行（2026-10-22）。広い画面では2列、スマホでは1列 */
+.print-list{
+  list-style:none;margin:0;padding:0;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:8px var(--sp-2);
+}
+@media (max-width:600px){ .print-list{grid-template-columns:1fr;} }
+.pr-row{
+  display:flex;align-items:center;gap:var(--sp-1);
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);
+  padding:6px 10px 6px 14px;min-height:52px;
+  transition:border-color .15s, box-shadow .15s;
+}
+.pr-row:hover{border-color:var(--orange-800);box-shadow:0 3px 10px rgba(199,71,0,0.10);}
+.pr-main{flex:1;min-width:0;display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);padding:4px 0;}
+.pr-tag{
+  flex:none;font-size:12px;font-weight:700;line-height:1;letter-spacing:0.02em;
+  color:var(--orange-800);background:var(--orange-50);padding:5px 9px;border-radius:var(--radius-pill);
+}
+.pr-text{display:flex;flex-direction:column;min-width:0;}
+.pr-title{font-size:16px;font-weight:700;line-height:1.5;color:var(--orange-800);}
+.pr-note{font-size:13px;line-height:1.5;color:var(--sub);}
+.pr-main:hover .pr-title, .pr-main:focus-visible .pr-title{text-decoration:underline;}
+.pr-ans{
+  flex:none;font-size:14px;font-weight:700;line-height:1;text-decoration:none;
+  color:var(--orange-800);background:var(--card);border:1px solid var(--orange-100);
+  padding:10px 14px;border-radius:var(--radius-pill);
+}
+.pr-ans:hover, .pr-ans:focus-visible{background:var(--orange-50);border-color:var(--orange-800);color:var(--orange-900);}

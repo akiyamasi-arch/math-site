@@ -95,6 +95,21 @@
       ${p.note ? `<p>${esc(p.note)}</p>` : ''}
     </a>`;
   }
+  // プリントはコンパクトな行で並べる。answer があれば同じ行の右端に「解答」ボタンを出す（2026-10-22）
+  function printRow(p){
+    const label = `${p.title}（PDFファイル、新しいタブで開きます）`;
+    const ans = p.answer ? `<a class="pr-ans" href="${esc(encodeURI(p.answer))}" target="_blank" rel="noopener" aria-label="${esc(p.title + 'の解答（PDFファイル、新しいタブで開きます）')}">解答</a>` : '';
+    return `<li class="pr-row">
+      <a class="pr-main" href="${esc(encodeURI(p.file))}" target="_blank" rel="noopener" aria-label="${esc(label)}">
+        <span class="pr-tag">PDF</span>
+        <span class="pr-text"><span class="pr-title">${esc(p.title)}</span>${p.note ? `<span class="pr-note">${esc(p.note)}</span>` : ''}</span>
+      </a>${ans}
+    </li>`;
+  }
+  function printListOr(items, emptyText){
+    if(!items.length) return `<div class="placeholder">${esc(emptyText)}</div>`;
+    return `<ul class="print-list">${items.map(printRow).join('')}</ul>`;
+  }
   function gemCard(g){
     const label = `${g.title}（Geminiが新しいタブで開きます）`;
     return `<a class="card" href="${esc(g.url)}" target="_blank" rel="noopener" aria-label="${esc(label)}">
@@ -426,7 +441,7 @@
     label.innerHTML = `<a href="${subjectUrl(s)}">${esc(s.name)}</a>`;
     title.textContent = u.name;
     secA.innerHTML = gridOr(itemsFor(D.apps,   s, u), appCard,   'この単元のアプリは準備中です。');
-    secP.innerHTML = gridOr(itemsFor(D.prints, s, u), printCard, 'この単元のプリントは準備中です。');
+    secP.innerHTML = printListOr(itemsFor(D.prints, s, u), 'この単元のプリントは準備中です。');
     secV.innerHTML = gridOr(itemsFor(D.videos, s, u), videoCard, 'この単元の参考動画は準備中です。');
     bindVideoThumbs(secV);
     // 授業スライドは、スライドがある単元だけ欄ごと表示する
