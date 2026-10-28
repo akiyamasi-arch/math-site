@@ -337,8 +337,8 @@ a:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
 a.card:hover, a.card:focus-visible{
   color:var(--ink);
   border-color:var(--orange-800);
-  box-shadow:0 4px 14px rgba(199,71,0,0.14);
-  transform:translateY(-1px);
+  box-shadow:0 6px 18px rgba(199,71,0,0.16);
+  transform:translateY(-3px);
 }
 .card .tag{
   font-size:14px;      /* Oln-14B-100 相当 */
@@ -565,9 +565,9 @@ footer{
   display:flex;align-items:center;gap:var(--sp-1);
   background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);
   padding:6px 10px 6px 14px;min-height:52px;
-  transition:border-color .15s, box-shadow .15s;
+  transition:border-color .15s, box-shadow .15s, transform .15s;
 }
-.pr-row:hover{border-color:var(--orange-800);box-shadow:0 3px 10px rgba(199,71,0,0.10);}
+.pr-row:hover{border-color:var(--orange-800);box-shadow:0 3px 10px rgba(199,71,0,0.10);transform:translateY(-2px);}
 .pr-main{flex:1;min-width:0;display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);padding:4px 0;}
 .pr-tag{
   flex:none;font-size:12px;font-weight:700;line-height:1;letter-spacing:0.02em;
@@ -583,3 +583,27 @@ footer{
   padding:10px 14px;border-radius:var(--radius-pill);
 }
 .pr-ans:hover, .pr-ans:focus-visible{background:var(--orange-50);border-color:var(--orange-800);color:var(--orange-900);}
+
+/* ---- 控えめな動き（2026-10-28）----
+   見出し横の小さな図：ページを開いたとき一度だけ線が描かれる（約1.5秒）
+   カード類：スクロールで画面に入るとふわっと現れる（site.js の initReveal が .reveal を付ける）
+   どちらも「動きを減らす」設定の端末では動かさない */
+.page-title.has-fig{display:flex;align-items:center;gap:12px;}
+.title-fig{flex:none;width:44px;height:44px;color:var(--orange-700);}
+.title-fig svg{width:100%;height:100%;display:block;}
+.title-fig svg *{stroke-dasharray:1;stroke-dashoffset:1;animation:fig-draw 1s ease-out forwards;}
+.title-fig svg > *:nth-child(2){animation-delay:.25s;}
+.title-fig svg > *:nth-child(3){animation-delay:.5s;}
+.title-fig svg > *:nth-child(n+4){animation-delay:.7s;}
+@keyframes fig-draw{to{stroke-dashoffset:0;}}
+
+.reveal:not(.is-in){opacity:0;}
+.reveal.is-in{animation:rv-rise .5s ease-out backwards;animation-delay:var(--rv-delay, 0ms);}
+@keyframes rv-rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+
+@media (prefers-reduced-motion: reduce){
+  .title-fig svg *{animation:none;stroke-dashoffset:0;}
+  .reveal:not(.is-in){opacity:1;}
+  .reveal.is-in{animation:none;}
+  a.card:hover, a.card:focus-visible, .pr-row:hover{transform:none;}
+}

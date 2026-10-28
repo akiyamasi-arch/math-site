@@ -390,6 +390,61 @@
     </article>`).join('');
   }
 
+  // ---- 見出しの横の小さな図（ページを開いたとき一度だけ線が描かれる） ----
+  // 単元ごとの図。無い単元は科目のアイコンを使う。線を描く演出のため、各要素に pathLength="1" を自動で付ける
+  const UNIT_FIGS = {
+    'kazu-shiki':      '<rect x="8" y="8" width="32" height="32" rx="2"/><path d="M28 8v32M8 28h32"/>',
+    'shugo-meidai':    '<circle cx="19" cy="24" r="12"/><circle cx="29" cy="24" r="12"/>',
+    'nijikansu':       '<path d="M6 38h36M24 44V4"/><path d="M10 8q14 48 28 0"/>',
+    'zukei-keiryo':    '<path d="M8 38h32L8 14z"/><path d="M30 38A10 10 0 0 1 32 32"/><path d="M8 33h5v5"/>',
+    'data-bunseki':    '<path d="M6 40h36"/><path d="M11 40V27M19 40V16M27 40V21M35 40V10"/>',
+    'zukei-seishitsu': '<circle cx="24" cy="24" r="15"/><path d="M24 9L37 31.5H11z"/>',
+    'baai-kakuritsu':  '<path d="M7 24L21 13M7 24L21 35"/><path d="M21 13L39 7M21 13L39 19M21 35L39 29M21 35L39 41"/>',
+    'fukusosu-hoteishiki': '<path d="M6 32h36M16 44V4"/><path d="M16 32L34 12"/><circle cx="34" cy="12" r="2.5"/>',
+    'zukei-hoteishiki':'<path d="M6 40h36M10 44V4"/><circle cx="27" cy="21" r="10"/><path d="M12 38L44 8"/>',
+    'sankaku-kansu':   '<path d="M6 24h36M24 42V6"/><circle cx="24" cy="24" r="14"/><path d="M24 24L35.2 15.6V24"/>',
+    'shisu-taisu':     '<path d="M6 40h36M12 44V4"/><path d="M6 38C24 37 32 31 40 6"/>',
+    'bibun-sekibun':   '<path d="M8 36C16 6 32 6 40 36"/><path d="M10 13.5h28"/><circle cx="24" cy="13.5" r="2.5"/>',
+    'suretsu':         '<path d="M8 40V35M16 40V29M24 40V23M32 40V16M40 40V8"/>',
+    'tokei-suisoku':   '<path d="M4 40h40"/><path d="M4 39C14 39 16 10 24 10S34 39 44 39"/><path d="M24 40V10"/>',
+    'kyokugen':        '<path d="M6 40h36M10 44V4"/><path d="M14 6C16 28 24 33 42 34"/>',
+    'bibunho':         '<path d="M8 36C16 6 32 6 40 36"/><path d="M10 13.5h28"/><circle cx="24" cy="13.5" r="2.5"/>',
+    'sekibunho':       '<path d="M6 40h36"/><path d="M8 32C18 8 30 8 40 22"/><path d="M16 40V20M22 40V15M28 40V14M34 40V16"/>',
+    'kyokusen-fukuso': '<path d="M4 24h40M24 42V6"/><ellipse cx="24" cy="24" rx="17" ry="10"/>'
+  };
+  function titleFigure(s, u){
+    let svg = (u && UNIT_FIGS[u.id]) ? SVG_OPEN + UNIT_FIGS[u.id] + '</svg>' : (ICONS[s.id] || '');
+    if(!svg) return '';
+    svg = svg.replace(/<(path|circle|rect|ellipse)(?![^>]*pathLength)/g, '<$1 pathLength="1"');
+    return `<span class="title-fig" aria-hidden="true">${svg}</span>`;
+  }
+  function setTitle(el, text, fig){
+    if(!fig){ el.textContent = text; return; }
+    el.classList.add('has-fig');
+    el.innerHTML = `${fig}<span>${esc(text)}</span>`;
+  }
+
+  // ---- カードがスクロールでふわっと現れる（「動きを減らす」設定のときは何もしない） ----
+  function initReveal(){
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduce || !('IntersectionObserver' in window)) return;
+    const els = document.querySelectorAll('.wrap .card, .wrap .tip-card, .wrap .video-card, .wrap .pr-row, .wrap .news-list li');
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if(!e.isIntersecting) return;
+        e.target.classList.add('is-in');
+        io.unobserve(e.target);
+      });
+    }, { rootMargin: '0px 0px -40px 0px' });
+    els.forEach(el => {
+      const i = Array.prototype.indexOf.call(el.parentNode.children, el);
+      el.style.setProperty('--rv-delay', Math.min(i, 5) * 60 + 'ms');
+      el.classList.add('reveal');
+      io.observe(el);
+    });
+  }
+  document.addEventListener('DOMContentLoaded', initReveal);
+
   // ---- 科目ページ・単元ページ ----
   function renderSubjectPage(){
     const s = findSubject(param('s'));
@@ -407,7 +462,7 @@
     }
     document.title = `${s.name}｜数学学習サイト`;
     breadcrumb(crumb, [{ name:'トップ', url:'index.html' }, { name:s.name }]);
-    title.textContent = s.name;
+    setTitle(title, s.name, titleFigure(s, null));
     lead.textContent = s.description || '';
     grid.innerHTML = s.units.map((u, i) => {
       const c = counts(s, u), t = total(c);
@@ -439,7 +494,7 @@
     document.title = `${u.name}｜${s.name}｜数学学習サイト`;
     breadcrumb(crumb, [{ name:'トップ', url:'index.html' }, { name:s.name, url:subjectUrl(s) }, { name:u.name }]);
     label.innerHTML = `<a href="${subjectUrl(s)}">${esc(s.name)}</a>`;
-    title.textContent = u.name;
+    setTitle(title, u.name, titleFigure(s, u));
     secA.innerHTML = gridOr(itemsFor(D.apps,   s, u), appCard,   'この単元のアプリは準備中です。');
     secP.innerHTML = printListOr(itemsFor(D.prints, s, u), 'この単元のプリントは準備中です。');
     secV.innerHTML = gridOr(itemsFor(D.videos, s, u), videoCard, 'この単元の参考動画は準備中です。');

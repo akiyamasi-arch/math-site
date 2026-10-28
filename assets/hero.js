@@ -1,5 +1,6 @@
 // トップページの背景演出：
 //   深い紺の空間に青い星雲（ネビュラ）が光り、結晶のかけらが漂い、薄いグリッド線が走る。
+//   四隅寄りでは放物線・正弦波・単位円などのグラフが、ゆっくり描かれては消える。
 // - prefers-reduced-motion（動きを減らす設定）のときは動かさず1枚の静止画として描く
 // - 星雲は縮小した裏キャンバスに描いてから拡大表示し、30fps程度に抑えて負荷を軽くしている
 (function(){
@@ -167,6 +168,76 @@
     }
   }
 
+  // ---- 数式の線：放物線・正弦波・単位円などが、ペン先の光とともにゆっくり描かれては消える ----
+  // 1つの図は約14秒周期（描く5秒 → 見せる6秒 → 消える3秒）。外部素材は使わず、線を引くだけなので軽い
+  const CURVES = [
+    { name:'parabola', f:u => { const x = -1 + 2 * u; return [x, 1.4 * x * x - 0.7]; } },
+    { name:'sine',     sx:1.6, f:u => { const x = -1 + 2 * u; return [x, 0.6 * Math.sin(3 * Math.PI * x)]; } },
+    { name:'circle',   f:u => { const a = 2 * Math.PI * u; return [0.8 * Math.cos(a), 0.8 * Math.sin(a)]; } },
+    { name:'normal',   sx:1.3, f:u => { const x = -1 + 2 * u; return [x, 1.25 * Math.exp(-x * x / 0.18) - 0.5]; } },
+    { name:'exp',      f:u => { const x = -1 + 2 * u; return [x, 0.15 * Math.exp(2.2 * x) - 0.6]; } },
+    { name:'cubic',    sx:1.3, f:u => { const x = -1 + 2 * u; return [x, 1.2 * (x * x * x - 0.8 * x)]; } }
+  ];
+  const C_DRAW = 150, C_HOLD = 330, C_LEN = 420, C_SAMPLES = 120;
+  function curveSlots(){
+    // 画面の四隅寄りに置き、中央の文字やボタンの真後ろは避ける。スマホは2か所だけ
+    if(w < 700) return [[0.78, 0.10], [0.24, 0.93]];
+    return [[0.14, 0.30], [0.86, 0.26], [0.16, 0.80], [0.84, 0.76]];
+  }
+  function drawCurves(){
+    const S = Math.max(46, Math.min(120, Math.min(w, h) * 0.14));
+    curveSlots().forEach(([px, py], k) => {
+      const off = k * 105;
+      const tt = reduce ? C_DRAW + 40 : t + off;
+      const cyc = Math.floor(tt / C_LEN), ph = tt % C_LEN;
+      const cv = CURVES[(k + cyc * 4) % CURVES.length];
+      const p = Math.min(1, ph / C_DRAW);
+      const ease = 1 - Math.pow(1 - p, 2);
+      const a = ph < 20 ? ph / 20 : ph > C_HOLD ? 1 - (ph - C_HOLD) / (C_LEN - C_HOLD) : 1;
+      if(a <= 0) return;
+      const cx = px * w, cy = py * h, sx = (cv.sx || 1) * S, sy = S * 0.8;
+      const X = x => cx + x * sx, Y = y => cy - y * sy;
+      // 座標軸
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = `rgba(140,190,255,${0.22 * a})`;
+      ctx.beginPath();
+      ctx.moveTo(X(-1.15), Y(0)); ctx.lineTo(X(1.15), Y(0));
+      ctx.moveTo(X(0), Y(-0.95)); ctx.lineTo(X(0), Y(0.95));
+      ctx.stroke();
+      // 曲線（描けたところまで）
+      const n = Math.max(1, Math.round(C_SAMPLES * ease));
+      ctx.save();
+      ctx.lineWidth = 1.6;
+      ctx.strokeStyle = `rgba(170,220,255,${0.55 * a})`;
+      ctx.shadowColor = 'rgba(120,200,255,0.7)'; ctx.shadowBlur = 6;
+      ctx.beginPath();
+      for(let i = 0; i <= n; i++){
+        const [x, y] = cv.f(i / C_SAMPLES);
+        i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y));
+      }
+      ctx.stroke();
+      ctx.restore();
+      // 単位円は描き終わったあと、半径が回って sin の高さを示す
+      if(cv.name === 'circle' && p >= 1){
+        const ang = (ph - C_DRAW) * 0.02;
+        const qx = 0.8 * Math.cos(ang), qy = 0.8 * Math.sin(ang);
+        ctx.strokeStyle = `rgba(200,235,255,${0.5 * a})`;
+        ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(qx), Y(qy)); ctx.stroke();
+        ctx.setLineDash([3, 4]);
+        ctx.beginPath(); ctx.moveTo(X(qx), Y(qy)); ctx.lineTo(X(qx), Y(0)); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = `rgba(255,255,255,${0.85 * a})`;
+        ctx.beginPath(); ctx.arc(X(qx), Y(qy), 2.4, 0, Math.PI * 2); ctx.fill();
+      }
+      // ペン先の光（描いている間だけ）
+      if(p < 1 && !reduce){
+        const [x, y] = cv.f(n / C_SAMPLES);
+        ctx.fillStyle = `rgba(255,255,255,${0.9 * a})`;
+        ctx.beginPath(); ctx.arc(X(x), Y(y), 2.6, 0, Math.PI * 2); ctx.fill();
+      }
+    });
+  }
+
   function drawVignette(){
     const g = ctx.createRadialGradient(w * 0.5, h * 0.45, Math.min(w, h) * 0.25, w * 0.5, h * 0.45, Math.max(w, h) * 0.75);
     g.addColorStop(0, 'rgba(2,6,23,0)');
@@ -182,6 +253,7 @@
     ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
     drawNebula();
     drawGrid();
+    drawCurves();
     drawSparks();
     drawShards();
     drawVignette();
