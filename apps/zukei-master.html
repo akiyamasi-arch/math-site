@@ -72,6 +72,31 @@
   .pip.now{outline:3px solid var(--orange-400);outline-offset:1px;}
   .certificate{margin-top:var(--sp-2);border:2px solid var(--gold);background:var(--gold-soft);text-align:center;}
   .certificate .big{font-size:22px;font-weight:700;color:var(--gold);}
+  .name-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:var(--sp-2);padding-top:var(--sp-2);border-top:1px dashed var(--line);}
+  .name-row label{font-size:14px;font-weight:700;}
+  .name-row input{font-size:16px;font-family:inherit;padding:8px 10px;border:2px solid var(--line-strong);border-radius:var(--radius-md);width:200px;max-width:100%;}
+  .name-row .msg{font-size:14px;color:var(--x);font-weight:700;width:100%;}
+  /* 賞状（スクリーンショット用。スマホ1画面に収まる大きさ） */
+  .cert-wrap{max-width:440px;margin:0 auto;}
+  .cert{background:#fffdf5;border:3px solid var(--gold);outline:1.5px solid var(--gold);outline-offset:-9px;border-radius:6px;padding:22px 22px 18px;text-align:center;line-height:1.5;}
+  .cert.plain{border-color:#64748b;outline-color:#64748b;background:#fff;}
+  .cert .c-site{font-size:11px;color:var(--sub);letter-spacing:.08em;}
+  .cert .c-title{font-size:25px;font-weight:700;letter-spacing:.3em;margin:2px 0 0;padding-left:.3em;color:var(--gold);}
+  .cert.plain .c-title{color:var(--ink);}
+  .cert .c-sub{font-size:14px;font-weight:700;margin:0 0 8px;}
+  .cert .c-name{font-size:22px;font-weight:700;border-bottom:1.5px solid var(--ink);display:inline-block;min-width:60%;padding:0 12px 2px;margin:2px 0 8px;word-break:break-all;}
+  .cert .c-name small{font-size:14px;font-weight:400;margin-left:6px;}
+  .cert .c-text{font-size:13px;margin:0 0 10px;text-align:left;}
+  .cert table{width:100%;border-collapse:collapse;font-size:12.5px;text-align:left;}
+  .cert td{padding:2.5px 4px;border-bottom:1px dotted #d6c9a0;white-space:nowrap;}
+  .cert td.m{text-align:right;letter-spacing:.05em;color:var(--gold);font-weight:700;}
+  .cert td.s{text-align:right;width:3.2em;font-size:11px;font-weight:700;}
+  .cert .c-total{display:flex;justify-content:space-around;gap:6px;margin:10px 0 6px;font-size:13px;font-weight:700;}
+  .cert .c-total b{font-size:19px;color:var(--orange-800);}
+  .cert .c-foot{font-size:11px;color:var(--sub);margin-top:6px;}
+  .cert .c-foot span{display:block;}
+  .cert .c-foot span:last-child{text-align:right;font-size:13px;color:var(--ink);margin-top:4px;}
+  .cert-note{font-size:14px;color:var(--sub);margin:var(--sp-2) 0 0;text-align:center;}
   .submit-box textarea{width:100%;font-family:inherit;font-size:14px;line-height:1.6;border:1px solid var(--line);border-radius:var(--radius-md);padding:10px;resize:vertical;background:#f8fafc;color:var(--ink);}
 
   /* ---- ステージ ---- */
@@ -602,8 +627,11 @@
         <span class="no">性質 ${k + 1}　<span style="color:var(--sub);font-weight:400">教科書 ${s.page}</span> ${stt === 'master' ? '<span class="badge master">★ マスター</span>' : stt === 'clear' ? '<span class="badge clear">クリア</span>' : ''}</span>
         <span class="ttl">${s.title}</span><span class="rule">${s.short}</span>
         <span class="pips">${pipsHTML(s, -1, 'span')}</span></button>`; }).join('');
-    const text = `【図形の性質マスター】クリア ${nClear}/${STAGES.length}・マスター ${nMaster}/${STAGES.length}・★ ${stars}/${TOTAL}\n` +
+    const NL = String.fromCharCode(10);
+    const esc = v => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const makeText = () => `${save._name ? '名前：' + save._name + NL : ''}【図形の性質マスター】クリア ${nClear}/${STAGES.length}・マスター ${nMaster}/${STAGES.length}・★ ${stars}/${TOTAL}\n` +
       STAGES.map((s, k) => `${k + 1} ${s.title}：${rec(s.id).map(v => MARK[v] || '・').join('')}`).join('\n');
+    const text = esc(makeText());
     app.innerHTML = `
       <h1>図形の性質マスター</h1>
       <p class="lead">性質を1つ選んで、図を見ながら問題を解きます。10個の性質をすべて ★ にすると「図形の性質マスター」です。</p>
@@ -611,8 +639,14 @@
         <p class="section-title">マスター度</p>
         <div class="meter"><div class="bar"><i style="width:${(stars / TOTAL * 100).toFixed(1)}%"></i></div><span class="num">★ ${stars} / ${TOTAL}</span></div>
         <p class="legend">★ ヒントなし・1回で正解　／　○ 正解　／　△ 答えを見た　　（記録はこの端末のブラウザの中だけに残ります）</p>
+        <div class="name-row">
+          <label for="nameIn">名前</label>
+          <input id="nameIn" type="text" maxlength="20" autocomplete="off" placeholder="例：1年A組 倉吉 太郎" value="${esc(save._name || '')}">
+          <button class="btn primary" id="certBtn">${nMaster === STAGES.length ? '★ 賞状を表示する' : '記録証を表示する'}</button>
+          <span class="msg" id="nameMsg"></span>
+        </div>
       </div>
-      ${nMaster === STAGES.length ? `<div class="card certificate"><div class="big">★ 図形の性質マスター 認定 ★</div><div>10個の性質をすべてマスターしました。</div></div>` : ''}
+      ${nMaster === STAGES.length ? `<div class="card certificate"><div class="big">★ 図形の性質マスター 認定 ★</div><div>10個の性質をすべてマスターしました。名前を入れて賞状を表示し、スクリーンショットを先生に送りましょう。</div></div>` : ''}
       <div class="stage-grid">${cards}</div>
       <div class="card submit-box" style="margin-top:var(--sp-3)">
         <p class="section-title">提出用テキスト（先生に出すときは、コピーして貼り付けます）</p>
@@ -620,6 +654,8 @@
         <div class="actions"><button class="btn small" id="copyBtn">コピーする</button><button class="btn small" id="resetBtn">記録をすべて消す</button><span id="copyMsg" style="font-size:14px;color:var(--ok);align-self:center"></span></div>
       </div>`;
     app.querySelectorAll('.stage-card').forEach(b => b.addEventListener('click', () => openStage(b.dataset.id, 0)));
+    $('nameIn').addEventListener('input', () => { save._name = $('nameIn').value.trim(); store(); $('subText').value = makeText(); $('nameMsg').textContent = ''; });
+    $('certBtn').addEventListener('click', () => { if(!save._name){ $('nameMsg').textContent = '先に名前を入れてください。'; $('nameIn').focus(); return; } certificate(); });
     $('copyBtn').addEventListener('click', () => { const ta = $('subText'); ta.select();
       const done = () => { $('copyMsg').textContent = 'コピーしました'; };
       if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(done, () => { document.execCommand('copy'); done(); });
@@ -630,7 +666,7 @@
 
   function openStage(id, i){
     const st = STAGES.find(s => s.id === id);
-    cur = { st, i, tries: 0, h: 0, done: false, wrong: [] };
+    cur = { st, i, tries: 0, h: 0, done: false, wrong: [], prop: false };
     renderProblem(true);
   }
 
@@ -654,10 +690,11 @@
         <div><div class="no">性質 ${k + 1}</div><h2>${st.title}</h2></div>
         <button class="btn small" id="homeBtn">← 性質の一覧へ</button>
       </div>
-      <div class="card prop">
+      <button class="btn small" id="propBtn" aria-expanded="${cur.prop ? 'true' : 'false'}">${cur.prop ? '▲ 「この性質を使う」をとじる' : '▼ 「この性質を使う」を見る'}</button>
+      ${cur.prop ? `<div class="card prop" style="margin-top:8px">
         <div><div class="name">この性質を使う</div><p class="rule">${st.rule}</p><p class="page">教科書 ${st.page}</p></div>
         <div class="pfig">${makeFig(st.pfig, { h: 0, done: false }, null).svg}</div>
-      </div>
+      </div>` : ''}
       <div class="main-grid">
         <div class="card figure"><p class="section-title">図</p>${fig.svg}</div>
         <div class="card">
@@ -675,6 +712,7 @@
         </div>
       </div>`;
     $('homeBtn').addEventListener('click', home);
+    $('propBtn').addEventListener('click', () => { cur.prop = !cur.prop; const v = $('ansIn') && !cur.done ? $('ansIn').value : null; renderProblem(); if(v != null) $('ansIn').value = v; });
     app.querySelectorAll('button.pip').forEach(b => b.addEventListener('click', () => openStage(st.id, +b.dataset.i)));
     if($('hintBtn')) $('hintBtn').addEventListener('click', () => { cur.h++; cur.fb = ''; renderProblem(); });
     if($('giveBtn')) $('giveBtn').addEventListener('click', () => finish(1));
@@ -697,7 +735,7 @@
     if(ok){ finish(cur.tries === 0 && cur.h === 0 ? 3 : 2); return; }
     cur.tries++;
     if(choice != null) cur.wrong.push(choice);
-    cur.fb = `<div class="fb ng">おしい。もう一度、図と「この性質を使う」を見てみよう。${cur.tries >= 2 ? '' : 'ヒントも使えます。'}</div>`;
+    cur.fb = `<div class="fb ng">おしい。もう一度、図をよく見てみよう。「この性質を使う」も開けます。${cur.tries >= 2 ? '' : 'ヒントも使えます。'}</div>`;
     renderProblem();
     const el = $('ansIn'); if(el){ el.focus({ preventScroll: true }); }
   }
@@ -726,6 +764,34 @@
     $('homeBtn').addEventListener('click', home);
     if($('retryBtn')) $('retryBtn').addEventListener('click', () => openStage(st.id, first));
     if($('nextStageBtn')) $('nextStageBtn').addEventListener('click', () => openStage(next.id, 0));
+    window.scrollTo(0, 0);
+  }
+
+  // 賞状・記録証（スクリーンショットを撮って先生に送る）
+  function certificate(){
+    const esc = v => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const stars = STAGES.reduce((n, s) => n + rec(s.id).filter(v => v === 3).length, 0);
+    const nClear = STAGES.filter(s => stageState(s)).length, nMaster = STAGES.filter(s => stageState(s) === 'master').length;
+    const all = nMaster === STAGES.length, allClear = nClear === STAGES.length;
+    const d = new Date(), date = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+    const rows = STAGES.map((s, k) => { const stt = stageState(s);
+      return `<tr><td>${k + 1}　${s.title}</td><td class="m">${rec(s.id).map(v => MARK[v] || '・').join('')}</td><td class="s" style="color:${stt === 'master' ? 'var(--gold)' : stt ? 'var(--ok)' : 'var(--sub)'}">${stt === 'master' ? 'マスター' : stt ? 'クリア' : ''}</td></tr>`; }).join('');
+    app.innerHTML = `
+      <div class="cert-wrap">
+        <div class="cert${all ? '' : ' plain'}" id="cert">
+          <div class="c-site">数学学習サイト　数学A「図形の性質」</div>
+          <p class="c-title">${all ? '賞状' : '記録証'}</p>
+          <p class="c-sub">${all ? '★ 図形の性質マスター ★' : allClear ? '図形の性質　全性質クリア' : '図形の性質マスター　学習の記録'}</p>
+          <div class="c-name">${esc(save._name)}<small>殿</small></div>
+          <p class="c-text">${all ? 'あなたは図形の性質 10 個すべての問題を、ヒントなし・1回で正解しました。よってここに「図形の性質マスター」と認めます。' : allClear ? 'あなたは図形の性質 10 個すべての問題に正解しました。全部 ★ にするとマスターです。' : 'あなたの現在の学習の記録は次のとおりです。'}</p>
+          <table>${rows}</table>
+          <div class="c-total"><span>マスター <b>${nMaster}</b> / ${STAGES.length}</span><span>クリア <b>${nClear}</b> / ${STAGES.length}</span><span>★ <b>${stars}</b> / ${TOTAL}</span></div>
+          <div class="c-foot"><span>★ 1回で正解　○ 正解　△ 答えを見た</span><span>${date}</span></div>
+        </div>
+        <p class="cert-note">この画面のスクリーンショットを撮って、先生に送ってください。</p>
+        <div class="actions" style="justify-content:center"><button class="btn" id="homeBtn">← 性質の一覧へ</button></div>
+      </div>`;
+    $('homeBtn').addEventListener('click', home);
     window.scrollTo(0, 0);
   }
 
