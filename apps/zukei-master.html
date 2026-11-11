@@ -96,6 +96,28 @@
   .cert .c-foot{font-size:11px;color:var(--sub);margin-top:6px;}
   .cert .c-foot span{display:block;}
   .cert .c-foot span:last-child{text-align:right;font-size:13px;color:var(--ink);margin-top:4px;}
+  /* マスターカード（性質ごとに1枚。集める） */
+  .cards{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin:4px 0 2px;}
+  .mcard{border:1.5px dashed #b9c2cf;border-radius:6px;background:#f4f6f9;padding:3px 2px 4px;text-align:center;line-height:1.25;color:#94a3b8;font-family:inherit;min-width:0;}
+  button.mcard{cursor:pointer;}
+  .mcard .mno{font-size:9px;font-weight:700;}
+  .mcard .mfig{height:38px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;}
+  .mcard .mfig svg{width:100%;height:100%;display:block;}
+  .mcard .mname{font-size:9.5px;font-weight:700;min-height:2.5em;display:flex;align-items:center;justify-content:center;}
+  .mcard .mst{font-size:9px;font-weight:700;}
+  .mcard.got{border:2px solid var(--gold);background:linear-gradient(160deg,#fff8dc,#ffe9a8);color:var(--ink);}
+  .mcard.got .mno, .mcard.got .mst{color:var(--gold);}
+  .bigcard{max-width:330px;margin:0 auto;border:3px solid var(--gold);outline:1.5px solid var(--gold);outline-offset:-8px;border-radius:14px;background:linear-gradient(160deg,#fffdf2,#ffeeb5);padding:20px 20px 16px;text-align:center;line-height:1.5;}
+  .bigcard .b-top{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--gold);}
+  .bigcard .b-title{font-size:21px;font-weight:700;margin:2px 0 6px;}
+  .bigcard .b-fig{background:#fff;border:1px solid #e6d7a4;border-radius:8px;padding:4px;}
+  .bigcard .b-fig svg{width:100%;height:auto;display:block;}
+  .bigcard .b-rule{font-size:13px;text-align:left;margin:8px 0;}
+  .bigcard .b-rule b{background:#fff;padding:0 4px;border-radius:3px;}
+  .bigcard .b-stars{color:var(--gold);font-size:16px;letter-spacing:.1em;font-weight:700;}
+  .bigcard .b-foot{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;margin-top:6px;border-top:1px solid #e6d7a4;padding-top:6px;}
+  .bigcard .b-foot b{word-break:break-all;text-align:left;}
+  .get-msg{text-align:center;font-size:20px;font-weight:700;color:var(--gold);margin:0 0 var(--sp-1);}
   .cert-note{font-size:14px;color:var(--sub);margin:var(--sp-2) 0 0;text-align:center;}
   .submit-box textarea{width:100%;font-family:inherit;font-size:14px;line-height:1.6;border:1px solid var(--line);border-radius:var(--radius-md);padding:10px;resize:vertical;background:#f8fafc;color:var(--ink);}
 
@@ -344,7 +366,7 @@
   // ⑩ 2つの円（中心 O 半径 r、中心 P 半径 s、中心間 d）
   function twoCircles(g, r, s, d){
     g.circle(O0, r); const Pc = { x: d, y: 0 }; g.circle(Pc, s, { color: CG });
-    const O = g.P('O', O0, { d: [0, -1] }), P = g.P('P', Pc, { d: [0, -1] });
+    const near = d < 0.45 * r; const O = g.P('O', O0, { d: near ? [-0.8, -1] : [0, -1] }), P = g.P('P', Pc, { d: near ? [0.8, -1] : [0, -1] });
     g.dot(O); g.dot(P, { color: CG });
     return { O, P };
   }
@@ -362,257 +384,404 @@
     g.bound({ x: 0, y: -gap*0.3 });
   }
 
-  /* ================= ステージと問題 ================= */
+  /* ================= ステージと問題 =================
+     各問題は「型」だけが決まっていて、開くたびに数値を作り直す（答えの丸暗記を防ぐ）。
+     図は数値から計算して描くので、数値が変わっても図は必ず合う。 */
+  const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const r5 = (a, b) => 5 * ri(a / 5, b / 5);
+  const X = '<i>x</i>';
   const POS = ['一方が他方の内部にある', '内接する', '2点で交わる', '外接する', '離れている'];
-  const Q_BIS = '△ABC で、AD は ∠A の二等分線です。<i>x</i> の値を求めなさい。';
-  const posProb = (r, s, d, ans, hints) => ({
-    q: `半径 ${r} の円 O と半径 ${s} の円 P があり、中心間の距離は d ＝ ${d} です。2つの円の位置関係を選びなさい。`,
-    choices: POS, ans, unit: '',
-    fig: (g, st) => { if(st.done){ twoCircles(g, r, s, d); } else bars(g, r, s, d); },
-    hints
-  });
+
+  // ---- ① 角の二等分線：AB=c, AC=b, BD=m, DC=n, BC=a（m:n = c:b = p:q）----
+  function genBis(){
+    for(;;){
+      const [p, q] = pick([[2,1],[3,1],[3,2],[4,3],[5,3],[1,2],[2,3],[3,4],[3,5]]);
+      const k = ri(2, 8), j = ri(1, 7);
+      const c = p*k, b = q*k, m = p*j, n = q*j, a = m + n;
+      if(j >= k || Math.max(c, b) > 20 || a > 24) continue;
+      const t = j / k;
+      if(t < Math.max(0.5, Math.abs(p - q) / (p + q) + 0.15) || t > 0.9) continue;
+      return { p, q, c, b, m, n, a };
+    }
+  }
+  const Q_BIS = '△ABC で、AD は ∠A の二等分線です。' + X + ' の値を求めなさい。';
+  const H_BIS = '角の二等分線の性質　BD : DC ＝ AB : AC　を使う';
+  const bis = kind => () => {
+    const v = genBis(), { p, q, c, b, m, n, a } = v;
+    if(kind === 'BD') return { q: Q_BIS, ans: m, unit: '', fig: g => figBis(g, c, b, a, { AB: '' + c, AC: '' + b, BD: 'x', DC: '' + n }),
+      hints: [H_BIS, `${X} : ${n} ＝ ${c} : ${b}`, `${b}${X} ＝ ${n*c}　よって　${X} ＝ ${m}`] };
+    if(kind === 'DC') return { q: Q_BIS, ans: n, unit: '', fig: g => figBis(g, c, b, a, { AB: '' + c, AC: '' + b, BD: '' + m, DC: 'x' }),
+      hints: [H_BIS, `${m} : ${X} ＝ ${c} : ${b}`, `${c}${X} ＝ ${m*b}　よって　${X} ＝ ${n}`] };
+    if(kind === 'AB') return { q: Q_BIS, ans: c, unit: '', fig: g => figBis(g, c, b, a, { AB: 'x', AC: '' + b, BD: '' + m, DC: '' + n }),
+      hints: [H_BIS, `${m} : ${n} ＝ ${X} : ${b}`, `${n}${X} ＝ ${m*b}　よって　${X} ＝ ${c}`] };
+    if(kind === 'AC') return { q: Q_BIS, ans: b, unit: '', fig: g => figBis(g, c, b, a, { AB: '' + c, AC: 'x', BD: '' + m, DC: '' + n }),
+      hints: [H_BIS, `${m} : ${n} ＝ ${c} : ${X}`, `${m}${X} ＝ ${n*c}　よって　${X} ＝ ${b}`] };
+    if(kind === 'BC-BD') return { q: `△ABC で、AD は ∠A の二等分線、BC ＝ ${a} です。BD の長さ ${X} を求めなさい。`, ans: m, unit: '',
+      fig: g => figBis(g, c, b, a, { AB: '' + c, AC: '' + b, BD: 'x', BC: '' + a }),
+      hints: [`BD : DC ＝ AB : AC ＝ ${c} : ${b} ＝ ${p} : ${q}`, `BC（＝${a}）を ${p} : ${q} に分けるので、BD は全体の {${p}|${p+q}}`, `${X} ＝ ${a} × {${p}|${p+q}} ＝ ${m}`] };
+    return { q: `△ABC で、AD は ∠A の二等分線、BC ＝ ${a} です。DC の長さ ${X} を求めなさい。`, ans: n, unit: '',
+      fig: g => figBis(g, c, b, a, { AB: '' + c, AC: '' + b, DC: 'x', BC: '' + a }),
+      hints: [`BD : DC ＝ AB : AC ＝ ${c} : ${b} ＝ ${p} : ${q}`, `BC（＝${a}）を ${p} : ${q} に分けるので、DC は全体の {${q}|${p+q}}`, `${X} ＝ ${a} × {${q}|${p+q}} ＝ ${n}`] };
+  };
+
+  // ---- ② 外心：∠OAB=al, ∠OBC=be, ∠OCA=ga（合計 90°）----
+  function genO(beMin, beMax){
+    for(;;){
+      const be = r5(beMin || 15, beMax || 40), al = r5(15, 50), ga = 90 - al - be;
+      if(ga >= 15 && ga <= 50) return { al, be, ga };
+    }
+  }
+  const oDir = v => { const d = pol(90 - v.be - v.ga); return [d.x, d.y]; };   // OA と OC の間（線と重ならない向き）
+  const gaishin = [
+    () => { const v = genO(), n = ri(3, 12);
+      return { q: `点 O は △ABC の外心で、OA ＝ ${n} です。OC の長さ ${X} を求めなさい。`, ans: n, unit: '',
+        fig: g => { const p = ptsO(g, v.al, v.be, v.ga, oDir(v)); g.seg(p.O, p.A); g.seg(p.O, p.B); g.seg(p.O, p.C); g.len(p.O, p.A, '' + n, { b: 12 }); g.len(p.O, p.C, 'x', { b: 12 }); },
+        hints: ['外心は3つの頂点から等しい距離にある　OA ＝ OB ＝ OC', `${X} ＝ OC ＝ OA ＝ ${n}`] }; },
+    () => { const v = genO(20, 40);
+      return { q: `点 O は △ABC の外心です。∠${X} の大きさを求めなさい。`, ans: v.be, unit: '°',
+        fig: g => { const p = ptsO(g, v.al, v.be, v.ga, [0, 1]); g.seg(p.O, p.B); g.seg(p.O, p.C); g.ang(p.B, p.O, p.C, v.be + '°'); g.ang(p.C, p.B, p.O, 'x'); },
+        hints: ['OB ＝ OC だから △OBC は二等辺三角形', '二等辺三角形の底角は等しい　∠OCB ＝ ∠OBC', `${X} ＝ ${v.be}°`] }; },
+    () => { const v = genO(20, 40);
+      return { q: `点 O は △ABC の外心です。∠${X}（∠BOC）の大きさを求めなさい。`, ans: 180 - 2*v.be, unit: '°',
+        fig: g => { const p = ptsO(g, v.al, v.be, v.ga, [0, 1]); g.seg(p.O, p.B); g.seg(p.O, p.C); g.ang(p.B, p.O, p.C, v.be + '°'); g.ang(p.O, p.B, p.C, 'x', { r: 16 }); },
+        hints: [`OB ＝ OC だから △OBC は二等辺三角形。∠OCB ＝ ∠OBC ＝ ${v.be}°`, '△OBC の内角の和は 180°', `${X} ＝ 180° − ${v.be}° × 2 ＝ ${180 - 2*v.be}°`] }; },
+    () => { const v = genO(15, 30);
+      return { q: `点 O は △ABC の外心です。∠${X}（∠BAC）の大きさを求めなさい。`, ans: v.al + v.ga, unit: '°',
+        fig: (g, st) => { const p = ptsO(g, v.al, v.be, v.ga); g.seg(p.O, p.B); g.seg(p.O, p.C); if(st.h >= 1 || st.done) g.seg(p.O, p.A, { dash: 1, color: CO, w: 2 }); g.ang(p.B, p.A, p.O, v.al + '°'); g.ang(p.C, p.O, p.A, v.ga + '°'); g.ang(p.A, p.B, p.C, 'x', { r: 17 }); },
+        hints: ['OA を引く（図に点線で出ました）。OA ＝ OB ＝ OC だから △OAB と △OCA は二等辺三角形', `∠OAB ＝ ∠OBA ＝ ${v.al}°、∠OAC ＝ ∠OCA ＝ ${v.ga}°`, `${X} ＝ ${v.al}° ＋ ${v.ga}° ＝ ${v.al + v.ga}°`] }; },
+    () => { const v = genO(20, 40);
+      return { q: `点 O は △ABC の外心です。∠${X}（∠OCA）の大きさを求めなさい。`, ans: v.ga, unit: '°',
+        fig: g => { const p = ptsO(g, v.al, v.be, v.ga, oDir(v)); g.seg(p.O, p.A); g.seg(p.O, p.B); g.seg(p.O, p.C); g.ang(p.A, p.O, p.B, v.al + '°'); g.ang(p.B, p.O, p.C, v.be + '°'); g.ang(p.C, p.O, p.A, 'x'); },
+        hints: ['△OAB・△OBC・△OCA はどれも二等辺三角形。底角は等しい', `∠OBA ＝ ${v.al}°、∠OCB ＝ ${v.be}°、∠OAC ＝ ${X}`, `△ABC の内角の和　2 × (${v.al}° ＋ ${v.be}° ＋ ${X}) ＝ 180°`, `${v.al}° ＋ ${v.be}° ＋ ${X} ＝ 90°　よって　${X} ＝ ${v.ga}°`] }; }
+  ];
+
+  // ---- ③ 内心：∠IBC=hb, ∠ICB=hc ----
+  function genI(){ for(;;){ const hb = r5(20, 35), hc = r5(20, 35); if(hb + hc <= 65) return { hb, hc, A: 180 - 2*(hb + hc) }; } }
+  const naishin = [
+    () => { const v = genI();
+      return { q: `点 I は △ABC の内心です。∠${X} の大きさを求めなさい。`, ans: v.hb, unit: '°',
+        fig: g => { const p = ptsI(g, 2*v.hb, 2*v.hc); g.seg(p.I, p.B); g.seg(p.I, p.C); g.ang(p.B, p.I, p.C, v.hb + '°', { r: 44 }); g.ang(p.B, p.A, p.I, 'x', { r: 34 }); },
+        hints: ['内心 I は角の二等分線の交点。BI は ∠B を2等分する', '∠IBA ＝ ∠IBC', `${X} ＝ ${v.hb}°`] }; },
+    () => { const v = genI();
+      return { q: `点 I は △ABC の内心です。∠${X}（∠BIC）の大きさを求めなさい。`, ans: 180 - v.hb - v.hc, unit: '°',
+        fig: g => { const p = ptsI(g, 2*v.hb, 2*v.hc); g.seg(p.I, p.B); g.seg(p.I, p.C); g.ang(p.B, p.I, p.C, v.hb + '°', { r: 40 }); g.ang(p.C, p.B, p.I, v.hc + '°', { r: 46 }); g.ang(p.I, p.B, p.C, 'x', { r: 14, tr: 26 }); },
+        hints: ['△IBC の内角の和は 180°', `${X} ＝ 180° − (${v.hb}° ＋ ${v.hc}°)`, `${X} ＝ ${180 - v.hb - v.hc}°`] }; },
+    () => { const v = genI();
+      return { q: `点 I は △ABC の内心です。∠${X}（∠BAC）の大きさを求めなさい。`, ans: v.A, unit: '°',
+        fig: g => { const p = ptsI(g, 2*v.hb, 2*v.hc); g.seg(p.I, p.B); g.seg(p.I, p.C); g.ang(p.B, p.I, p.C, v.hb + '°', { r: 38 }); g.ang(p.C, p.B, p.I, v.hc + '°', { r: 44 }); g.ang(p.A, p.B, p.C, 'x'); },
+        hints: [`BI・CI は角の二等分線。∠B ＝ ${v.hb}° × 2 ＝ ${2*v.hb}°、∠C ＝ ${v.hc}° × 2 ＝ ${2*v.hc}°`, '△ABC の内角の和は 180°', `${X} ＝ 180° − (${2*v.hb}° ＋ ${2*v.hc}°) ＝ ${v.A}°`] }; },
+    () => { const v = genI();
+      return { q: `点 I は △ABC の内心です。∠${X}（∠IBC）の大きさを求めなさい。`, ans: v.hb, unit: '°',
+        fig: g => { const p = ptsI(g, 2*v.hb, 2*v.hc); g.seg(p.I, p.B); g.seg(p.I, p.C); g.ang(p.A, p.B, p.C, v.A + '°'); g.ang(p.C, p.B, p.I, v.hc + '°', { r: 40 }); g.ang(p.B, p.I, p.C, 'x', { r: 44 }); },
+        hints: [`CI は ∠C の二等分線。∠C ＝ ${v.hc}° × 2 ＝ ${2*v.hc}°`, `∠B ＝ 180° − (${v.A}° ＋ ${2*v.hc}°) ＝ ${2*v.hb}°`, `BI は ∠B の二等分線。${X} ＝ ${2*v.hb}° ÷ 2 ＝ ${v.hb}°`] }; },
+    () => { const v = genI();
+      return { q: `点 I は △ABC の内心で、∠A ＝ ${v.A}° です。∠${X}（∠BIC）の大きさを求めなさい。`, ans: 180 - v.hb - v.hc, unit: '°',
+        fig: g => { const p = ptsI(g, 2*v.hb, 2*v.hc); g.seg(p.I, p.B); g.seg(p.I, p.C); g.ang(p.A, p.B, p.C, v.A + '°');
+          g.ang(p.B, p.A, p.I, '', { mark: 1, r: 34 }); g.ang(p.B, p.I, p.C, '', { mark: 1, r: 34 }); g.ang(p.C, p.I, p.A, '', { mark: 1, open: 1, r: 40 }); g.ang(p.C, p.B, p.I, '', { mark: 1, open: 1, r: 40 });
+          g.ang(p.I, p.B, p.C, 'x', { r: 14, tr: 26 }); },
+        hints: [`∠B ＋ ∠C ＝ 180° − ${v.A}° ＝ ${180 - v.A}°`, `BI・CI は角の二等分線だから　∠IBC ＋ ∠ICB ＝ ${180 - v.A}° ÷ 2 ＝ ${v.hb + v.hc}°`, `${X} ＝ 180° − ${v.hb + v.hc}° ＝ ${180 - v.hb - v.hc}°`] }; }
+  ];
+
+  // ---- ④ 重心 ----
+  const jushin = [
+    () => { const k = ri(3, 9);
+      return { q: `点 G は △ABC の重心で、BC ＝ ${2*k} です。BD の長さ ${X} を求めなさい。`, ans: k, unit: '',
+        fig: g => { const p = ptsG(g); g.len(p.B, p.C, '' + 2*k, { b: 34 }); g.len(p.B, p.D, 'x', { b: 13 }); },
+        hints: ['重心は中線の交点。AD は中線だから、D は辺 BC の中点', `${X} ＝ ${2*k} ÷ 2 ＝ ${k}`] }; },
+    () => { const k = ri(2, 9);
+      return { q: `点 G は △ABC の重心で、AG ＝ ${2*k} です。GD の長さ ${X} を求めなさい。`, ans: k, unit: '',
+        fig: g => { const p = ptsG(g); g.len(p.A, p.G, '' + 2*k, { b: 13 }); g.len(p.G, p.D, 'x', { b: 13 }); },
+        hints: ['重心は中線を 2 : 1 に分ける　AG : GD ＝ 2 : 1', `${2*k} : ${X} ＝ 2 : 1`, `2${X} ＝ ${2*k}　よって　${X} ＝ ${k}`] }; },
+    () => { const k = ri(2, 9);
+      return { q: `点 G は △ABC の重心で、GD ＝ ${k} です。AG の長さ ${X} を求めなさい。`, ans: 2*k, unit: '',
+        fig: g => { const p = ptsG(g); g.len(p.A, p.G, 'x', { b: 13 }); g.len(p.G, p.D, '' + k, { b: 13 }); },
+        hints: ['AG : GD ＝ 2 : 1', `${X} : ${k} ＝ 2 : 1`, `${X} ＝ ${2*k}`] }; },
+    () => { const k = ri(2, 8);
+      return { q: `点 G は △ABC の重心で、AD ＝ ${3*k} です。AG の長さ ${X} を求めなさい。`, ans: 2*k, unit: '',
+        fig: g => { const p = ptsG(g); g.len(p.A, p.D, '' + 3*k, { b: 30, flip: 1 }); g.len(p.A, p.G, 'x', { b: 13 }); },
+        hints: ['AG : GD ＝ 2 : 1 だから、AG は AD 全体の {2|3}', `${X} ＝ ${3*k} × {2|3} ＝ ${2*k}`] }; },
+    () => { const k = ri(2, 8);
+      return { q: `点 G は △ABC の重心で、BE ＝ ${3*k} です。GE の長さ ${X} を求めなさい。`, ans: k, unit: '',
+        fig: g => { const p = ptsG(g); g.len(p.B, p.E, '' + 3*k, { b: 30 }); g.len(p.G, p.E, 'x', { b: 12, flip: 1 }); },
+        hints: ['BE も中線。BG : GE ＝ 2 : 1 だから、GE は BE 全体の {1|3}', `${X} ＝ ${3*k} × {1|3} ＝ ${k}`] }; },
+    () => { const k = ri(2, 8);
+      return { q: `点 G は △ABC の重心で、AG ＝ ${2*k} です。AD の長さ ${X} を求めなさい。`, ans: 3*k, unit: '',
+        fig: g => { const p = ptsG(g); g.len(p.A, p.D, 'x', { b: 30, flip: 1 }); g.len(p.A, p.G, '' + 2*k, { b: 13 }); },
+        hints: [`AG : GD ＝ 2 : 1 だから　GD ＝ ${2*k} ÷ 2 ＝ ${k}`, `${X} ＝ AG ＋ GD ＝ ${2*k} ＋ ${k} ＝ ${3*k}`] }; }
+  ];
+
+  // ---- ⑤ 円周角 ----
+  const enshu = [
+    () => { const a = r5(25, 65), pp = r5(65, 115);
+      return { q: `円 O で、∠${X}（中心角 ∠AOB）の大きさを求めなさい。`, ans: 2*a, unit: '°',
+        fig: g => { const O = circ(g, true, [0, 1]); const A = g.P('A', pol(270 - a)), B = g.P('B', pol(270 + a)), P = g.P('P', pol(pp));
+          g.seg(P, A); g.seg(P, B); g.seg(O, A); g.seg(O, B); g.ang(P, A, B, a + '°'); g.ang(O, A, B, 'x', { r: 16 }); },
+        hints: ['弧 AB に対する円周角が ∠APB、中心角が ∠AOB', '中心角は円周角の2倍', `${X} ＝ ${a}° × 2 ＝ ${2*a}°`] }; },
+    () => { const c = 10 * ri(7, 15), pp = r5(65, 115);
+      return { q: `円 O で、∠${X}（円周角 ∠APB）の大きさを求めなさい。`, ans: c / 2, unit: '°',
+        fig: g => { const O = circ(g, true, [0, 1]); const A = g.P('A', pol(270 - c/2)), B = g.P('B', pol(270 + c/2)), P = g.P('P', pol(pp));
+          g.seg(P, A); g.seg(P, B); g.seg(O, A); g.seg(O, B); g.ang(O, A, B, c + '°', { r: 15 }); g.ang(P, A, B, 'x'); },
+        hints: ['弧 AB に対する円周角が ∠APB、中心角が ∠AOB', '円周角は中心角の半分', `${X} ＝ ${c}° ÷ 2 ＝ ${c/2}°`] }; },
+    () => { const a = r5(25, 50);
+      return { q: `4点 A, B, P, Q は同じ円周上にあります。∠${X} の大きさを求めなさい。`, ans: a, unit: '°',
+        fig: g => { circ(g, false); const A = g.P('A', pol(255 - a)), B = g.P('B', pol(255 + a)), P = g.P('P', pol(60)), Q = g.P('Q', pol(140));
+          g.seg(P, A); g.seg(P, B); g.seg(Q, A); g.seg(Q, B); g.ang(P, A, B, a + '°', { r: 40 }); g.ang(Q, A, B, 'x', { r: 34 }); },
+        hints: ['∠APB と ∠AQB は、どちらも弧 AB に対する円周角', '同じ弧に対する円周角は等しい', `${X} ＝ ${a}°`] }; },
+    () => { const a = r5(25, 65);
+      return { q: `線分 AB は円 O の直径です。∠${X} の大きさを求めなさい。`, ans: 90 - a, unit: '°',
+        fig: g => { const O = circ(g, true); const A = g.P('A', pol(180)), B = g.P('B', pol(0)), C = g.P('C', pol(2*a));
+          g.poly([A, B, C]); g.ang(A, C, B, a + '°'); g.ang(B, A, C, 'x'); },
+        hints: ['AB は直径。半円の弧に対する円周角は 90° だから　∠ACB ＝ 90°', '△ABC の内角の和は 180°', `${X} ＝ 180° − (90° ＋ ${a}°) ＝ ${90 - a}°`] }; },
+    () => { const a = r5(20, 40);
+      return { q: `線分 AB は円 O の直径です。∠${X}（∠COB）の大きさを求めなさい。`, ans: 2*a, unit: '°',
+        fig: g => { const O = circ(g, true); const A = g.P('A', pol(180)), B = g.P('B', pol(0)), C = g.P('C', pol(2*a));
+          g.seg(A, B); g.seg(A, C); g.seg(O, C); g.ang(A, C, B, a + '°', { r: 44 }); g.ang(O, B, C, 'x', { r: 24 }); },
+        hints: ['弧 BC に対する円周角が ∠CAB、中心角が ∠COB', '中心角は円周角の2倍', `${X} ＝ ${a}° × 2 ＝ ${2*a}°`] }; }
+  ];
+
+  // ---- ⑥ 円に内接する四角形 ----
+  const Q_NAI = '四角形 ABCD は円に内接しています。';
+  const naisetsu = [
+    () => { const a = r5(95, 115);
+      return { q: `${Q_NAI}∠${X} の大きさを求めなさい。`, ans: 180 - a, unit: '°',
+        fig: g => { circ(g, false); const A = g.P('A', pol(120)), B = g.P('B', pol(200)), C = g.P('C', pol(320)), D = g.P('D', pol(200 + 2*a));
+          g.poly([A, B, C, D]); g.ang(A, B, D, a + '°', { r: 17 }); g.ang(C, D, B, 'x', { r: 18 }); },
+        hints: ['円に内接する四角形の、向かいあう内角の和は 180°', '∠A ＋ ∠C ＝ 180°', `${X} ＝ 180° − ${a}° ＝ ${180 - a}°`] }; },
+    () => { const b = r5(65, 85);
+      return { q: `${Q_NAI}∠${X} の大きさを求めなさい。`, ans: 180 - b, unit: '°',
+        fig: g => { circ(g, false); const A = g.P('A', pol(110)), B = g.P('B', pol(210)), C = g.P('C', pol(470 - 2*b)), D = g.P('D', pol(30));
+          g.poly([A, B, C, D]); g.ang(B, C, A, b + '°', { r: 20 }); g.ang(D, A, C, 'x', { r: 17 }); },
+        hints: ['向かいあう内角の和は 180°', '∠B ＋ ∠D ＝ 180°', `${X} ＝ 180° − ${b}° ＝ ${180 - b}°`] }; },
+    () => { const a = r5(95, 110);
+      return { q: `${Q_NAI}∠${X}（∠C の外角）の大きさを求めなさい。`, ans: a, unit: '°',
+        fig: g => { circ(g, false); const A = g.P('A', pol(125)), B = g.P('B', pol(205)), C = g.P('C', pol(325)), D = g.P('D', pol(205 + 2*a));
+          const E = g.bound(mix(B, C, 1.35)); g.poly([A, B, C, D]); g.seg(C, E); g.ang(A, B, D, a + '°', { r: 18 }); g.ang(C, D, E, 'x', { r: 18 }); },
+        hints: ['内角は、向かいあう角の外角に等しい', '∠C の外角 ＝ ∠A', `${X} ＝ ${a}°`] }; },
+    () => { const e = r5(65, 80);
+      return { q: `${Q_NAI}∠${X}（∠A）の大きさを求めなさい。`, ans: e, unit: '°',
+        fig: g => { circ(g, false); const A = g.P('A', pol(110)), B = g.P('B', pol(220)), C = g.P('C', pol(320)), D = g.P('D', pol(220 + 2*e));
+          const E = g.bound(mix(B, C, 1.35)); g.poly([A, B, C, D]); g.seg(C, E); g.ang(C, D, E, e + '°', { r: 20 }); g.ang(A, B, D, 'x', { r: 22 }); },
+        hints: ['内角は、向かいあう角の外角に等しい', '∠A ＝ ∠C の外角', `${X} ＝ ${e}°`] }; },
+    () => { const p = r5(30, 45), q = r5(50, 65);
+      return { q: `${Q_NAI}∠${X}（∠C）の大きさを求めなさい。`, ans: p + q, unit: '°',
+        fig: g => { circ(g, false); const b = 100 + 2*q, d = 460 - 2*p; const A = g.P('A', pol(100)), B = g.P('B', pol(b)), C = g.P('C', pol((b + d) / 2)), D = g.P('D', pol(d));
+          g.poly([A, B, C, D]); g.seg(B, D); g.ang(B, A, D, p + '°', { r: 36 }); g.ang(D, A, B, q + '°', { r: 26 }); g.ang(C, D, B, 'x', { r: 17 }); },
+        hints: [`まず △ABD で ∠A を求める　∠A ＝ 180° − (${p}° ＋ ${q}°) ＝ ${180 - p - q}°`, '向かいあう内角の和は 180°　∠A ＋ ∠C ＝ 180°', `${X} ＝ 180° − ${180 - p - q}° ＝ ${p + q}°`] }; }
+  ];
+
+  // ---- ⑦ 接線と弦のつくる角 ----
+  const sessen = [
+    () => { const t = r5(50, 70);
+      return { q: `直線 AT は点 A で円に接しています。∠${X} の大きさを求めなさい。`, ans: t, unit: '°',
+        fig: g => { const p = tangentBase(g, 270 + 2*t, 150, false); g.ang(p.A, p.B, p.T, t + '°'); g.ang(p.C, p.A, p.B, 'x'); },
+        hints: ['接線 AT と弦 AB がつくる角は ∠BAT', '∠BAT ＝ ∠ACB（弧 AB に対する円周角）', `${X} ＝ ${t}°`] }; },
+    () => { const t = r5(40, 65);
+      return { q: `直線 AT は点 A で円に接しています。∠${X} の大きさを求めなさい。`, ans: t, unit: '°',
+        fig: g => { const p = tangentBase(g, 270 + 2*t, 130, false); g.ang(p.C, p.A, p.B, t + '°', { r: 28 }); g.ang(p.A, p.B, p.T, 'x', { r: 26 }); },
+        hints: ['接線と弦のつくる角　∠BAT ＝ ∠ACB', `${X} ＝ ${t}°`] }; },
+    () => { const s = r5(55, 75);
+      return { q: `直線 ST は点 A で円に接しています。∠${X}（∠CAS）の大きさを求めなさい。`, ans: s, unit: '°',
+        fig: g => { const p = tangentBase(g, 30, 270 - 2*s, true); g.ang(p.B, p.C, p.A, s + '°'); g.ang(p.A, p.C, p.S, 'x'); },
+        hints: ['今度は接線と弦 AC がつくる角 ∠CAS を考える', '∠CAS は、弧 AC に対する円周角 ∠ABC に等しい', `${X} ＝ ${s}°`] }; },
+    () => { const t = r5(35, 50), m = r5(55, 70);
+      return { q: `直線 AT は点 A で円に接しています。∠${X}（∠ABC）の大きさを求めなさい。`, ans: 180 - t - m, unit: '°',
+        fig: g => { const p = tangentBase(g, 270 + 2*t, 2*t + 2*m - 90, false); g.ang(p.A, p.B, p.T, t + '°', { r: 34 }); g.ang(p.A, p.C, p.B, m + '°', { r: 22 }); g.ang(p.B, p.A, p.C, 'x', { r: 20 }); },
+        hints: [`接線と弦のつくる角　∠ACB ＝ ∠BAT ＝ ${t}°`, '△ABC の内角の和は 180°', `${X} ＝ 180° − (${t}° ＋ ${m}°) ＝ ${180 - t - m}°`] }; },
+    () => { let t, s; do { t = r5(35, 45); s = r5(30, 40); } while(t === s);
+      return { q: `直線 ST は点 A で円に接しています。∠${X}（∠CAS）の大きさを求めなさい。`, ans: s, unit: '°',
+        fig: g => { const p = tangentBase(g, 270 + 2*t, 270 - 2*s, true); g.ang(p.C, p.A, p.B, t + '°', { r: 30 }); g.ang(p.B, p.C, p.A, s + '°', { r: 42 }); g.ang(p.A, p.C, p.S, 'x', { r: 44 }); },
+        hints: ['∠CAS は接線と弦 AC がつくる角', 'その角の内部にある弧 AC に対する円周角は ∠ABC（∠ACB ではない）', `${X} ＝ ∠ABC ＝ ${s}°`] }; }
+  ];
+
+  // ---- ⑧ 接線の長さ：AF=AE=u, BD=BF=v, CD=CE=w ----
+  const genT = () => ({ u: ri(2, 6), v: ri(3, 6), w: ri(2, 6) });
+  const Q_IN = '△ABC の内接円が、辺と点 D, E, F で接しています。';
+  const nagasa = [
+    () => { const n = ri(4, 12);
+      return { q: `点 P から円に2本の接線を引き、接点を A, B とします。PB の長さ ${X} を求めなさい。`, ans: n, unit: '',
+        fig: g => { g.circle(O0, 1); const O = g.P('O', O0, { d: [-1, 0] }); g.dot(O); const P = g.P('P', { x: 2.4, y: 0 }, { d: [1, 0] }), A = g.P('A', pol(Math.acos(1/2.4)/R)), B = g.P('B', pol(-Math.acos(1/2.4)/R));
+          g.seg(P, A); g.seg(P, B); g.len(P, A, '' + n, { b: 13 }); g.len(P, B, 'x', { b: 13 }); },
+        hints: ['円の外の点から引いた2本の接線の長さは等しい', `${X} ＝ PB ＝ PA ＝ ${n}`] }; },
+    () => { const { u, v, w } = genT();
+      return { q: `${Q_IN}AE の長さ ${X} を求めなさい。`, ans: u, unit: '',
+        fig: g => { const p = ptsIn(g, u + v, w + u, v + w); g.len(p.A, p.F, '' + u, { b: 13 }); g.len(p.A, p.E, 'x', { b: 13 }); },
+        hints: ['AF と AE は、点 A から円に引いた2本の接線', '接線の長さは等しい　AE ＝ AF', `${X} ＝ ${u}`] }; },
+    () => { const { u, v, w } = genT(), c = u + v, b = w + u;
+      return { q: `${Q_IN}BD の長さ ${X} を求めなさい。`, ans: v, unit: '',
+        fig: g => { const p = ptsIn(g, c, b, v + w); g.len(p.A, p.B, '' + c, { b: 34 }); g.len(p.A, p.C, '' + b, { b: 34 }); g.len(p.D, p.C, '' + w, { b: 13 }); g.len(p.B, p.D, 'x', { b: 13 }); },
+        hints: [`C から：CE ＝ CD ＝ ${w}　だから　AE ＝ ${b} − ${w} ＝ ${u}`, `A から：AF ＝ AE ＝ ${u}　だから　BF ＝ ${c} − ${u} ＝ ${v}`, `B から：${X} ＝ BD ＝ BF ＝ ${v}`] }; },
+    () => { const { u, v, w } = genT();
+      return { q: `${Q_IN}BC の長さ ${X} を求めなさい。`, ans: v + w, unit: '',
+        fig: g => { const p = ptsIn(g, u + v, w + u, v + w); g.len(p.A, p.F, '' + u, { b: 13 }); g.len(p.B, p.D, '' + v, { b: 12 }); g.len(p.C, p.E, '' + w, { b: 13 }); g.len(p.B, p.C, 'x', { b: 34 }); },
+        hints: [`C から引いた接線の長さは等しい　CD ＝ CE ＝ ${w}`, 'BC ＝ BD ＋ DC', `${X} ＝ ${v} ＋ ${w} ＝ ${v + w}`] }; },
+    () => { const { u, v, w } = genT();
+      return { q: `${Q_IN}△ABC の周の長さ ${X} を求めなさい。`, ans: 2*(u + v + w), unit: '',
+        fig: g => { const p = ptsIn(g, u + v, w + u, v + w); g.len(p.A, p.F, '' + u, { b: 13 }); g.len(p.B, p.D, '' + v, { b: 13 }); g.len(p.C, p.E, '' + w, { b: 13 }); },
+        hints: [`接線の長さは等しい　AE ＝ AF ＝ ${u}、BF ＝ BD ＝ ${v}、CD ＝ CE ＝ ${w}`, `周の長さは、${u}・${v}・${w} がそれぞれ2回ずつ出てくる`, `${X} ＝ 2 × (${u} ＋ ${v} ＋ ${w}) ＝ ${2*(u + v + w)}`] }; }
+  ];
+
+  // ---- ⑨ 方べきの定理 ----
+  function genChord(){ for(;;){ const a = ri(2, 8), b = ri(2, 9), c = ri(2, 8), d = a*b/c; if(Number.isInteger(d) && d >= 2 && d <= 9 && a !== c && a !== d) return [a, b, c, d]; } }
+  function genSec(){ for(;;){ const a = ri(2, 5), b = ri(5, 12), c = ri(2, 6), d = a*b/c; if(Number.isInteger(d) && d <= 12 && a !== c && b - a >= 2 && d - c >= 1 && b / a <= 4.5 && d / c <= 4.5) return [a, b, c, d]; } }
+  const TAN = [[2,8,4],[4,9,6],[3,12,6],[1,4,2],[1,9,3],[4,16,8],[9,16,12],[5,20,10],[2,18,6],[8,18,12]];
+  const houbeki = [
+    () => { const [a, b, c, d] = genChord();
+      return { q: `円の2つの弦 AB, CD が点 P で交わっています。${X} の値を求めなさい。`, ans: b, unit: '',
+        fig: g => powIn(g, a, b, c, d, -20, 250, ['' + a, 'x', '' + c, '' + d], [0.2, 1]),
+        hints: ['方べきの定理　PA × PB ＝ PC × PD', `${a} × ${X} ＝ ${c} × ${d}`, `${a}${X} ＝ ${c*d}　よって　${X} ＝ ${b}`] }; },
+    () => { const [a, b, c, d] = genChord();
+      return { q: `円の2つの弦 AB, CD が点 P で交わっています。${X} の値を求めなさい。`, ans: d, unit: '',
+        fig: g => powIn(g, a, b, c, d, 15, 110, ['' + a, '' + b, '' + c, 'x'], [-1, 0.9]),
+        hints: ['方べきの定理　PA × PB ＝ PC × PD', `${a} × ${b} ＝ ${c} × ${X}`, `${c}${X} ＝ ${a*b}　よって　${X} ＝ ${d}`] }; },
+    () => { const [a, b, c, d] = genSec();
+      return { q: `点 P を通る2直線が、円と A, B および C, D で交わっています。PD の長さ ${X} を求めなさい。`, ans: d, unit: '',
+        fig: g => { const p = powOut(g, a, b, c, d, 35); g.len(p.P, p.A, '' + a, { b: 11, flip: 1 }); g.len(p.P, p.B, '' + b, { b: 32 }); g.len(p.P, p.C, '' + c, { b: 11, flip: 1 }); g.len(p.P, p.D, 'x', { b: 26 }); },
+        hints: ['方べきの定理　PA × PB ＝ PC × PD（どれも P からはかった長さ）', `${a} × ${b} ＝ ${c} × ${X}`, `${c}${X} ＝ ${a*b}　よって　${X} ＝ ${d}`] }; },
+    () => { const [a, b, t] = pick(TAN.slice(0, 5));
+      return { q: `直線 PT は点 T で円に接しています。PT の長さ ${X} を求めなさい。`, ans: t, unit: '',
+        fig: g => { const p = powTan(g, a, b, 42); g.len(p.P, p.A, '' + a, { b: 11, flip: 1 }); g.len(p.P, p.B, '' + b, { b: 32 }); g.len(p.P, p.T, 'x', { b: 15 }); },
+        hints: ['接線のときの方べきの定理　PA × PB ＝ PT²', `${a} × ${b} ＝ ${X}²　つまり　${X}² ＝ ${a*b}`, `${X} は正の数だから　${X} ＝ ${t}`] }; },
+    () => { const [a, b, t] = pick(TAN.slice(5));
+      return { q: `直線 PT は点 T で円に接しています。PT の長さ ${X} を求めなさい。`, ans: t, unit: '',
+        fig: g => { const p = powTan(g, a, b, 38); g.len(p.P, p.A, '' + a, { b: 11, flip: 1 }); g.len(p.P, p.B, '' + b, { b: 36 }); g.len(p.P, p.T, 'x', { b: 15 }); },
+        hints: ['PA × PB ＝ PT²', `${a} × ${b} ＝ ${X}²　つまり　${X}² ＝ ${a*b}`, `${X} は正の数だから　${X} ＝ ${t}`] }; },
+    () => { const [a, b, c, d] = genSec();
+      return { q: `【チャレンジ】点 P を通る2直線が、円と A, B および C, D で交わっています。AB の長さ ${X} を求めなさい。`, ans: b - a, unit: '',
+        fig: g => { const p = powOut(g, a, b, c, d, 40); g.len(p.P, p.A, '' + a, { b: 11 }); g.len(p.A, p.B, 'x', { b: 13 }); g.len(p.P, p.C, '' + c, { b: 12 }); g.len(p.C, p.D, '' + (d - c), { b: 12 }); },
+        hints: [`方べきの定理は「P からの長さ」で使う。PB ＝ ${a} ＋ ${X}、PD ＝ ${c} ＋ ${d - c} ＝ ${d}`, `PA × PB ＝ PC × PD　より　${a} × (${a} ＋ ${X}) ＝ ${c} × ${d}`, `${a} ＋ ${X} ＝ ${b}　よって　${X} ＝ ${b - a}`] }; }
+  ];
+
+  // ---- ⑩ 2つの円 ----
+  const posProb = types => () => {
+    let r, s, d; const type = pick(types);
+    for(;;){ r = ri(4, 7); s = ri(2, r - 2);
+      if(type === 0){ if(r - s < 2) continue; d = ri(1, r - s - 1); }
+      else if(type === 1) d = r - s; else if(type === 2) d = ri(r - s + 1, r + s - 1); else if(type === 3) d = r + s; else d = r + s + ri(1, 3);
+      break; }
+    const h0 = `半径の和　${r} ＋ ${s} ＝ ${r + s}、半径の差　${r} − ${s} ＝ ${r - s}　をまず計算する`;
+    const hs = [
+      [`d ＝ ${d} は、半径の差 ${r - s} より小さい（d ＜ r − s）`, '小さい円が大きい円の中に入りきるので「一方が他方の内部にある」'],
+      [`d ＝ ${d} は、半径の差とちょうど同じ（d ＝ r − s）`, '小さい円が内側から接するので「内接する」'],
+      [`d ＝ ${d} は ${r - s} と ${r + s} の間（r − s ＜ d ＜ r ＋ s）`, '「2点で交わる」'],
+      [`d ＝ ${d} は、半径の和とちょうど同じ（d ＝ r ＋ s）`, '外側から接するので「外接する」'],
+      [`d ＝ ${d} は、半径の和 ${r + s} より大きい（r ＋ s ＜ d）`, '円どうしが届かないので「離れている」']][type];
+    return { q: `半径 ${r} の円 O と半径 ${s} の円 P があり、中心間の距離は d ＝ ${d} です。2つの円の位置関係を選びなさい。`,
+      choices: POS, ans: type, unit: '',
+      fig: (g, st) => { if(st.done) twoCircles(g, r, s, d); else bars(g, r, s, d); },
+      hints: [h0, hs[0], hs[1]] };
+  };
+  const futatsu = [
+    () => { const r = ri(5, 9), s = ri(2, r - 2);
+      return { q: `半径 ${r} の円 O と半径 ${s} の円 P が外接しています。中心間の距離 ${X} を求めなさい。`, ans: r + s, unit: '',
+        fig: g => { const p = twoCircles(g, r, s, r + s), T = { x: r, y: 0 }; g.seg(p.O, p.P); g.dot(T, { color: CO }); g.len(p.O, T, '' + r, { b: 13, flip: 1, color: INK }); g.len(T, p.P, '' + s, { b: 13, flip: 1 }); g.len(p.O, p.P, 'x', { b: 34 }); },
+        hints: ['外接するとき、2つの中心と接点は一直線に並ぶ', '外接　d ＝ r ＋ s', `${X} ＝ ${r} ＋ ${s} ＝ ${r + s}`] }; },
+    () => { const r = ri(6, 9), s = ri(3, r - 3);
+      return { q: `半径 ${r} の円 O に、半径 ${s} の円 P が内接しています。中心間の距離 ${X} を求めなさい。`, ans: r - s, unit: '',
+        fig: g => { const p = twoCircles(g, r, s, r - s), T = { x: r, y: 0 }; g.seg(p.O, T); g.dot(T, { color: CO }); g.len(p.O, T, '' + r, { b: 40, color: INK }); g.len(p.P, T, '' + s, { b: 14, flip: 1 }); g.len(p.O, p.P, 'x', { b: 14, flip: 1 }); },
+        hints: ['内接するとき、2つの中心と接点は一直線に並ぶ', '内接　d ＝ r − s', `${X} ＝ ${r} − ${s} ＝ ${r - s}`] }; },
+    () => { const r = ri(5, 9), s = ri(2, r - 2);
+      return { q: `半径 ${r} の円 O と円 P が外接していて、中心間の距離は ${r + s} です。円 P の半径 ${X} を求めなさい。`, ans: s, unit: '',
+        fig: g => { const p = twoCircles(g, r, s, r + s), T = { x: r, y: 0 }; g.seg(p.O, p.P); g.dot(T, { color: CO }); g.len(p.O, T, '' + r, { b: 13, flip: 1, color: INK }); g.len(T, p.P, 'x', { b: 13, flip: 1 }); g.len(p.O, p.P, '' + (r + s), { b: 34 }); },
+        hints: ['外接　d ＝ r ＋ s', `${r + s} ＝ ${r} ＋ ${X}`, `${X} ＝ ${s}`] }; },
+    posProb([2, 3, 4]), posProb([0, 1, 2]), posProb([0, 1, 2, 3, 4])
+  ];
 
   const STAGES = [
   { id: 'bis', title: '角の二等分線と線分の比', page: 'p.65', short: 'BD : DC ＝ AB : AC',
     rule: '△ABC で AD が ∠A の二等分線のとき　<b>BD : DC ＝ AB : AC</b>',
     pfig: g => figBis(g, 8, 6, 7, {}),
-    probs: [
-      { q: Q_BIS, ans: 4, unit: '', fig: g => figBis(g, 8, 6, 7, { AB: '8', AC: '6', BD: 'x', DC: '3' }),
-        hints: ['角の二等分線の性質　BD : DC ＝ AB : AC　を使う', '<i>x</i> : 3 ＝ 8 : 6', '6<i>x</i> ＝ 24　よって　<i>x</i> ＝ 4'] },
-      { q: Q_BIS, ans: 2, unit: '', fig: g => figBis(g, 9, 3, 8, { AB: '9', AC: '3', BD: '6', DC: 'x' }),
-        hints: ['BD : DC ＝ AB : AC　を使う', '6 : <i>x</i> ＝ 9 : 3', '9<i>x</i> ＝ 18　よって　<i>x</i> ＝ 2'] },
-      { q: Q_BIS, ans: 12, unit: '', fig: g => figBis(g, 12, 16, 21, { AB: 'x', AC: '16', BD: '9', DC: '12' }),
-        hints: ['BD : DC ＝ AB : AC　を使う', '9 : 12 ＝ <i>x</i> : 16', '12<i>x</i> ＝ 144　よって　<i>x</i> ＝ 12'] },
-      { q: Q_BIS, ans: 8, unit: '', fig: g => figBis(g, 12, 8, 15, { AB: '12', AC: 'x', BD: '9', DC: '6' }),
-        hints: ['BD : DC ＝ AB : AC　を使う', '9 : 6 ＝ 12 : <i>x</i>', '9<i>x</i> ＝ 72　よって　<i>x</i> ＝ 8'] },
-      { q: '△ABC で、AD は ∠A の二等分線、BC ＝ 5 です。BD の長さ <i>x</i> を求めなさい。', ans: 3, unit: '', fig: g => figBis(g, 6, 4, 5, { AB: '6', AC: '4', BD: 'x', BC: '5' }),
-        hints: ['BD : DC ＝ AB : AC ＝ 6 : 4 ＝ 3 : 2', 'BC（＝5）を 3 : 2 に分けるので、BD は全体の {3|5}', '<i>x</i> ＝ 5 × {3|5} ＝ 3'] },
-      { q: '△ABC で、AD は ∠A の二等分線、BC ＝ 20 です。DC の長さ <i>x</i> を求めなさい。', ans: 12, unit: '', fig: g => figBis(g, 10, 15, 20, { AB: '10', AC: '15', DC: 'x', BC: '20' }),
-        hints: ['BD : DC ＝ AB : AC ＝ 10 : 15 ＝ 2 : 3', 'BC（＝20）を 2 : 3 に分けるので、DC は全体の {3|5}', '<i>x</i> ＝ 20 × {3|5} ＝ 12'] }
-    ] },
-
+    gens: [bis('BD'), bis('DC'), bis('AB'), bis('AC'), bis('BC-BD'), bis('BC-DC')] },
   { id: 'gaishin', title: '外心', page: 'p.67', short: 'OA ＝ OB ＝ OC',
     rule: '外心 O は3辺の垂直二等分線の交点で、<b>OA ＝ OB ＝ OC</b>。だから △OAB・△OBC・△OCA は<b>二等辺三角形</b>（底角が等しい）',
     pfig: g => { g.circle(O0, 1, { dash: 1, color: '#94a3b8' }); const p = ptsO(g, 30, 25, 35); [p.A, p.B, p.C].forEach(v => g.seg(p.O, v, { color: CO, w: 2.4 })); },
-    probs: [
-      { q: '点 O は △ABC の外心で、OA ＝ 6 です。OC の長さ <i>x</i> を求めなさい。', ans: 6, unit: '',
-        fig: g => { const p = ptsO(g, 30, 25, 35); g.seg(p.O, p.A); g.seg(p.O, p.B); g.seg(p.O, p.C); g.len(p.O, p.A, '6', { b: 12 }); g.len(p.O, p.C, 'x', { b: 12 }); },
-        hints: ['外心は3つの頂点から等しい距離にある　OA ＝ OB ＝ OC', '<i>x</i> ＝ OC ＝ OA ＝ 6'] },
-      { q: '点 O は △ABC の外心です。∠<i>x</i> の大きさを求めなさい。', ans: 25, unit: '°',
-        fig: g => { const p = ptsO(g, 35, 25, 30, [0, 1]); g.seg(p.O, p.B); g.seg(p.O, p.C); g.ang(p.B, p.O, p.C, '25°'); g.ang(p.C, p.B, p.O, 'x'); },
-        hints: ['OB ＝ OC だから △OBC は二等辺三角形', '二等辺三角形の底角は等しい　∠OCB ＝ ∠OBC', '<i>x</i> ＝ 25°'] },
-      { q: '点 O は △ABC の外心です。∠<i>x</i>（∠BOC）の大きさを求めなさい。', ans: 110, unit: '°',
-        fig: g => { const p = ptsO(g, 25, 35, 30, [0, 1]); g.seg(p.O, p.B); g.seg(p.O, p.C); g.ang(p.B, p.O, p.C, '35°'); g.ang(p.O, p.B, p.C, 'x', { r: 16 }); },
-        hints: ['OB ＝ OC だから △OBC は二等辺三角形。∠OCB ＝ ∠OBC ＝ 35°', '△OBC の内角の和は 180°', '<i>x</i> ＝ 180° − 35° × 2 ＝ 110°'] },
-      { q: '点 O は △ABC の外心です。∠<i>x</i>（∠BAC）の大きさを求めなさい。', ans: 75, unit: '°',
-        fig: (g, st) => { const p = ptsO(g, 30, 15, 45); g.seg(p.O, p.B); g.seg(p.O, p.C); if(st.h >= 1 || st.done) g.seg(p.O, p.A, { dash: 1, color: CO, w: 2 }); g.ang(p.B, p.A, p.O, '30°'); g.ang(p.C, p.O, p.A, '45°'); g.ang(p.A, p.B, p.C, 'x', { r: 17 }); },
-        hints: ['OA を引く（図に点線で出ました）。OA ＝ OB ＝ OC だから △OAB と △OCA は二等辺三角形', '∠OAB ＝ ∠OBA ＝ 30°、∠OAC ＝ ∠OCA ＝ 45°', '<i>x</i> ＝ 30° ＋ 45° ＝ 75°'] },
-      { q: '点 O は △ABC の外心です。∠<i>x</i>（∠OCA）の大きさを求めなさい。', ans: 30, unit: '°',
-        fig: g => { const p = ptsO(g, 20, 40, 30, [0.9, 0.5]); g.seg(p.O, p.A); g.seg(p.O, p.B); g.seg(p.O, p.C); g.ang(p.A, p.O, p.B, '20°'); g.ang(p.B, p.O, p.C, '40°'); g.ang(p.C, p.O, p.A, 'x'); },
-        hints: ['△OAB・△OBC・△OCA はどれも二等辺三角形。底角は等しい', '∠OBA ＝ 20°、∠OCB ＝ 40°、∠OAC ＝ <i>x</i>', '△ABC の内角の和　2 × (20° ＋ 40° ＋ <i>x</i>) ＝ 180°', '20° ＋ 40° ＋ <i>x</i> ＝ 90°　よって　<i>x</i> ＝ 30°'] }
-    ] },
-
+    gens: gaishin },
   { id: 'naishin', title: '内心', page: 'p.69', short: '角の二等分線の交点',
     rule: '内心 I は<b>3つの角の二等分線の交点</b>。BI は ∠B を、CI は ∠C を、AI は ∠A を2等分する',
     pfig: g => { const p = ptsI(g, 60, 50); g.circle(p.I, p.I.y, { dash: 1, color: '#94a3b8' }); [p.A, p.B, p.C].forEach(v => g.seg(p.I, v, { color: CO, w: 2.2 }));
       g.ang(p.B, p.A, p.I, '', { mark: 1, r: 30 }); g.ang(p.B, p.I, p.C, '', { mark: 1, r: 30 }); g.ang(p.C, p.I, p.A, '', { mark: 1, open: 1, r: 30 }); g.ang(p.C, p.B, p.I, '', { mark: 1, open: 1, r: 30 }); },
-    probs: [
-      { q: '点 I は △ABC の内心です。∠<i>x</i> の大きさを求めなさい。', ans: 25, unit: '°',
-        fig: g => { const p = ptsI(g, 50, 60); g.seg(p.I, p.B); g.seg(p.I, p.C); g.ang(p.B, p.I, p.C, '25°', { r: 44 }); g.ang(p.B, p.A, p.I, 'x', { r: 34 }); },
-        hints: ['内心 I は角の二等分線の交点。BI は ∠B を2等分する', '∠IBA ＝ ∠IBC', '<i>x</i> ＝ 25°'] },
-      { q: '点 I は △ABC の内心です。∠<i>x</i>（∠BIC）の大きさを求めなさい。', ans: 130, unit: '°',
-        fig: g => { const p = ptsI(g, 60, 40); g.seg(p.I, p.B); g.seg(p.I, p.C); g.ang(p.B, p.I, p.C, '30°', { r: 40 }); g.ang(p.C, p.B, p.I, '20°', { r: 48 }); g.ang(p.I, p.B, p.C, 'x', { r: 14, tr: 26 }); },
-        hints: ['△IBC の内角の和は 180°', '<i>x</i> ＝ 180° − (30° ＋ 20°)', '<i>x</i> ＝ 130°'] },
-      { q: '点 I は △ABC の内心です。∠<i>x</i>（∠BAC）の大きさを求めなさい。', ans: 60, unit: '°',
-        fig: g => { const p = ptsI(g, 70, 50); g.seg(p.I, p.B); g.seg(p.I, p.C); g.ang(p.B, p.I, p.C, '35°', { r: 36 }); g.ang(p.C, p.B, p.I, '25°', { r: 44 }); g.ang(p.A, p.B, p.C, 'x'); },
-        hints: ['BI・CI は角の二等分線。∠B ＝ 35° × 2 ＝ 70°、∠C ＝ 25° × 2 ＝ 50°', '△ABC の内角の和は 180°', '<i>x</i> ＝ 180° − (70° ＋ 50°) ＝ 60°'] },
-      { q: '点 I は △ABC の内心です。∠<i>x</i>（∠IBC）の大きさを求めなさい。', ans: 25, unit: '°',
-        fig: g => { const p = ptsI(g, 50, 60); g.seg(p.I, p.B); g.seg(p.I, p.C); g.ang(p.A, p.B, p.C, '70°'); g.ang(p.C, p.B, p.I, '30°', { r: 38 }); g.ang(p.B, p.I, p.C, 'x', { r: 44 }); },
-        hints: ['CI は ∠C の二等分線。∠C ＝ 30° × 2 ＝ 60°', '∠B ＝ 180° − (70° ＋ 60°) ＝ 50°', 'BI は ∠B の二等分線。<i>x</i> ＝ 50° ÷ 2 ＝ 25°'] },
-      { q: '点 I は △ABC の内心で、∠A ＝ 80° です。∠<i>x</i>（∠BIC）の大きさを求めなさい。', ans: 130, unit: '°',
-        fig: g => { const p = ptsI(g, 60, 40); g.seg(p.I, p.B); g.seg(p.I, p.C); g.ang(p.A, p.B, p.C, '80°');
-          g.ang(p.B, p.A, p.I, '', { mark: 1, r: 34 }); g.ang(p.B, p.I, p.C, '', { mark: 1, r: 34 }); g.ang(p.C, p.I, p.A, '', { mark: 1, open: 1, r: 40 }); g.ang(p.C, p.B, p.I, '', { mark: 1, open: 1, r: 40 });
-          g.ang(p.I, p.B, p.C, 'x', { r: 14, tr: 26 }); },
-        hints: ['∠B ＋ ∠C ＝ 180° − 80° ＝ 100°', 'BI・CI は角の二等分線だから　∠IBC ＋ ∠ICB ＝ 100° ÷ 2 ＝ 50°', '<i>x</i> ＝ 180° − 50° ＝ 130°'] }
-    ] },
-
+    gens: naishin },
   { id: 'jushin', title: '重心', page: 'p.71', short: '中線を 2 : 1 に分ける',
     rule: '重心 G は3本の<b>中線</b>（頂点と向かいの辺の中点を結ぶ線）の交点。重心は中線を<b>頂点の側から 2 : 1</b> に分ける　AG : GD ＝ 2 : 1',
     pfig: g => { const p = ptsG(g); g.len(p.A, p.G, '2', { b: 13, v: 2 }); g.len(p.G, p.D, '1', { b: 13, v: 1 }); },
-    probs: [
-      { q: '点 G は △ABC の重心で、BC ＝ 14 です。BD の長さ <i>x</i> を求めなさい。', ans: 7, unit: '',
-        fig: g => { const p = ptsG(g); g.len(p.B, p.C, '14', { b: 34 }); g.len(p.B, p.D, 'x', { b: 13 }); },
-        hints: ['重心は中線の交点。AD は中線だから、D は辺 BC の中点', '<i>x</i> ＝ 14 ÷ 2 ＝ 7'] },
-      { q: '点 G は △ABC の重心で、AG ＝ 6 です。GD の長さ <i>x</i> を求めなさい。', ans: 3, unit: '',
-        fig: g => { const p = ptsG(g); g.len(p.A, p.G, '6', { b: 13 }); g.len(p.G, p.D, 'x', { b: 13 }); },
-        hints: ['重心は中線を 2 : 1 に分ける　AG : GD ＝ 2 : 1', '6 : <i>x</i> ＝ 2 : 1', '2<i>x</i> ＝ 6　よって　<i>x</i> ＝ 3'] },
-      { q: '点 G は △ABC の重心で、GD ＝ 4 です。AG の長さ <i>x</i> を求めなさい。', ans: 8, unit: '',
-        fig: g => { const p = ptsG(g); g.len(p.A, p.G, 'x', { b: 13 }); g.len(p.G, p.D, '4', { b: 13 }); },
-        hints: ['AG : GD ＝ 2 : 1', '<i>x</i> : 4 ＝ 2 : 1', '<i>x</i> ＝ 8'] },
-      { q: '点 G は △ABC の重心で、AD ＝ 12 です。AG の長さ <i>x</i> を求めなさい。', ans: 8, unit: '',
-        fig: g => { const p = ptsG(g); g.len(p.A, p.D, '12', { b: 30, flip: 1 }); g.len(p.A, p.G, 'x', { b: 13 }); },
-        hints: ['AG : GD ＝ 2 : 1 だから、AG は AD 全体の {2|3}', '<i>x</i> ＝ 12 × {2|3} ＝ 8'] },
-      { q: '点 G は △ABC の重心で、BE ＝ 15 です。GE の長さ <i>x</i> を求めなさい。', ans: 5, unit: '',
-        fig: g => { const p = ptsG(g); g.len(p.B, p.E, '15', { b: 30 }); g.len(p.G, p.E, 'x', { b: 12, flip: 1 }); },
-        hints: ['BE も中線。BG : GE ＝ 2 : 1 だから、GE は BE 全体の {1|3}', '<i>x</i> ＝ 15 × {1|3} ＝ 5'] },
-      { q: '点 G は △ABC の重心で、AG ＝ 10 です。AD の長さ <i>x</i> を求めなさい。', ans: 15, unit: '',
-        fig: g => { const p = ptsG(g); g.len(p.A, p.D, 'x', { b: 30, flip: 1 }); g.len(p.A, p.G, '10', { b: 13 }); },
-        hints: ['AG : GD ＝ 2 : 1 だから　GD ＝ 10 ÷ 2 ＝ 5', '<i>x</i> ＝ AG ＋ GD ＝ 10 ＋ 5 ＝ 15'] }
-    ] },
-
+    gens: jushin },
   { id: 'enshu', title: '円周角の定理', page: 'p.72', short: '円周角は中心角の半分',
     rule: '① 同じ弧に対する<b>円周角は等しい</b>　② 円周角は<b>中心角の半分</b>　③ 半円の弧（直径）に対する円周角は <b>90°</b>',
     pfig: g => { const O = circ(g, true, [0, 1]); const A = g.P('A', pol(225)), B = g.P('B', pol(315)), P = g.P('P', pol(70)), Q = g.P('Q', pol(125));
       g.seg(P, A); g.seg(P, B); g.seg(Q, A); g.seg(Q, B); g.seg(O, A); g.seg(O, B);
       g.ang(P, A, B, 'a', { color: CO, soft: '#FFEEE2', r: 26 }); g.ang(Q, A, B, 'a', { color: CO, soft: '#FFEEE2', r: 26 }); g.ang(O, A, B, '2a', { color: CO, soft: '#FFEEE2', r: 15 }); },
-    probs: [
-      { q: '円 O で、∠<i>x</i>（中心角 ∠AOB）の大きさを求めなさい。', ans: 80, unit: '°',
-        fig: g => { const O = circ(g, true, [0, 1]); const A = g.P('A', pol(230)), B = g.P('B', pol(310)), P = g.P('P', pol(100));
-          g.seg(P, A); g.seg(P, B); g.seg(O, A); g.seg(O, B); g.ang(P, A, B, '40°', { r: 34 }); g.ang(O, A, B, 'x', { r: 16 }); },
-        hints: ['弧 AB に対する円周角が ∠APB、中心角が ∠AOB', '中心角は円周角の2倍', '<i>x</i> ＝ 40° × 2 ＝ 80°'] },
-      { q: '円 O で、∠<i>x</i>（円周角 ∠APB）の大きさを求めなさい。', ans: 65, unit: '°',
-        fig: g => { const O = circ(g, true, [0, 1]); const A = g.P('A', pol(205)), B = g.P('B', pol(335)), P = g.P('P', pol(80));
-          g.seg(P, A); g.seg(P, B); g.seg(O, A); g.seg(O, B); g.ang(O, A, B, '130°', { r: 15 }); g.ang(P, A, B, 'x', { r: 26 }); },
-        hints: ['弧 AB に対する円周角が ∠APB、中心角が ∠AOB', '円周角は中心角の半分', '<i>x</i> ＝ 130° ÷ 2 ＝ 65°'] },
-      { q: '4点 A, B, P, Q は同じ円周上にあります。∠<i>x</i> の大きさを求めなさい。', ans: 35, unit: '°',
-        fig: g => { circ(g, false); const A = g.P('A', pol(220)), B = g.P('B', pol(290)), P = g.P('P', pol(60)), Q = g.P('Q', pol(140));
-          g.seg(P, A); g.seg(P, B); g.seg(Q, A); g.seg(Q, B); g.ang(P, A, B, '35°', { r: 40 }); g.ang(Q, A, B, 'x', { r: 34 }); },
-        hints: ['∠APB と ∠AQB は、どちらも弧 AB に対する円周角', '同じ弧に対する円周角は等しい', '<i>x</i> ＝ 35°'] },
-      { q: '線分 AB は円 O の直径です。∠<i>x</i> の大きさを求めなさい。', ans: 50, unit: '°',
-        fig: g => { const O = circ(g, true); const A = g.P('A', pol(180)), B = g.P('B', pol(0)), C = g.P('C', pol(80));
-          g.poly([A, B, C]); g.ang(A, C, B, '40°', { r: 30 }); g.ang(B, A, C, 'x', { r: 24 }); },
-        hints: ['AB は直径。半円の弧に対する円周角は 90° だから　∠ACB ＝ 90°', '△ABC の内角の和は 180°', '<i>x</i> ＝ 180° − (90° ＋ 40°) ＝ 50°'] },
-      { q: '線分 AB は円 O の直径です。∠<i>x</i>（∠COB）の大きさを求めなさい。', ans: 50, unit: '°',
-        fig: g => { const O = circ(g, true); const A = g.P('A', pol(180)), B = g.P('B', pol(0)), C = g.P('C', pol(50));
-          g.seg(A, B); g.seg(A, C); g.seg(O, C); g.ang(A, C, B, '25°', { r: 44 }); g.ang(O, B, C, 'x', { r: 24 }); },
-        hints: ['弧 BC に対する円周角が ∠CAB、中心角が ∠COB', '中心角は円周角の2倍', '<i>x</i> ＝ 25° × 2 ＝ 50°'] }
-    ] },
-
+    gens: enshu },
   { id: 'naisetsu', title: '円に内接する四角形', page: 'p.74', short: '向かいあう角の和は 180°',
     rule: '円に内接する四角形では　① <b>向かいあう内角の和は 180°</b>　② 内角は、<b>向かいあう角の外角に等しい</b>',
     pfig: g => { circ(g, false); const A = g.P('A', pol(125)), B = g.P('B', pol(205)), C = g.P('C', pol(325)), D = g.P('D', pol(35));
       const E = g.bound(mix(B, C, 1.35)); g.poly([A, B, C, D]); g.seg(C, E);
       g.ang(A, B, D, '', { mark: 1, r: 22 }); g.ang(C, D, E, '', { mark: 1, r: 22 }); g.ang(C, B, D, '', { mark: 1, open: 1, r: 20 }); },
-    probs: [
-      { q: '四角形 ABCD は円に内接しています。∠<i>x</i> の大きさを求めなさい。', ans: 80, unit: '°',
-        fig: g => { circ(g, false); const A = g.P('A', pol(120)), B = g.P('B', pol(200)), C = g.P('C', pol(320)), D = g.P('D', pol(40));
-          g.poly([A, B, C, D]); g.ang(A, B, D, '100°', { r: 17 }); g.ang(C, D, B, 'x', { r: 18 }); },
-        hints: ['円に内接する四角形の、向かいあう内角の和は 180°', '∠A ＋ ∠C ＝ 180°', '<i>x</i> ＝ 180° − 100° ＝ 80°'] },
-      { q: '四角形 ABCD は円に内接しています。∠<i>x</i> の大きさを求めなさい。', ans: 105, unit: '°',
-        fig: g => { circ(g, false); const A = g.P('A', pol(110)), B = g.P('B', pol(210)), C = g.P('C', pol(320)), D = g.P('D', pol(30));
-          g.poly([A, B, C, D]); g.ang(B, C, A, '75°', { r: 20 }); g.ang(D, A, C, 'x', { r: 17 }); },
-        hints: ['向かいあう内角の和は 180°', '∠B ＋ ∠D ＝ 180°', '<i>x</i> ＝ 180° − 75° ＝ 105°'] },
-      { q: '四角形 ABCD は円に内接しています。∠<i>x</i>（∠C の外角）の大きさを求めなさい。', ans: 95, unit: '°',
-        fig: g => { circ(g, false); const A = g.P('A', pol(125)), B = g.P('B', pol(205)), C = g.P('C', pol(325)), D = g.P('D', pol(35));
-          const E = g.bound(mix(B, C, 1.35)); g.poly([A, B, C, D]); g.seg(C, E); g.ang(A, B, D, '95°', { r: 18 }); g.ang(C, D, E, 'x', { r: 18 }); },
-        hints: ['内角は、向かいあう角の外角に等しい', '∠C の外角 ＝ ∠A', '<i>x</i> ＝ 95°'] },
-      { q: '四角形 ABCD は円に内接しています。∠<i>x</i>（∠A）の大きさを求めなさい。', ans: 70, unit: '°',
-        fig: g => { circ(g, false); const A = g.P('A', pol(110)), B = g.P('B', pol(220)), C = g.P('C', pol(320)), D = g.P('D', pol(0));
-          const E = g.bound(mix(B, C, 1.35)); g.poly([A, B, C, D]); g.seg(C, E); g.ang(C, D, E, '70°', { r: 20 }); g.ang(A, B, D, 'x', { r: 22 }); },
-        hints: ['内角は、向かいあう角の外角に等しい', '∠A ＝ ∠C の外角', '<i>x</i> ＝ 70°'] },
-      { q: '四角形 ABCD は円に内接しています。∠<i>x</i>（∠C）の大きさを求めなさい。', ans: 100, unit: '°',
-        fig: g => { circ(g, false); const A = g.P('A', pol(100)), B = g.P('B', pol(220)), C = g.P('C', pol(310)), D = g.P('D', pol(20));
-          g.poly([A, B, C, D]); g.seg(B, D); g.ang(B, A, D, '40°', { r: 36 }); g.ang(D, A, B, '60°', { r: 26 }); g.ang(C, D, B, 'x', { r: 17 }); },
-        hints: ['まず △ABD で ∠A を求める　∠A ＝ 180° − (40° ＋ 60°) ＝ 80°', '向かいあう内角の和は 180°　∠A ＋ ∠C ＝ 180°', '<i>x</i> ＝ 180° − 80° ＝ 100°'] }
-    ] },
-
+    gens: naisetsu },
   { id: 'sessen', title: '接線と弦のつくる角', page: 'p.77', short: '∠BAT ＝ ∠ACB',
     rule: '直線 AT が点 A で円に接するとき　<b>∠BAT ＝ ∠ACB</b>（接線と弦 AB がつくる角は、その角の内部にある弧 AB に対する円周角に等しい）',
     pfig: g => { const p = tangentBase(g, 30, 150, false); g.ang(p.A, p.B, p.T, '', { mark: 1, r: 24 }); g.ang(p.C, p.A, p.B, '', { mark: 1, r: 24 }); },
-    probs: [
-      { q: '直線 AT は点 A で円に接しています。∠<i>x</i> の大きさを求めなさい。', ans: 60, unit: '°',
-        fig: g => { const p = tangentBase(g, 30, 150, false); g.ang(p.A, p.B, p.T, '60°'); g.ang(p.C, p.A, p.B, 'x'); },
-        hints: ['接線 AT と弦 AB がつくる角は ∠BAT', '∠BAT ＝ ∠ACB（弧 AB に対する円周角）', '<i>x</i> ＝ 60°'] },
-      { q: '直線 AT は点 A で円に接しています。∠<i>x</i> の大きさを求めなさい。', ans: 50, unit: '°',
-        fig: g => { const p = tangentBase(g, 10, 130, false); g.ang(p.C, p.A, p.B, '50°', { r: 28 }); g.ang(p.A, p.B, p.T, 'x', { r: 26 }); },
-        hints: ['接線と弦のつくる角　∠BAT ＝ ∠ACB', '<i>x</i> ＝ 50°'] },
-      { q: '直線 ST は点 A で円に接しています。∠<i>x</i>（∠CAS）の大きさを求めなさい。', ans: 70, unit: '°',
-        fig: g => { const p = tangentBase(g, 30, 130, true); g.ang(p.B, p.C, p.A, '70°'); g.ang(p.A, p.C, p.S, 'x'); },
-        hints: ['今度は接線と弦 AC がつくる角 ∠CAS を考える', '∠CAS は、弧 AC に対する円周角 ∠ABC に等しい', '<i>x</i> ＝ 70°'] },
-      { q: '直線 AT は点 A で円に接しています。∠<i>x</i>（∠ABC）の大きさを求めなさい。', ans: 75, unit: '°',
-        fig: g => { const p = tangentBase(g, 350, 120, false); g.ang(p.A, p.B, p.T, '40°', { r: 34 }); g.ang(p.A, p.C, p.B, '65°', { r: 22 }); g.ang(p.B, p.A, p.C, 'x', { r: 20 }); },
-        hints: ['接線と弦のつくる角　∠ACB ＝ ∠BAT ＝ 40°', '△ABC の内角の和は 180°', '<i>x</i> ＝ 180° − (40° ＋ 65°) ＝ 75°'] },
-      { q: '直線 ST は点 A で円に接しています。∠<i>x</i>（∠CAS）の大きさを求めなさい。', ans: 35, unit: '°',
-        fig: g => { const p = tangentBase(g, 350, 200, true); g.ang(p.C, p.A, p.B, '40°', { r: 30 }); g.ang(p.B, p.C, p.A, '35°', { r: 42 }); g.ang(p.A, p.C, p.S, 'x', { r: 44 }); },
-        hints: ['∠CAS は接線と弦 AC がつくる角', 'その角の内部にある弧 AC に対する円周角は ∠ABC（∠ACB ではない）', '<i>x</i> ＝ ∠ABC ＝ 35°'] }
-    ] },
-
+    gens: sessen },
   { id: 'nagasa', title: '接線の長さ', page: 'p.78', short: 'PA ＝ PB',
     rule: '円の外の点 P から引いた2本の接線の長さは等しい　<b>PA ＝ PB</b>',
     pfig: g => { g.circle(O0, 1); const P = g.P('P', { x: 2.4, y: 0 }, { d: [1, 0] }), A = g.P('A', pol(Math.acos(1/2.4)/R)), B = g.P('B', pol(-Math.acos(1/2.4)/R));
       g.seg(P, A, { color: CO, w: 2.6 }); g.seg(P, B, { color: CO, w: 2.6 }); g.dot(O0); },
-    probs: [
-      { q: '点 P から円に2本の接線を引き、接点を A, B とします。PB の長さ <i>x</i> を求めなさい。', ans: 7, unit: '',
-        fig: g => { g.circle(O0, 1); const O = g.P('O', O0, { d: [-1, 0] }); g.dot(O); const P = g.P('P', { x: 2.4, y: 0 }, { d: [1, 0] }), A = g.P('A', pol(Math.acos(1/2.4)/R)), B = g.P('B', pol(-Math.acos(1/2.4)/R));
-          g.seg(P, A); g.seg(P, B); g.len(P, A, '7', { b: 13 }); g.len(P, B, 'x', { b: 13 }); },
-        hints: ['円の外の点から引いた2本の接線の長さは等しい', '<i>x</i> ＝ PB ＝ PA ＝ 7'] },
-      { q: '△ABC の内接円が、辺と点 D, E, F で接しています。AE の長さ <i>x</i> を求めなさい。', ans: 3, unit: '',
-        fig: g => { const p = ptsIn(g, 7, 6, 7); g.len(p.A, p.F, '3', { b: 13 }); g.len(p.A, p.E, 'x', { b: 13 }); },
-        hints: ['AF と AE は、点 A から円に引いた2本の接線', '接線の長さは等しい　AE ＝ AF', '<i>x</i> ＝ 3'] },
-      { q: '△ABC の内接円が、辺と点 D, E, F で接しています。BD の長さ <i>x</i> を求めなさい。', ans: 6, unit: '',
-        fig: g => { const p = ptsIn(g, 9, 7, 10); g.len(p.A, p.B, '9', { b: 24 }); g.len(p.A, p.C, '7', { b: 24 }); g.len(p.D, p.C, '4', { b: 13 }); g.len(p.B, p.D, 'x', { b: 13 }); },
-        hints: ['C から：CE ＝ CD ＝ 4　だから　AE ＝ 7 − 4 ＝ 3', 'A から：AF ＝ AE ＝ 3　だから　BF ＝ 9 − 3 ＝ 6', 'B から：<i>x</i> ＝ BD ＝ BF ＝ 6'] },
-      { q: '△ABC の内接円が、辺と点 D, E, F で接しています。BC の長さ <i>x</i> を求めなさい。', ans: 9, unit: '',
-        fig: g => { const p = ptsIn(g, 7, 6, 9); g.len(p.A, p.F, '2', { b: 13 }); g.len(p.B, p.D, '5', { b: 12 }); g.len(p.C, p.E, '4', { b: 13 }); g.len(p.B, p.C, 'x', { b: 34 }); },
-        hints: ['C から引いた接線の長さは等しい　CD ＝ CE ＝ 4', 'BC ＝ BD ＋ DC', '<i>x</i> ＝ 5 ＋ 4 ＝ 9'] },
-      { q: '△ABC の内接円が、辺と点 D, E, F で接しています。△ABC の周の長さ <i>x</i> を求めなさい。', ans: 18, unit: '',
-        fig: g => { const p = ptsIn(g, 7, 5, 6); g.len(p.A, p.F, '3', { b: 13 }); g.len(p.B, p.D, '4', { b: 13 }); g.len(p.C, p.E, '2', { b: 13 }); },
-        hints: ['接線の長さは等しい　AE ＝ AF ＝ 3、BF ＝ BD ＝ 4、CD ＝ CE ＝ 2', '周の長さは、3・4・2 がそれぞれ2回ずつ出てくる', '<i>x</i> ＝ 2 × (3 ＋ 4 ＋ 2) ＝ 18'] }
-    ] },
-
+    gens: nagasa },
   { id: 'houbeki', title: '方べきの定理', page: 'p.80', short: 'PA × PB ＝ PC × PD',
     rule: '点 P を通る2本の直線が円と A, B および C, D で交わるとき　<b>PA × PB ＝ PC × PD</b>。片方が接線（接点 T）のときは　<b>PA × PB ＝ PT²</b>',
     pfig: g => { const p = powOut(g, 3, 8, 4, 6, 35); g.seg(p.P, p.A, { color: CO, w: 3 }); g.seg(p.P, p.C, { color: CG, w: 3 }); },
-    probs: [
-      { q: '円の2つの弦 AB, CD が点 P で交わっています。<i>x</i> の値を求めなさい。', ans: 6, unit: '',
-        fig: g => powIn(g, 2, 6, 3, 4, -20, 250, ['2', 'x', '3', '4'], [0.2, 1]),
-        hints: ['方べきの定理　PA × PB ＝ PC × PD', '2 × <i>x</i> ＝ 3 × 4', '2<i>x</i> ＝ 12　よって　<i>x</i> ＝ 6'] },
-      { q: '円の2つの弦 AB, CD が点 P で交わっています。<i>x</i> の値を求めなさい。', ans: 8, unit: '',
-        fig: g => powIn(g, 4, 6, 3, 8, 15, 110, ['4', '6', '3', 'x'], [-1, 0.9]),
-        hints: ['方べきの定理　PA × PB ＝ PC × PD', '4 × 6 ＝ 3 × <i>x</i>', '3<i>x</i> ＝ 24　よって　<i>x</i> ＝ 8'] },
-      { q: '点 P を通る2直線が、円と A, B および C, D で交わっています。PD の長さ <i>x</i> を求めなさい。', ans: 6, unit: '',
-        fig: g => { const p = powOut(g, 3, 8, 4, 6, 35); g.len(p.P, p.A, '3', { b: 11, flip: 1 }); g.len(p.P, p.B, '8', { b: 26 }); g.len(p.P, p.C, '4', { b: 11, flip: 1 }); g.len(p.P, p.D, 'x', { b: 26 }); },
-        hints: ['方べきの定理　PA × PB ＝ PC × PD（どれも P からはかった長さ）', '3 × 8 ＝ 4 × <i>x</i>', '4<i>x</i> ＝ 24　よって　<i>x</i> ＝ 6'] },
-      { q: '直線 PT は点 T で円に接しています。PT の長さ <i>x</i> を求めなさい。', ans: 4, unit: '',
-        fig: g => { const p = powTan(g, 2, 8, 42); g.len(p.P, p.A, '2', { b: 11, flip: 1 }); g.len(p.P, p.B, '8', { b: 26 }); g.len(p.P, p.T, 'x', { b: 15 }); },
-        hints: ['接線のときの方べきの定理　PA × PB ＝ PT²', '2 × 8 ＝ <i>x</i>²　つまり　<i>x</i>² ＝ 16', '<i>x</i> は正の数だから　<i>x</i> ＝ 4'] },
-      { q: '直線 PT は点 T で円に接しています。PT の長さ <i>x</i> を求めなさい。', ans: 6, unit: '',
-        fig: g => { const p = powTan(g, 4, 9, 38); g.len(p.P, p.A, '4', { b: 11, flip: 1 }); g.len(p.P, p.B, '9', { b: 36 }); g.len(p.P, p.T, 'x', { b: 15 }); },
-        hints: ['PA × PB ＝ PT²', '4 × 9 ＝ <i>x</i>²　つまり　<i>x</i>² ＝ 36', '<i>x</i> は正の数だから　<i>x</i> ＝ 6'] },
-      { q: '【チャレンジ】点 P を通る2直線が、円と A, B および C, D で交わっています。AB の長さ <i>x</i> を求めなさい。', ans: 4, unit: '',
-        fig: g => { const p = powOut(g, 2, 6, 3, 4, 40); g.len(p.P, p.A, '2', { b: 11 }); g.len(p.A, p.B, 'x', { b: 13 }); g.len(p.P, p.C, '3', { b: 12 }); g.len(p.C, p.D, '1', { b: 12 }); },
-        hints: ['方べきの定理は「P からの長さ」で使う。PB ＝ 2 ＋ <i>x</i>、PD ＝ 3 ＋ 1 ＝ 4', 'PA × PB ＝ PC × PD　より　2 × (2 ＋ <i>x</i>) ＝ 3 × 4', '2 ＋ <i>x</i> ＝ 6　よって　<i>x</i> ＝ 4'] }
-    ] },
-
+    gens: houbeki },
   { id: 'futatsu', title: '2つの円', page: 'p.81', short: '外接 d ＝ r ＋ s、内接 d ＝ r − s',
     rule: '半径 r, s（r ＞ s）の2つの円の中心間の距離を d とすると　<b>外接する ⇔ d ＝ r ＋ s</b>、<b>内接する ⇔ d ＝ r − s</b>。r − s ＜ d ＜ r ＋ s なら2点で交わり、d ＞ r ＋ s なら離れている',
     pfig: g => { const p = twoCircles(g, 5, 3, 8); g.seg(p.O, p.P); g.len(p.O, { x: 5, y: 0 }, 'r', { b: 13, flip: 1, color: INK }); g.len({ x: 5, y: 0 }, p.P, 's', { b: 13, flip: 1 }); },
-    probs: [
-      { q: '半径 7 の円 O と半径 4 の円 P が外接しています。中心間の距離 <i>x</i> を求めなさい。', ans: 11, unit: '',
-        fig: g => { const p = twoCircles(g, 7, 4, 11), T = { x: 7, y: 0 }; g.seg(p.O, p.P); g.dot(T, { color: CO }); g.len(p.O, T, '7', { b: 13, flip: 1, color: INK }); g.len(T, p.P, '4', { b: 13, flip: 1 }); g.len(p.O, p.P, 'x', { b: 34 }); },
-        hints: ['外接するとき、2つの中心と接点は一直線に並ぶ', '外接　d ＝ r ＋ s', '<i>x</i> ＝ 7 ＋ 4 ＝ 11'] },
-      { q: '半径 7 の円 O に、半径 4 の円 P が内接しています。中心間の距離 <i>x</i> を求めなさい。', ans: 3, unit: '',
-        fig: g => { const p = twoCircles(g, 7, 4, 3), T = { x: 7, y: 0 }; g.seg(p.O, T); g.dot(T, { color: CO }); g.len(p.O, T, '7', { b: 40, color: INK }); g.len(p.P, T, '4', { b: 14, flip: 1 }); g.len(p.O, p.P, 'x', { b: 14, flip: 1 }); },
-        hints: ['内接するとき、2つの中心と接点は一直線に並ぶ', '内接　d ＝ r − s', '<i>x</i> ＝ 7 − 4 ＝ 3'] },
-      { q: '半径 6 の円 O と円 P が外接していて、中心間の距離は 10 です。円 P の半径 <i>x</i> を求めなさい。', ans: 4, unit: '',
-        fig: g => { const p = twoCircles(g, 6, 4, 10), T = { x: 6, y: 0 }; g.seg(p.O, p.P); g.dot(T, { color: CO }); g.len(p.O, T, '6', { b: 13, flip: 1, color: INK }); g.len(T, p.P, 'x', { b: 13, flip: 1 }); g.len(p.O, p.P, '10', { b: 34 }); },
-        hints: ['外接　d ＝ r ＋ s', '10 ＝ 6 ＋ <i>x</i>', '<i>x</i> ＝ 4'] },
-      posProb(5, 3, 10, 4, ['半径の和　5 ＋ 3 ＝ 8、半径の差　5 − 3 ＝ 2　をまず計算する', 'd ＝ 10 は、半径の和 8 より大きい（r ＋ s ＜ d）', '円どうしが届かないので「離れている」']),
-      posProb(5, 3, 6, 2, ['半径の和　5 ＋ 3 ＝ 8、半径の差　5 − 3 ＝ 2', 'd ＝ 6 は 2 と 8 の間（r − s ＜ d ＜ r ＋ s）', '「2点で交わる」']),
-      posProb(5, 3, 2, 1, ['半径の和　5 ＋ 3 ＝ 8、半径の差　5 − 3 ＝ 2', 'd ＝ 2 は、半径の差とちょうど同じ（d ＝ r − s）', '小さい円が内側から接するので「内接する」'])
-    ] }
+    gens: futatsu }
   ];
-  const TOTAL = STAGES.reduce((n, s) => n + s.probs.length, 0);
+  const TOTAL = STAGES.reduce((n, s) => n + s.gens.length, 0);
+  ['角の二等分線', '外心', '内心', '重心', '円周角', '内接四角形', '接線と弦', '接線の長さ', '方べきの定理', '2つの円'].forEach((c, k) => { STAGES[k].card = c; });
 
   /* ================= 記録（この端末のブラウザの中だけ） ================= */
   const KEY = 'zukei-master-v1';
   let save = {};
   try { save = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch(e) { save = {}; }
-  const rec = id => { const st = STAGES.find(s => s.id === id); if(!Array.isArray(save[id])) save[id] = []; for(let i = 0; i < st.probs.length; i++) if(!save[id][i]) save[id][i] = 0; return save[id]; };
+  const rec = id => { const st = STAGES.find(s => s.id === id); if(!Array.isArray(save[id])) save[id] = []; for(let i = 0; i < st.gens.length; i++) if(!save[id][i]) save[id][i] = 0; return save[id]; };
   const store = () => { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch(e) {} };
   const stageState = st => { const r = rec(st.id); return r.every(v => v === 3) ? 'master' : r.every(v => v >= 2) ? 'clear' : ''; };
   const MARK = ['', '△', '○', '★'];
   const pipsHTML = (st, now, tag) => rec(st.id).map((v, i) => `<${tag} class="pip s${v}${i === now ? ' now' : ''}" data-i="${i}"${tag === 'button' ? ` aria-label="${i + 1}問目へ"` : ''}>${MARK[v] || i + 1}</${tag}>`).join('');
+
+  /* ================= マスターカード ================= */
+  const escT = v => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const today = () => { const d = new Date(); return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`; };
+  const nCards = () => STAGES.filter(s => stageState(s) === 'master').length;
+  // 小さいカード（コレクション用）。まだのものは「？」と ★ の数
+  function miniCard(s, k){
+    const got = stageState(s) === 'master', r = rec(s.id);
+    return `<button class="mcard${got ? ' got' : ''}" data-id="${s.id}" aria-label="${s.title}${got ? '（獲得）' : '（まだ）'}">
+      <div class="mno">No.${k + 1}</div>
+      <div class="mfig">${got ? makeFig(s.pfig, { h: 0, done: false }, null).svg : '？'}</div>
+      <div class="mname">${s.card}</div>
+      <div class="mst">${got ? '★ MASTER' : '★ ' + r.filter(v => v === 3).length + '/' + r.length}</div></button>`;
+  }
+  // 大きいカード（1枚）
+  function bigCard(s){
+    const k = STAGES.indexOf(s);
+    return `<div class="bigcard">
+      <div class="b-top">MASTER CARD　No.${k + 1}</div>
+      <div class="b-title">${s.title}</div>
+      <div class="b-fig">${makeFig(s.pfig, { h: 0, done: false }, null).svg}</div>
+      <p class="b-rule">${s.rule}</p>
+      <div class="b-stars">${'★'.repeat(s.gens.length)}</div>
+      <div class="b-foot"><b>${escT(save._name || '')}</b><span>${today()}</span></div>
+    </div>`;
+  }
+  function cardView(id){
+    const s = STAGES.find(v => v.id === id);
+    app.innerHTML = `<div class="cert-wrap">${bigCard(s)}
+      <p class="cert-note">マスターカード ${nCards()} / ${STAGES.length} 枚</p>
+      <div class="actions" style="justify-content:center"><button class="btn" id="backBtn">← カード一覧へ</button><button class="btn" id="homeBtn">性質の一覧へ</button></div></div>`;
+    $('backBtn').addEventListener('click', certificate);
+    $('homeBtn').addEventListener('click', home);
+    window.scrollTo(0, 0);
+  }
 
   /* ================= 画面 ================= */
   const app = $('app');
@@ -624,7 +793,7 @@
     const nClear = STAGES.filter(s => stageState(s)).length, nMaster = STAGES.filter(s => stageState(s) === 'master').length;
     const cards = STAGES.map((s, k) => { const stt = stageState(s);
       return `<button class="stage-card ${stt}" data-id="${s.id}">
-        <span class="no">性質 ${k + 1}　<span style="color:var(--sub);font-weight:400">教科書 ${s.page}</span> ${stt === 'master' ? '<span class="badge master">★ マスター</span>' : stt === 'clear' ? '<span class="badge clear">クリア</span>' : ''}</span>
+        <span class="no">性質 ${k + 1}　<span style="color:var(--sub);font-weight:400">教科書 ${s.page}</span> ${stt === 'master' ? '<span class="badge master">★ カード獲得</span>' : stt === 'clear' ? '<span class="badge clear">クリア</span>' : ''}</span>
         <span class="ttl">${s.title}</span><span class="rule">${s.short}</span>
         <span class="pips">${pipsHTML(s, -1, 'span')}</span></button>`; }).join('');
     const NL = String.fromCharCode(10);
@@ -634,19 +803,19 @@
     const text = esc(makeText());
     app.innerHTML = `
       <h1>図形の性質マスター</h1>
-      <p class="lead">性質を1つ選んで、図を見ながら問題を解きます。10個の性質をすべて ★ にすると「図形の性質マスター」です。</p>
+      <p class="lead">性質を1つ選んで、図を見ながら問題を解きます。問題の数値は開くたびに変わります。1つの性質を全部 ★ にすると「マスターカード」が1枚もらえます。10枚集めると「図形の性質マスター」です。</p>
       <div class="card">
         <p class="section-title">マスター度</p>
-        <div class="meter"><div class="bar"><i style="width:${(stars / TOTAL * 100).toFixed(1)}%"></i></div><span class="num">★ ${stars} / ${TOTAL}</span></div>
+        <div class="meter"><div class="bar"><i style="width:${(stars / TOTAL * 100).toFixed(1)}%"></i></div><span class="num">カード ${nMaster} / ${STAGES.length} 枚　★ ${stars} / ${TOTAL}</span></div>
         <p class="legend">★ ヒントなし・1回で正解　／　○ 正解　／　△ 答えを見た　　（記録はこの端末のブラウザの中だけに残ります）</p>
         <div class="name-row">
           <label for="nameIn">名前</label>
           <input id="nameIn" type="text" maxlength="20" autocomplete="off" placeholder="例：1年A組 倉吉 太郎" value="${esc(save._name || '')}">
-          <button class="btn primary" id="certBtn">${nMaster === STAGES.length ? '★ 賞状を表示する' : '記録証を表示する'}</button>
+          <button class="btn primary" id="certBtn">${nMaster === STAGES.length ? '★ 賞状とカードを表示する' : 'カードコレクションを表示する'}</button>
           <span class="msg" id="nameMsg"></span>
         </div>
       </div>
-      ${nMaster === STAGES.length ? `<div class="card certificate"><div class="big">★ 図形の性質マスター 認定 ★</div><div>10個の性質をすべてマスターしました。名前を入れて賞状を表示し、スクリーンショットを先生に送りましょう。</div></div>` : ''}
+      ${nMaster === STAGES.length ? `<div class="card certificate"><div class="big">★ 図形の性質マスター 認定 ★</div><div>マスターカードを10枚すべて集めました。名前を入れて賞状を表示し、スクリーンショットを先生に送りましょう。</div></div>` : ''}
       <div class="stage-grid">${cards}</div>
       <div class="card submit-box" style="margin-top:var(--sp-3)">
         <p class="section-title">提出用テキスト（先生に出すときは、コピーして貼り付けます）</p>
@@ -666,12 +835,12 @@
 
   function openStage(id, i){
     const st = STAGES.find(s => s.id === id);
-    cur = { st, i, tries: 0, h: 0, done: false, wrong: [], prop: false };
+    cur = { st, i, p: st.gens[i](), tries: 0, h: 0, done: false, wrong: [], prop: false };
     renderProblem(true);
   }
 
   function renderProblem(scroll){
-    const { st, i } = cur, p = st.probs[i], k = STAGES.indexOf(st);
+    const { st, i, p } = cur, k = STAGES.indexOf(st);
     const fig = makeFig(p.fig, { h: cur.h, done: cur.done }, p);
     const hintItems = p.hints.map((h, n) => ({ h, n })).filter(o => cur.done || o.n < cur.h)
       .map(o => `<div class="hint${cur.done && o.n === p.hints.length - 1 ? ' final' : ''}"><span class="n">${o.n + 1}</span><span>${mathHTML(o.h)}</span></div>`).join('');
@@ -682,7 +851,7 @@
       input = `<div class="ans-row"><span class="xeq">x ＝</span><input id="ansIn" type="text" inputmode="decimal" autocomplete="off" aria-label="答え" ${cur.done ? `value="${p.ans}" disabled` : ''}><span class="unit">${p.unit}</span>
         <button class="btn primary" id="checkBtn" ${cur.done ? 'disabled' : ''}>答え合わせ</button></div>`;
     }
-    const last = i === st.probs.length - 1;
+    const last = i === st.gens.length - 1;
     // ヒントは最後の1行（答え）以外を1つずつ。答えは正解するか「答えを見る」まで出さない
     const canHint = !cur.done && cur.h < p.hints.length - 1;
     app.innerHTML = `
@@ -699,7 +868,7 @@
         <div class="card figure"><p class="section-title">図</p>${fig.svg}</div>
         <div class="card">
           <div class="pips" style="margin-bottom:8px">${pipsHTML(st, i, 'button')}</div>
-          <div class="qno">問題 ${i + 1} / ${st.probs.length}</div>
+          <div class="qno">問題 ${i + 1} / ${st.gens.length}</div>
           <p class="qtext">${p.q}</p>
           ${input}
           <div id="fb">${cur.fb || ''}</div>
@@ -752,10 +921,11 @@
     const first = r.findIndex(v => v < 3);
     app.innerHTML = `
       <div class="stage-head"><div><div class="no">性質 ${k + 1}</div><h2>${st.title}</h2></div><button class="btn small" id="homeBtn">← 性質の一覧へ</button></div>
+      ${stt === 'master' ? `<p class="get-msg">マスターカードをゲット！（${nCards()} / ${STAGES.length} 枚）</p>${bigCard(st)}<div style="height:16px"></div>` : ''}
       <div class="card result">
         <div class="big">${stt === 'master' ? '★ マスター！ ★' : stt === 'clear' ? 'クリア！' : 'おつかれさま'}</div>
         <div class="pips">${pipsHTML(st, -1, 'span')}</div>
-        <p>${stt === 'master' ? 'この性質は完ぺきです。' : stt === 'clear' ? '全問正解できました。○ の問題をヒントなし・1回で解くと ★ になります。' : '△ や番号のままの問題に、もう一度ちょうせんしよう。'}</p>
+        <p>${stt === 'master' ? 'この性質は完ぺきです。カードは一覧の「カードコレクション」に入りました。' : stt === 'clear' ? '全問正解できました。○ の問題をヒントなし・1回で解くと ★ になり、全部 ★ でマスターカードがもらえます。' : '△ や番号のままの問題に、もう一度ちょうせんしよう。'}</p>
         <div class="actions">
           ${first >= 0 ? `<button class="btn primary" id="retryBtn">★ でない問題にもう一度</button>` : ''}
           ${next ? `<button class="btn${first < 0 ? ' primary' : ''}" id="nextStageBtn">次の性質「${next.title}」へ ▶</button>` : ''}
@@ -774,40 +944,47 @@
     const nClear = STAGES.filter(s => stageState(s)).length, nMaster = STAGES.filter(s => stageState(s) === 'master').length;
     const all = nMaster === STAGES.length, allClear = nClear === STAGES.length;
     const d = new Date(), date = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
-    const rows = STAGES.map((s, k) => { const stt = stageState(s);
-      return `<tr><td>${k + 1}　${s.title}</td><td class="m">${rec(s.id).map(v => MARK[v] || '・').join('')}</td><td class="s" style="color:${stt === 'master' ? 'var(--gold)' : stt ? 'var(--ok)' : 'var(--sub)'}">${stt === 'master' ? 'マスター' : stt ? 'クリア' : ''}</td></tr>`; }).join('');
+    const cards = STAGES.map(miniCard).join('');
     app.innerHTML = `
       <div class="cert-wrap">
         <div class="cert${all ? '' : ' plain'}" id="cert">
           <div class="c-site">数学学習サイト　数学A「図形の性質」</div>
-          <p class="c-title">${all ? '賞状' : '記録証'}</p>
-          <p class="c-sub">${all ? '★ 図形の性質マスター ★' : allClear ? '図形の性質　全性質クリア' : '図形の性質マスター　学習の記録'}</p>
+          <p class="c-title">${all ? '賞状' : 'カード帳'}</p>
+          <p class="c-sub">${all ? '★ 図形の性質マスター ★' : '図形の性質　マスターカード'}</p>
           <div class="c-name">${esc(save._name)}<small>殿</small></div>
-          <p class="c-text">${all ? 'あなたは図形の性質 10 個すべての問題を、ヒントなし・1回で正解しました。よってここに「図形の性質マスター」と認めます。' : allClear ? 'あなたは図形の性質 10 個すべての問題に正解しました。全部 ★ にするとマスターです。' : 'あなたの現在の学習の記録は次のとおりです。'}</p>
-          <table>${rows}</table>
-          <div class="c-total"><span>マスター <b>${nMaster}</b> / ${STAGES.length}</span><span>クリア <b>${nClear}</b> / ${STAGES.length}</span><span>★ <b>${stars}</b> / ${TOTAL}</span></div>
-          <div class="c-foot"><span>★ 1回で正解　○ 正解　△ 答えを見た</span><span>${date}</span></div>
+          <p class="c-text">${all ? 'あなたは図形の性質のマスターカードを 10 枚すべて集めました。よってここに「図形の性質マスター」と認めます。' : `集めたマスターカードは ${nMaster} 枚です。1つの性質の問題を全部 ★（ヒントなし・1回で正解）にすると、カードが1枚もらえます。`}</p>
+          <div class="cards">${cards}</div>
+          <div class="c-total"><span>カード <b>${nMaster}</b> / ${STAGES.length} 枚</span><span>クリア <b>${nClear}</b> / ${STAGES.length}</span><span>★ <b>${stars}</b> / ${TOTAL}</span></div>
+          <div class="c-foot"><span>金色のカードをおすと大きく表示できます</span><span>${date}</span></div>
         </div>
         <p class="cert-note">この画面のスクリーンショットを撮って、先生に送ってください。</p>
         <div class="actions" style="justify-content:center"><button class="btn" id="homeBtn">← 性質の一覧へ</button></div>
       </div>`;
     $('homeBtn').addEventListener('click', home);
+    app.querySelectorAll('.mcard.got').forEach(b => b.addEventListener('click', () => cardView(b.dataset.id)));
     window.scrollTo(0, 0);
   }
 
   /* 確認用：?debug=1 で全問題の図を一覧し、図の角度・長さが数値と合っているかを調べる */
   function debug(){
-    let bad = 0;
-    const cells = [];
+    const N = 300; let bad = 0, n = 0; const cells = [], badList = [];
     STAGES.forEach((s, k) => {
       cells.push(`<div class="card"><b>${k + 1} ${s.title}（性質カード）</b>${makeFig(s.pfig, { h: 0, done: false }, null).svg}</div>`);
-      s.probs.forEach((p, i) => [false, true].forEach(done => {
-        if(done && p.fig.length < 2) return;
-        const f = makeFig(p.fig, { h: done ? 9 : 0, done }, p); bad += f.issues.length;
-        cells.push(`<div class="card"><b>${k + 1}-${i + 1}${done ? '（解いた後）' : ''}</b> 答 ${p.choices ? p.choices[p.ans] : p.ans + p.unit}${f.svg}<div class="err">${f.issues.join('<br>')}</div></div>`);
-      }));
+      s.gens.forEach((gen, i) => {
+        for(let t = 0; t < N; t++){
+          const p = gen(); n++;
+          const ok = Number.isInteger(p.ans) && p.ans >= 0 && p.hints.length >= 2 && !/undefined|NaN/.test(p.q + p.hints.join(''));
+          [false, true].forEach(done => {
+            if(done && p.fig.length < 2) return;
+            const f = makeFig(p.fig, { h: done ? 9 : 0, done }, p);
+            const iss = f.issues.concat(ok ? [] : ['答え・文章が不正']).concat(/NaN/.test(f.svg) ? ['図に NaN'] : []);
+            if(iss.length){ bad++; if(badList.length < 30) badList.push(`${k + 1}-${i + 1}: ${iss.join(' / ')}｜${p.q.replace(/<[^>]+>/g, '')}`); }
+            if(t < 3 || iss.length) cells.push(`<div class="card"><b>${k + 1}-${i + 1}${done ? '（解いた後）' : ''}</b> 答 ${p.choices ? p.choices[p.ans] : p.ans + p.unit}<br>${p.q}${f.svg}<div>${p.hints.map(mathHTML).join('<br>')}</div><div class="err">${iss.join('<br>')}</div></div>`);
+          });
+        }
+      });
     });
-    app.innerHTML = `<p id="dbgSummary"><b>図のチェック：問題 ${TOTAL} 題／不一致 ${bad} 件</b></p><div class="dbg">${cells.join('')}</div>`;
+    app.innerHTML = `<p id="dbgSummary"><b>図のチェック：${n} 題を生成／不一致 ${bad} 件</b></p><pre id="dbgBad">${badList.join(String.fromCharCode(10))}</pre><div class="dbg">${cells.slice(0, 400).join('')}</div>`;
   }
 
   if(/[?&]debug=1/.test(location.search)) debug(); else home();
