@@ -98,25 +98,35 @@
   .cert .c-foot span:last-child{text-align:right;font-size:13px;color:var(--ink);margin-top:4px;}
   /* マスターカード（性質ごとに1枚。集める） */
   .cards{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin:4px 0 2px;}
-  .mcard{border:1.5px dashed #b9c2cf;border-radius:6px;background:#f4f6f9;padding:3px 2px 4px;text-align:center;line-height:1.25;color:#94a3b8;font-family:inherit;min-width:0;}
+  .mcard{border:1.5px dashed #b9c2cf;border-radius:8px;background:#f4f6f9;padding:3px 2px 4px;text-align:center;line-height:1.25;color:#94a3b8;font-family:inherit;min-width:0;}
   button.mcard{cursor:pointer;}
   .mcard .mno{font-size:9px;font-weight:700;}
-  .mcard .mfig{height:38px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;}
+  .mcard .mfig{height:44px;position:relative;display:flex;align-items:center;justify-content:center;}
   .mcard .mfig svg{width:100%;height:100%;display:block;}
+  .mcard:not(.got) .mfig svg{filter:brightness(0);opacity:.16;}
+  .mcard .mfig .q{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#64748b;}
   .mcard .mname{font-size:9.5px;font-weight:700;min-height:2.5em;display:flex;align-items:center;justify-content:center;}
   .mcard .mst{font-size:9px;font-weight:700;}
-  .mcard.got{border:2px solid var(--gold);background:linear-gradient(160deg,#fff8dc,#ffe9a8);color:var(--ink);}
-  .mcard.got .mno, .mcard.got .mst{color:var(--gold);}
-  .bigcard{max-width:330px;margin:0 auto;border:3px solid var(--gold);outline:1.5px solid var(--gold);outline-offset:-8px;border-radius:14px;background:linear-gradient(160deg,#fffdf2,#ffeeb5);padding:20px 20px 16px;text-align:center;line-height:1.5;}
-  .bigcard .b-top{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--gold);}
-  .bigcard .b-title{font-size:21px;font-weight:700;margin:2px 0 6px;}
-  .bigcard .b-fig{background:#fff;border:1px solid #e6d7a4;border-radius:8px;padding:4px;}
-  .bigcard .b-fig svg{width:100%;height:auto;display:block;}
-  .bigcard .b-rule{font-size:13px;text-align:left;margin:8px 0;}
-  .bigcard .b-rule b{background:#fff;padding:0 4px;border-radius:3px;}
-  .bigcard .b-stars{color:var(--gold);font-size:16px;letter-spacing:.1em;font-weight:700;}
-  .bigcard .b-foot{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;margin-top:6px;border-top:1px solid #e6d7a4;padding-top:6px;}
-  .bigcard .b-foot b{word-break:break-all;text-align:left;}
+  .mcard.got{border:2px solid var(--td);background:linear-gradient(165deg,#fff 0%,var(--tl) 45%,var(--tc) 130%);color:var(--ink);box-shadow:0 1px 0 rgba(0,0,0,.12);}
+  .mcard.got .mno, .mcard.got .mst{color:var(--td);}
+  .bigcard{position:relative;overflow:hidden;max-width:330px;margin:0 auto;border:4px solid var(--td);border-radius:18px;background:linear-gradient(165deg,#fff 0%,var(--tl) 40%,var(--tc) 135%);padding:12px 14px 12px;text-align:center;line-height:1.5;box-shadow:0 6px 18px rgba(30,41,59,.18), inset 0 0 0 3px #fff;}
+  .bigcard::before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.55) 48%,transparent 58%);pointer-events:none;}
+  .bigcard > *{position:relative;}
+  .bigcard .b-head{display:flex;align-items:center;gap:8px;text-align:left;}
+  .bigcard .b-no{flex:none;background:var(--td);color:#fff;font-size:12px;font-weight:700;border-radius:999px;padding:1px 10px;letter-spacing:.04em;}
+  .bigcard .b-title{font-size:19px;font-weight:700;line-height:1.3;}
+  .bigcard .b-art{position:relative;margin:8px 0 0;border:3px solid var(--td);border-radius:12px;background:radial-gradient(circle at 50% 42%,#fff 0%,var(--tl) 55%,var(--tc) 120%);padding:6px 0 2px;}
+  .bigcard .b-art svg{width:62%;height:auto;display:block;margin:0 auto;}
+  .bigcard .sp{position:absolute;color:#fff;text-shadow:0 0 4px var(--td);font-size:18px;line-height:1;}
+  .bigcard .sp.s1{left:9%;top:10%;font-size:22px;} .bigcard .sp.s2{right:10%;top:16%;} .bigcard .sp.s3{left:13%;bottom:22%;font-size:15px;} .bigcard .sp.s4{right:13%;bottom:26%;font-size:13px;}
+  .bigcard .b-rare{position:absolute;right:8px;bottom:4px;color:#f5a400;font-size:13px;letter-spacing:.08em;font-weight:700;text-shadow:0 1px 0 #fff;}
+  .bigcard .b-name{margin:-2px 6px 0;background:var(--td);color:#fff;border-radius:10px;padding:5px 10px 6px;line-height:1.35;}
+  .bigcard .b-name b{display:block;font-size:18px;letter-spacing:.06em;}
+  .bigcard .b-name span{display:block;font-size:12.5px;}
+  .bigcard .b-rule{font-size:12.5px;text-align:left;margin:8px 2px 6px;background:rgba(255,255,255,.8);border-radius:8px;padding:6px 9px;}
+  .bigcard .b-rule b{color:var(--td);}
+  .bigcard .b-foot{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:11px;padding:0 4px;}
+  .bigcard .b-foot b{font-size:13.5px;word-break:break-all;text-align:left;}
   .get-msg{text-align:center;font-size:20px;font-weight:700;color:var(--gold);margin:0 0 var(--sp-1);}
   .cert-note{font-size:14px;color:var(--sub);margin:var(--sp-2) 0 0;text-align:center;}
   .submit-box textarea{width:100%;font-family:inherit;font-size:14px;line-height:1.6;border:1px solid var(--line);border-radius:var(--radius-md);padding:10px;resize:vertical;background:#f8fafc;color:var(--ink);}
@@ -752,25 +762,94 @@
   const escT = v => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const today = () => { const d = new Date(); return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`; };
   const nCards = () => STAGES.filter(s => stageState(s) === 'master').length;
-  // 小さいカード（コレクション用）。まだのものは「？」と ★ の数
+  /* ---- キャラクター（性質の図形に顔と手足を付けたオリジナル。SVG 200×200）---- */
+  const K = '#4a3728';
+  const SK = w => `stroke="${K}" stroke-width="${w || 5}" stroke-linejoin="round" stroke-linecap="round"`;
+  function face(cx, cy, dx, o){
+    o = o || {}; const e = o.e || 6;
+    return `<ellipse cx="${cx - dx - 9}" cy="${cy + 9}" rx="7" ry="4.5" fill="#ff7b93" opacity=".6"/><ellipse cx="${cx + dx + 9}" cy="${cy + 9}" rx="7" ry="4.5" fill="#ff7b93" opacity=".6"/>` +
+      `<circle cx="${cx - dx}" cy="${cy}" r="${e}" fill="${K}"/><circle cx="${cx - dx - e*0.3}" cy="${cy - e*0.35}" r="${e*0.36}" fill="#fff"/>` +
+      `<circle cx="${cx + dx}" cy="${cy}" r="${e}" fill="${K}"/><circle cx="${cx + dx - e*0.3}" cy="${cy - e*0.35}" r="${e*0.36}" fill="#fff"/>` +
+      (o.nomouth ? '' : `<path d="M ${cx - 7} ${cy + 9} Q ${cx} ${cy + 18} ${cx + 7} ${cy + 9}" fill="none" stroke="${K}" stroke-width="3.5" stroke-linecap="round"/>`);
+  }
+  const arm = (x1, y1, x2, y2, c) => `<path d="M ${x1} ${y1} L ${x2} ${y2}" fill="none" ${SK()}/><circle cx="${x2}" cy="${y2}" r="6" fill="${c}" ${SK(4)}/>`;
+  const feet = (x1, x2, y) => `<ellipse cx="${x1}" cy="${y}" rx="13" ry="6.5" fill="${K}"/><ellipse cx="${x2}" cy="${y}" rx="13" ry="6.5" fill="${K}"/>`;
+  const CHARS = [
+    { name: 'ニトウくん', say: '角を半分こ。辺の比もおそろい！', c: '#FFD166', d: '#B97A00', l: '#FFF6D6',
+      art: t => feet(70, 128, 171) + arm(52, 112, 28, 92, t.c) + arm(142, 118, 172, 100, t.c) +
+        `<polygon points="85,28 28,165 172,165" fill="${t.c}" ${SK()}/>` +
+        `<line x1="85" y1="34" x2="96.8" y2="162" stroke="#fff" stroke-width="4" stroke-dasharray="7 6" stroke-linecap="round"/>` +
+        `<circle cx="79" cy="54" r="3.6" fill="${K}"/><circle cx="93" cy="55" r="3.6" fill="${K}"/>` + face(92, 116, 17) },
+    { name: 'ガイシン', say: '3つの頂点まで、どれも同じ距離！', c: '#7CC6FE', d: '#1F6FB2', l: '#E4F3FF',
+      art: t => `<circle cx="100" cy="100" r="78" fill="#fff" stroke="${t.c}" stroke-width="7"/>` +
+        `<polygon points="100,22 36,145 164,145" fill="${t.l}" ${SK(4)}/>` +
+        [[100, 22], [36, 145], [164, 145]].map(p => `<line x1="100" y1="100" x2="${p[0]}" y2="${p[1]}" stroke="${t.d}" stroke-width="6" stroke-linecap="round"/><circle cx="${p[0]}" cy="${p[1]}" r="8" fill="${t.c}" ${SK(4)}/>`).join('') +
+        `<circle cx="100" cy="100" r="28" fill="${t.c}" ${SK()}/>` + face(100, 97, 10, { e: 5 }) },
+    { name: 'ナイシン', say: '3つの辺に、ぴったりタッチ', c: '#8EE3B4', d: '#1E8A56', l: '#E6FAEF',
+      art: t => `<polygon points="100,20 18,172 182,172" fill="${t.l}" ${SK()}/>` +
+        `<polygon points="72,95 80,66 97,82" fill="${t.c}" ${SK()}/><polygon points="128,95 120,66 103,82" fill="${t.c}" ${SK()}/>` +
+        `<circle cx="100" cy="123" r="49" fill="${t.c}" ${SK()}/>` + face(100, 118, 17) +
+        `<path d="M 60 126 L 44 122 M 60 133 L 45 136 M 140 126 L 156 122 M 140 133 L 155 136" fill="none" stroke="${K}" stroke-width="2.5" stroke-linecap="round"/>` },
+    { name: 'ジュウシン', say: 'おへそで 2：1 のバランス', c: '#FFB067', d: '#C25E00', l: '#FFEEDD',
+      art: t => feet(72, 128, 176) + arm(58, 122, 26, 104, t.c) + arm(142, 122, 174, 104, t.c) +
+        `<polygon points="100,25 25,170 175,170" fill="${t.c}" ${SK()}/>` +
+        `<path d="M 100 31 L 100 166 M 31 167 L 137.5 97.5 M 169 167 L 62.5 97.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".9"/>` +
+        `<circle cx="100" cy="121.7" r="8" fill="#e63946" ${SK(3.5)}/>` + face(100, 80, 11, { e: 5 }) },
+    { name: 'エンシュー', say: '円周角は中心角の半分だよ', c: '#C3AEFA', d: '#6540C9', l: '#F1EBFF',
+      art: t => `<path d="M 92 30 Q 88 12 100 16 Q 98 6 110 12 Q 108 22 106 30" fill="${t.c}" ${SK(4)}/>` +
+        `<ellipse cx="26" cy="110" rx="12" ry="22" fill="${t.c}" ${SK()}/><ellipse cx="174" cy="110" rx="12" ry="22" fill="${t.c}" ${SK()}/>` +
+        `<circle cx="100" cy="100" r="72" fill="${t.c}" ${SK()}/>` + face(100, 80, 24, { e: 7, nomouth: 1 }) +
+        `<polygon points="100,170 66,112 134,112" fill="#FFB703" ${SK(4.5)}/><path d="M 66 112 Q 100 128 134 112" fill="none" stroke="${K}" stroke-width="3" stroke-linecap="round"/>` },
+    { name: 'ナイセツ', say: '向かいあう角、たして 180°', c: '#6FD6D0', d: '#12807A', l: '#E0F8F6',
+      art: t => `<circle cx="100" cy="100" r="78" fill="#fff" stroke="${t.c}" stroke-width="7"/>` +
+        `<polygon points="86.5,23.2 26.7,126.7 126.7,173.3 173.3,73.3" fill="${t.c}" ${SK()}/>` +
+        `<circle cx="86" cy="42" r="6" fill="#e63946"/><circle cx="123" cy="155" r="6" fill="#e63946"/><circle cx="45" cy="122" r="6" fill="#3a86ff"/><circle cx="155" cy="79" r="6" fill="#3a86ff"/>` + face(100, 98, 17) },
+    { name: 'セッセン', say: '接線と弦の角 ＝ 向こうの円周角', c: '#FF8FA3', d: '#C42847', l: '#FFE6EB',
+      art: t => `<path d="M 8 70 L 28 70 M 2 92 L 26 92 M 10 114 L 30 114" fill="none" stroke="${t.d}" stroke-width="4" stroke-linecap="round" opacity=".6"/>` +
+        `<circle cx="55" cy="177" r="8" fill="${K}"/><circle cx="145" cy="177" r="8" fill="${K}"/><rect x="20" y="160" width="160" height="10" rx="5" fill="#8d99ae" ${SK(4)}/>` +
+        `<circle cx="100" cy="98" r="62" fill="${t.c}" ${SK()}/>` +
+        `<line x1="100" y1="158" x2="153.7" y2="67" stroke="${K}" stroke-width="10" stroke-linecap="round"/><line x1="100" y1="158" x2="153.7" y2="67" stroke="#fff" stroke-width="5" stroke-linecap="round"/>` +
+        `<path d="M 124 157 A 24 24 0 0 0 112 137" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>` + face(84, 92, 16) },
+    { name: 'セッチョー', say: '2本の接線、長さはおんなじ', c: '#FFB3C7', d: '#C2456E', l: '#FFEEF3',
+      art: t => `<polygon points="100,188 144.6,97.7 55.4,97.7" fill="#E9B872" ${SK()}/>` +
+        `<path d="M 72 118 L 108 172 M 92 112 L 122 150 M 128 118 L 92 172 M 108 112 L 78 150" fill="none" stroke="#C98F45" stroke-width="2.5" stroke-linecap="round"/>` +
+        `<path d="M 116 139.8 L 128.6 146 M 83.9 139.8 L 71.4 146" fill="none" stroke="${K}" stroke-width="4" stroke-linecap="round"/>` +
+        `<path d="M 100 26 Q 104 10 116 8" fill="none" ${SK(3.5)}/><circle cx="100" cy="24" r="8" fill="#e63946" ${SK(3.5)}/>` +
+        `<circle cx="100" cy="75" r="50" fill="${t.c}" ${SK()}/>` + face(100, 74, 16) },
+    { name: 'ホウベキ丸', say: 'PA×PB ＝ PC×PD でござる', c: '#9DB2FF', d: '#3A4FC4', l: '#E8EDFF',
+      art: t => [[40, 30, 165, 122], [160, 30, 35, 122]].map(v => `<line x1="${v[0]}" y1="${v[1]}" x2="${v[2]}" y2="${v[3]}" stroke="${K}" stroke-width="12" stroke-linecap="round"/><line x1="${v[0]}" y1="${v[1]}" x2="${v[2]}" y2="${v[3]}" stroke="#DCE3EA" stroke-width="6" stroke-linecap="round"/>`).join('') +
+        `<line x1="40" y1="30" x2="54" y2="40.3" stroke="#8D5524" stroke-width="12" stroke-linecap="round"/><line x1="160" y1="30" x2="146" y2="40.3" stroke="#8D5524" stroke-width="12" stroke-linecap="round"/>` +
+        `<circle cx="100" cy="112" r="60" fill="${t.c}" ${SK()}/>` +
+        `<path d="M 78 58 L 157 116 M 122 58 L 43 116" fill="none" stroke="#fff" stroke-width="3.5" stroke-dasharray="6 5" stroke-linecap="round" opacity=".95"/>` +
+        `<path d="M 100 64 L 103 71 L 110 74 L 103 77 L 100 84 L 97 77 L 90 74 L 97 71 Z" fill="#FFD166" ${SK(2.5)}/>` + face(100, 128, 16) },
+    { name: 'フタツ', say: 'くっつけば d ＝ r＋s', c: '#C5E86C', d: '#5E8A00', l: '#F3FBDD',
+      art: t => `<ellipse cx="105" cy="172" rx="88" ry="6" fill="${K}" opacity=".15"/>` +
+        `<circle cx="70" cy="115" r="55" fill="${t.c}" ${SK()}/><circle cx="153.9" cy="138" r="32" fill="#FFF3B0" ${SK()}/>` +
+        face(68, 110, 16) + face(155, 135, 9, { e: 4.5 }) +
+        `<path d="M 128 78 q -7 -9 -14 -2 q -5 6 14 20 q 19 -14 14 -20 q -7 -7 -14 2 Z" fill="#e63946" ${SK(3)}/>` }
+  ];
+  const charSVG = k => `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${CHARS[k].name}">${CHARS[k].art(CHARS[k])}</svg>`;
+  const themeStyle = k => `--tc:${CHARS[k].c};--td:${CHARS[k].d};--tl:${CHARS[k].l}`;
+
+  // 小さいカード（コレクション用）。まだのものはシルエットと ★ の数
   function miniCard(s, k){
     const got = stageState(s) === 'master', r = rec(s.id);
-    return `<button class="mcard${got ? ' got' : ''}" data-id="${s.id}" aria-label="${s.title}${got ? '（獲得）' : '（まだ）'}">
+    return `<button class="mcard${got ? ' got' : ''}" style="${themeStyle(k)}" data-id="${s.id}" aria-label="${s.title}${got ? '（獲得）' : '（まだ）'}">
       <div class="mno">No.${k + 1}</div>
-      <div class="mfig">${got ? makeFig(s.pfig, { h: 0, done: false }, null).svg : '？'}</div>
+      <div class="mfig">${charSVG(k)}${got ? '' : '<span class="q">？</span>'}</div>
       <div class="mname">${s.card}</div>
       <div class="mst">${got ? '★ MASTER' : '★ ' + r.filter(v => v === 3).length + '/' + r.length}</div></button>`;
   }
   // 大きいカード（1枚）
   function bigCard(s){
-    const k = STAGES.indexOf(s);
-    return `<div class="bigcard">
-      <div class="b-top">MASTER CARD　No.${k + 1}</div>
-      <div class="b-title">${s.title}</div>
-      <div class="b-fig">${makeFig(s.pfig, { h: 0, done: false }, null).svg}</div>
+    const k = STAGES.indexOf(s), ch = CHARS[k];
+    return `<div class="bigcard" style="${themeStyle(k)}">
+      <div class="b-head"><span class="b-no">No.${k + 1}</span><span class="b-title">${s.title}</span></div>
+      <div class="b-art"><span class="sp s1">✦</span><span class="sp s2">✦</span><span class="sp s3">✧</span><span class="sp s4">✦</span>${charSVG(k)}
+        <span class="b-rare">${'★'.repeat(s.gens.length)}</span></div>
+      <div class="b-name"><b>${ch.name}</b><span>「${ch.say}」</span></div>
       <p class="b-rule">${s.rule}</p>
-      <div class="b-stars">${'★'.repeat(s.gens.length)}</div>
-      <div class="b-foot"><b>${escT(save._name || '')}</b><span>${today()}</span></div>
+      <div class="b-foot"><b>${escT(save._name || '')}</b><span>MASTER CARD　${today()}</span></div>
     </div>`;
   }
   function cardView(id){
@@ -987,7 +1066,9 @@
     app.innerHTML = `<p id="dbgSummary"><b>図のチェック：${n} 題を生成／不一致 ${bad} 件</b></p><pre id="dbgBad">${badList.join(String.fromCharCode(10))}</pre><div class="dbg">${cells.slice(0, 400).join('')}</div>`;
   }
 
-  if(/[?&]debug=1/.test(location.search)) debug(); else home();
+  // 確認用：?cards=1 で全カードを一覧
+  function cardsDebug(){ save._name = save._name || '1年A組 倉吉 太郎'; app.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">' + STAGES.map(bigCard).join('') + '</div>'; }
+  if(/[?&]debug=1/.test(location.search)) debug(); else if(/[?&]cards=1/.test(location.search)) cardsDebug(); else home();
 })();
 </script>
 </body>
