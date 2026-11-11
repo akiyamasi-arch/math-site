@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>図形の性質マスター｜数学学習サイト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
+<style>
+  :root{
+    --orange-50:#FFEEE2; --orange-100:#FFDFCA; --orange-400:#FF8D44;
+    --orange-700:#E25100; --orange-800:#C74700; --orange-900:#AC3E00;
+    --ink:#1E293B; --sub:#475569; --line:#D9DEE6; --line-strong:#B9C2CF;
+    --bg:#FBFBFA; --card:#FFFFFF; --focus:#FFD866;
+    --x:#D62839; --x-soft:#FDE2E4; --given:#1D6FB8; --given-soft:#DBEAFE;
+    --ok:#16794C; --ok-soft:#E3F5EC; --gold:#B7791F; --gold-soft:#FFF4CC;
+    --sp-1:8px; --sp-2:16px; --sp-3:24px; --sp-4:32px; --sp-6:48px;
+    --radius-sm:4px; --radius-md:8px; --radius-pill:999px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.7;}
+  a{color:var(--orange-800);}
+  a:focus-visible, button:focus-visible, input:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+  .brand-bar{height:6px;background:var(--orange-700);}
+  .site-header{background:var(--card);border-bottom:1px solid var(--line);padding:var(--sp-2);}
+  .site-header .inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;}
+  .site-title{margin:0;font-size:18px;font-weight:700;}
+  .site-title a{color:var(--ink);text-decoration:none;}
+  .back-link{font-size:14px;font-weight:700;}
+  .wrap{max-width:1100px;margin:0 auto;padding:var(--sp-3) var(--sp-2) var(--sp-6);}
+  h1{margin:0 0 4px;font-size:26px;line-height:1.4;}
+  h2{margin:0;font-size:20px;line-height:1.4;}
+  .lead{margin:0 0 var(--sp-3);color:var(--sub);font-size:15px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--sp-2) var(--sp-3);}
+  .section-title{font-size:13px;font-weight:700;color:var(--sub);margin:0 0 var(--sp-1);}
+  .btn{border:1px solid var(--line-strong);background:#f8fafc;color:var(--ink);padding:10px 18px;border-radius:var(--radius-pill);font-size:15px;cursor:pointer;font-family:inherit;min-height:44px;}
+  .btn:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .btn:disabled{opacity:.35;cursor:default;}
+  .btn.primary{background:var(--orange-800);color:#fff;border-color:var(--orange-800);font-weight:700;}
+  .btn.primary:hover{background:var(--orange-900);}
+  .btn.small{padding:6px 14px;font-size:14px;min-height:36px;}
+
+  /* 分数は横線の縦組み */
+  .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25;margin:0 2px;}
+  .frac .num, .frac .den{padding:0 4px;white-space:nowrap;}
+  .frac .bar{display:block;width:100%;height:2px;background:currentColor;margin:2px 0;}
+
+  /* ---- ホーム ---- */
+  .meter{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;}
+  .meter .bar{flex:1;min-width:160px;height:14px;background:#eef1f5;border-radius:var(--radius-pill);overflow:hidden;}
+  .meter .bar i{display:block;height:100%;background:var(--orange-700);border-radius:var(--radius-pill);}
+  .meter .num{font-weight:700;}
+  .legend{font-size:13px;color:var(--sub);margin:var(--sp-1) 0 0;}
+  .stage-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:var(--sp-2);margin-top:var(--sp-2);}
+  .stage-card{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--sp-2);cursor:pointer;font-family:inherit;color:var(--ink);font-size:15px;line-height:1.6;}
+  .stage-card:hover{border-color:var(--orange-800);background:#fffaf6;}
+  .stage-card .no{font-size:12px;font-weight:700;color:var(--orange-800);}
+  .stage-card .ttl{font-size:17px;font-weight:700;}
+  .stage-card .rule{font-size:13px;color:var(--sub);}
+  .stage-card.clear{border-color:var(--ok);}
+  .stage-card.master{border-color:var(--gold);background:var(--gold-soft);}
+  .badge{display:inline-block;font-size:12px;font-weight:700;padding:1px 10px;border-radius:var(--radius-pill);}
+  .badge.clear{background:var(--ok-soft);color:var(--ok);}
+  .badge.master{background:var(--gold);color:#fff;}
+  .pips{display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
+  .pip{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line-strong);background:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;color:var(--sub);padding:0;font-family:inherit;}
+  button.pip{cursor:pointer;}
+  .pip.s1{background:#f1f5f9;color:var(--sub);}
+  .pip.s2{background:var(--ok-soft);border-color:var(--ok);color:var(--ok);}
+  .pip.s3{background:var(--gold-soft);border-color:var(--gold);color:var(--gold);}
+  .pip.now{outline:3px solid var(--orange-400);outline-offset:1px;}
+  .certificate{margin-top:var(--sp-2);border:2px solid var(--gold);background:var(--gold-soft);text-align:center;}
+  .certificate .big{font-size:22px;font-weight:700;color:var(--gold);}
+  .submit-box textarea{width:100%;font-family:inherit;font-size:14px;line-height:1.6;border:1px solid var(--line);border-radius:var(--radius-md);padding:10px;resize:vertical;background:#f8fafc;color:var(--ink);}
+
+  /* ---- ステージ ---- */
+  .stage-head{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-2);}
+  .stage-head .no{font-size:13px;font-weight:700;color:var(--orange-800);}
+  .prop{border-left:6px solid var(--orange-700);display:grid;grid-template-columns:1fr 220px;gap:var(--sp-2);align-items:center;}
+  .prop .name{font-size:13px;font-weight:700;color:var(--orange-800);}
+  .prop .rule{font-size:16px;margin:4px 0 0;}
+  .prop .rule b{background:var(--orange-50);padding:1px 6px;border-radius:var(--radius-sm);}
+  .prop .page{font-size:13px;color:var(--sub);margin:6px 0 0;}
+  .prop svg{width:100%;height:auto;display:block;}
+  @media (max-width:640px){ .prop{grid-template-columns:1fr;} .prop .pfig{max-width:240px;margin:0 auto;} }
+  .main-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:var(--sp-2);align-items:start;margin-top:var(--sp-2);}
+  @media (max-width:820px){ .main-grid{grid-template-columns:1fr;} }
+  .figure svg{width:100%;height:auto;display:block;max-height:420px;}
+  .qno{font-size:13px;font-weight:700;color:var(--orange-800);}
+  .qtext{font-size:17px;margin:2px 0 var(--sp-2);}
+  .ans-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .ans-row .xeq{font-size:20px;font-weight:700;font-style:italic;color:var(--x);}
+  .ans-row input{font-size:22px;font-family:inherit;width:110px;padding:6px 10px;border:2px solid var(--line-strong);border-radius:var(--radius-md);text-align:center;}
+  .ans-row .unit{font-size:20px;font-weight:700;}
+  .choices{display:flex;flex-direction:column;gap:8px;}
+  .choices button{text-align:left;border:1.5px solid var(--line-strong);background:#fff;border-radius:var(--radius-md);padding:10px 14px;font-size:16px;font-family:inherit;color:var(--ink);cursor:pointer;min-height:44px;}
+  .choices button:hover{border-color:var(--orange-800);background:var(--orange-50);}
+  .choices button.wrong{opacity:.45;text-decoration:line-through;}
+  .choices button.right{border-color:var(--ok);background:var(--ok-soft);font-weight:700;}
+  .choices button:disabled{cursor:default;}
+  .fb{margin-top:var(--sp-2);padding:10px 14px;border-radius:var(--radius-md);font-weight:700;}
+  .fb.ok{background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok);}
+  .fb.ng{background:#fff3cd;color:#7a5b00;border:1px solid #ffe08a;}
+  .fb.info{background:#f1f5f9;color:var(--sub);border:1px solid var(--line);}
+  .hints{margin-top:var(--sp-2);border-top:1px dashed var(--line);padding-top:var(--sp-2);}
+  .hint{display:flex;gap:10px;margin-bottom:8px;font-size:15px;}
+  .hint .n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .hint.final{font-weight:700;}
+  .hint.final .n{background:var(--orange-800);}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:var(--sp-2);}
+  .result{text-align:center;}
+  .result .big{font-size:24px;font-weight:700;margin:4px 0;}
+  .result .pips{justify-content:center;margin:var(--sp-1) 0;}
+  .result .actions{justify-content:center;}
+  .dbg{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;}
+  .dbg .card{padding:8px;font-size:12px;}
+  .dbg .err{color:#c00;font-weight:700;}
+</style>
+</head>
+<body>
+
+<div class="brand-bar"></div>
+<header class="site-header">
+  <div class="inner">
+    <p class="site-title"><a href="../index.html">数学学習サイト</a></p>
+    <a class="back-link" href="../unit.html?s=mathA&u=zukei-seishitsu">← 単元ページに戻る</a>
+  </div>
+</header>
+
+<div class="wrap" id="app"></div>
+
+<script>
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const fracHTML = (n, d) => `<span class="frac"><span class="num">${n}</span><span class="bar"></span><span class="den">${d}</span></span>`;
+  const mathHTML = s => String(s).replace(/\{([^|{}]+)\|([^|{}]+)\}/g, (_, n, d) => fracHTML(n, d));
+
+  /* ================= 図形の計算 ================= */
+  const R = Math.PI / 180;
+  const pol = (deg, r, c) => ({ x: (c ? c.x : 0) + (r == null ? 1 : r) * Math.cos(deg * R), y: (c ? c.y : 0) + (r == null ? 1 : r) * Math.sin(deg * R) });
+  const mix = (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+  const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  const O0 = { x: 0, y: 0 };
+  // 3辺の長さ（AB=c, AC=b, BC=a）から三角形
+  function triSSS(c, b, a){ const x = (c*c + a*a - b*b) / (2*a); return { A: { x, y: Math.sqrt(c*c - x*x) }, B: { x: 0, y: 0 }, C: { x: a, y: 0 } }; }
+  // 角 B, C（度）から三角形（BC=1）
+  function triAng(Bd, Cd){ const Ad = 180 - Bd - Cd, c = Math.sin(Cd*R) / Math.sin(Ad*R); return { A: { x: c*Math.cos(Bd*R), y: c*Math.sin(Bd*R) }, B: { x: 0, y: 0 }, C: { x: 1, y: 0 } }; }
+  function incenter(A, B, C){ const a = dist(B,C), b = dist(C,A), c = dist(A,B), s = a+b+c; return { x: (a*A.x + b*B.x + c*C.x)/s, y: (a*A.y + b*B.y + c*C.y)/s }; }
+  function circum(A, B, C){
+    const d = 2 * (A.x*(B.y-C.y) + B.x*(C.y-A.y) + C.x*(A.y-B.y));
+    const a2 = A.x*A.x + A.y*A.y, b2 = B.x*B.x + B.y*B.y, c2 = C.x*C.x + C.y*C.y;
+    const x = (a2*(B.y-C.y) + b2*(C.y-A.y) + c2*(A.y-B.y)) / d;
+    const y = (a2*(C.x-B.x) + b2*(A.x-C.x) + c2*(B.x-A.x)) / d;
+    return { x, y, r: Math.hypot(A.x - x, A.y - y) };
+  }
+
+  /* ================= 図を描くしくみ =================
+     build(g, st) の中で点・線・角・長さを登録 → 全体が収まるように拡大して SVG にする。
+     st.h = 表示中のヒントの数、st.done = 解き終わったか（補助線や答えの図を出すのに使う） */
+  const W = 360, H = 280, PAD = 42;
+  const INK = '#1E293B', CX = '#D62839', CXS = '#FDE2E4', CG = '#1D6FB8', CGS = '#DBEAFE', CO = '#E25100';
+  function makeFig(build, st, prob){
+    const ext = [], q = [], names = [], issues = [], lenChk = [];
+    const g = {
+      P(name, pt, o){ const p = { x: pt.x, y: pt.y }; ext.push(p); if(name) names.push({ name, p, o: o || {} }); return p; },
+      bound(pt){ ext.push(pt); return pt; },
+      circle(c, r, o){ ext.push({ x: c.x - r, y: c.y - r }, { x: c.x + r, y: c.y + r }); q.push(t => t.circle(c, r, o || {})); },
+      seg(a, b, o){ q.push(t => t.seg(a, b, o || {})); },
+      poly(arr, o){ for(let i = 0; i < arr.length; i++) g.seg(arr[i], arr[(i+1) % arr.length], o); },
+      dot(a, o){ q.push(t => t.dot(a, o || {})); },
+      ang(v, a, b, text, o){ q.push(t => t.ang(v, a, b, text, o || {})); },
+      len(a, b, text, o){ q.push(t => t.len(a, b, text, o || {})); },
+      text(a, str, o){ ext.push(a); q.push(t => t.text(a, str, o || {})); }
+    };
+    build(g, st || { h: 0, done: false });
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    ext.forEach(p => { x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); });
+    const bw = Math.max(x1 - x0, 1e-6), bh = Math.max(y1 - y0, 1e-6);
+    const sc = Math.min((W - 2*PAD) / bw, (H - 2*PAD) / bh);
+    const ox = (W - bw*sc) / 2, oy = (H - bh*sc) / 2;
+    const px = p => [ox + (p.x - x0) * sc, oy + (y1 - p.y) * sc];
+    const cen = [W/2, H/2];
+    const L = [[], [], [], []];   // 0:塗り 1:線 2:印 3:文字
+    const f = n => n.toFixed(1);
+    const halo = 'paint-order="stroke" stroke="#fff" stroke-width="4" stroke-linejoin="round"';
+    const t = {
+      circle(c, r, o){ const C = px(c); L[1].push(`<circle cx="${f(C[0])}" cy="${f(C[1])}" r="${f(r*sc)}" fill="${o.fill || 'none'}" stroke="${o.color || INK}" stroke-width="${o.w || 1.6}"${o.dash ? ' stroke-dasharray="5 4"' : ''}/>`); },
+      seg(a, b, o){ const A = px(a), B = px(b); L[1].push(`<line x1="${f(A[0])}" y1="${f(A[1])}" x2="${f(B[0])}" y2="${f(B[1])}" stroke="${o.color || INK}" stroke-width="${o.w || 1.8}" stroke-linecap="round"${o.dash ? ' stroke-dasharray="5 4"' : ''}/>`); },
+      dot(a, o){ const A = px(a); L[2].push(`<circle cx="${f(A[0])}" cy="${f(A[1])}" r="${o.r || 3}" fill="${o.color || INK}"/>`); },
+      text(a, str, o){ const A = px(a); L[3].push(`<text x="${f(A[0] + (o.dx || 0))}" y="${f(A[1] + (o.dy || 0))}" text-anchor="${o.anchor || 'middle'}" dominant-baseline="central" font-size="${o.size || 13}" font-weight="700" fill="${o.color || INK}" ${halo}>${str}</text>`); },
+      ang(v, a, b, text, o){
+        const V = px(v), A = px(a), B = px(b);
+        const a1 = Math.atan2(A[1]-V[1], A[0]-V[0]), a2 = Math.atan2(B[1]-V[1], B[0]-V[0]);
+        let d = a2 - a1; while(d > Math.PI) d -= 2*Math.PI; while(d <= -Math.PI) d += 2*Math.PI;
+        const deg = Math.abs(d) / R, mid = a1 + d/2;
+        const isX = text === 'x';
+        if(o.mark){ const rr = o.r || 24; L[2].push(`<circle cx="${f(V[0] + rr*Math.cos(mid))}" cy="${f(V[1] + rr*Math.sin(mid))}" r="3.2" fill="${o.open ? '#fff' : CO}" stroke="${CO}" stroke-width="1.6"/>`); return; }
+        const want = isX ? (prob && prob.unit === '°' && !prob.choices ? prob.ans : null) : (/^\d+(\.\d+)?°$/.test(text) ? parseFloat(text) : null);
+        if(want != null && !o.nocheck && Math.abs(want - deg) > 0.6) issues.push(`角 ${text}：図は ${deg.toFixed(1)}°`);
+        const r = o.r || (deg < 32 ? 36 : deg < 52 ? 27 : 20);
+        const s = [V[0] + r*Math.cos(a1), V[1] + r*Math.sin(a1)], e = [V[0] + r*Math.cos(a2), V[1] + r*Math.sin(a2)];
+        const col = o.color || (isX ? CX : CG), soft = o.soft || (isX ? CXS : CGS);
+        const arc = `A ${r} ${r} 0 0 ${d > 0 ? 1 : 0} ${f(e[0])} ${f(e[1])}`;
+        L[0].push(`<path d="M ${f(V[0])} ${f(V[1])} L ${f(s[0])} ${f(s[1])} ${arc} Z" fill="${soft}"/>`);
+        L[2].push(`<path d="M ${f(s[0])} ${f(s[1])} ${arc}" fill="none" stroke="${col}" stroke-width="1.6"/>`);
+        const tr = o.tr || (r + (text.length > 3 ? 17 : text.length > 1 ? 14 : 11));
+        L[3].push(`<text x="${f(V[0] + tr*Math.cos(mid) + (o.dx || 0))}" y="${f(V[1] + tr*Math.sin(mid) + (o.dy || 0))}" text-anchor="middle" dominant-baseline="central" font-size="${isX ? 17 : 13.5}" font-weight="700" ${isX ? 'font-style="italic"' : ''} fill="${col}" ${halo}>${text}</text>`);
+      },
+      len(a, b, text, o){
+        const A = px(a), B = px(b), M = [(A[0]+B[0])/2, (A[1]+B[1])/2];
+        const dl = Math.hypot(B[0]-A[0], B[1]-A[1]) || 1;
+        let n = [-(B[1]-A[1]) / dl, (B[0]-A[0]) / dl];
+        if(n[0]*(M[0]-cen[0]) + n[1]*(M[1]-cen[1]) < 0) n = [-n[0], -n[1]];
+        if(o.flip) n = [-n[0], -n[1]];
+        const bl = o.b || 15, isX = text === 'x';
+        const col = o.color || (isX ? CX : CG);
+        const want = o.v != null ? o.v : isX ? (prob && prob.unit === '' && !prob.choices ? prob.ans : null) : (/^\d+(\.\d+)?$/.test(text) ? parseFloat(text) : null);
+        if(want != null && !o.nocheck) lenChk.push({ text, k: want / dist(a, b) });
+        if(!o.plain) L[2].push(`<path d="M ${f(A[0])} ${f(A[1])} Q ${f(M[0] + n[0]*2*bl)} ${f(M[1] + n[1]*2*bl)} ${f(B[0])} ${f(B[1])}" fill="none" stroke="${col}" stroke-width="1.2" stroke-dasharray="4 3"/>`);
+        L[3].push(`<text x="${f(M[0] + n[0]*bl)}" y="${f(M[1] + n[1]*bl)}" text-anchor="middle" dominant-baseline="central" font-size="${isX ? 17 : 14}" font-weight="700" ${isX ? 'font-style="italic"' : ''} fill="${col}" ${halo}>${text}</text>`);
+      }
+    };
+    q.forEach(fn => fn(t));
+    if(lenChk.length > 1) lenChk.forEach(c => { if(Math.abs(c.k / lenChk[0].k - 1) > 0.012) issues.push(`長さ ${c.text}：図の比が合わない（${(c.k / lenChk[0].k).toFixed(3)}）`); });
+    names.forEach(nm => {
+      const A = px(nm.p); let dx, dy;
+      if(nm.o.d){ dx = nm.o.d[0]; dy = -nm.o.d[1]; } else { dx = A[0] - cen[0]; dy = A[1] - cen[1]; }
+      const l = Math.hypot(dx, dy) || 1, k = nm.o.k || 14;
+      L[3].push(`<text x="${f(A[0] + dx/l*k)}" y="${f(A[1] + dy/l*k)}" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="700" fill="${INK}" ${halo}>${nm.name}</text>`);
+    });
+    return { svg: `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="問題の図" style="overflow:visible">${L[0].join('')}${L[1].join('')}${L[2].join('')}${L[3].join('')}</svg>`, issues };
+  }
+
+  /* ================= 図の部品（性質ごと） ================= */
+  // ① 角の二等分線：AB=c, AC=b, BC=a。lab = {AB, AC, BD, DC, BC}
+  function figBis(g, c, b, a, lab){
+    const t = triSSS(c, b, a), A = g.P('A', t.A, { d: [0, 1] }), B = g.P('B', t.B, { d: [-1, -0.4] }), C = g.P('C', t.C, { d: [1, -0.4] });
+    const D = g.P('D', { x: a*c/(b+c), y: 0 }, { d: [0.25, -1], k: 13 });
+    g.poly([A, B, C]); g.seg(A, D);
+    g.ang(A, B, D, '', { mark: 1, r: 26 }); g.ang(A, D, C, '', { mark: 1, r: 26 });
+    if(lab.AB) g.len(A, B, lab.AB); if(lab.AC) g.len(A, C, lab.AC);
+    if(lab.BD) g.len(B, D, lab.BD, { b: 13 }); if(lab.DC) g.len(D, C, lab.DC, { b: 13 });
+    if(lab.BC) g.len(B, C, lab.BC, { b: lab.BD || lab.DC ? 34 : 15 });
+  }
+  // ② 外心：∠OAB=al, ∠OBC=be, ∠OCA=ga（合計90°）
+  function ptsO(g, al, be, ga, od){
+    const B = g.P('B', pol(180 + be)), C = g.P('C', pol(-be)), A = g.P('A', pol(180 - be - 2*ga));
+    const O = g.P('O', O0, { d: od || [0, -1], k: 13 });
+    g.poly([A, B, C]); g.dot(O, { color: CO });
+    return { A, B, C, O };
+  }
+  // ③ 内心：角 B, C
+  function ptsI(g, Bd, Cd){
+    const t = triAng(Bd, Cd), A = g.P('A', t.A, { d: [0, 1] }), B = g.P('B', t.B, { d: [-1, -0.5] }), C = g.P('C', t.C, { d: [1, -0.5] });
+    const I = g.P('I', incenter(A, B, C), { d: [0, 1], k: 13 });
+    g.poly([A, B, C]); g.dot(I, { color: CO });
+    return { A, B, C, I };
+  }
+  // ④ 重心
+  function ptsG(g){
+    const A = g.P('A', { x: 1.5, y: 3.3 }, { d: [0, 1] }), B = g.P('B', { x: 0, y: 0 }, { d: [-1, -0.5] }), C = g.P('C', { x: 4.6, y: 0 }, { d: [1, -0.5] });
+    const D = g.P('D', mix(B, C, 0.5), { d: [0, -1] }), E = g.P('E', mix(C, A, 0.5), { d: [1, 0.6] });
+    const G = g.P('G', { x: (A.x+B.x+C.x)/3, y: (A.y+B.y+C.y)/3 }, { d: [-0.2, 1], k: 15 });
+    g.poly([A, B, C]); g.seg(A, D); g.seg(B, E); g.dot(G, { color: CO });
+    return { A, B, C, D, E, G };
+  }
+  // ⑤〜⑦ 円（半径1）
+  function circ(g, withO, od){
+    g.circle(O0, 1);
+    if(withO){ const O = g.P('O', O0, { d: od || [0, -1], k: 13 }); g.dot(O); return O; }
+    return O0;
+  }
+  // ⑦ 接線（A は円のいちばん下）
+  function tangentBase(g, bDeg, cDeg, left){
+    circ(g, false);
+    const A = g.P('A', pol(270), { d: [0, -1] }), B = g.P('B', pol(bDeg)), C = g.P('C', pol(cDeg));
+    const T = g.P('T', { x: 1.5, y: -1 }, { d: [0.3, -1] });
+    const S = left ? g.P('S', { x: -1.5, y: -1 }, { d: [-0.3, -1] }) : g.bound({ x: -1.5, y: -1 });
+    g.seg(S, T); g.poly([A, B, C]);
+    return { A, B, C, T, S };
+  }
+  // ⑧ 内接円（AB=c, AC=b, BC=a）
+  function ptsIn(g, c, b, a){
+    const t = triSSS(c, b, a), s = (a+b+c)/2;
+    const A = g.P('A', t.A, { d: [0, 1] }), B = g.P('B', t.B, { d: [-1, -0.5] }), C = g.P('C', t.C, { d: [1, -0.5] });
+    const I = incenter(A, B, C);
+    const D = g.P('D', { x: s - b, y: 0 }, { d: [0, -1] });
+    const F = g.P('F', mix(B, A, (s - b)/c), { d: [-1, 0.6] }), E = g.P('E', mix(C, A, (s - c)/b), { d: [1, 0.6] });
+    g.poly([A, B, C]); g.circle(I, I.y);
+    return { A, B, C, D, E, F, I };
+  }
+  // ⑨ 方べき：円の内部で交わる
+  function powIn(g, a, b, c, d, th1, th2, lab, pd){
+    const P = g.P('P', O0, { d: pd, k: 15 });
+    const A = g.P('A', pol(th1 + 180, a)), B = g.P('B', pol(th1, b)), C = g.P('C', pol(th2, c)), D = g.P('D', pol(th2 + 180, d));
+    const cc = circum(A, B, C); g.circle(cc, cc.r);
+    g.seg(A, B); g.seg(C, D);
+    g.len(P, A, lab[0], { b: 11 }); g.len(P, B, lab[1], { b: 11 }); g.len(P, C, lab[2], { b: 11 }); g.len(P, D, lab[3], { b: 11 });
+  }
+  // ⑨ 方べき：円の外の点 P から2本
+  function powOut(g, a, b, c, d, th){
+    const P = g.P('P', O0, { d: [-1, -0.3] });
+    const A = g.P('A', pol(th, a), { d: [-0.5, 1] }), B = g.P('B', pol(th, b), { d: [0.6, 1] }), C = g.P('C', pol(0, c), { d: [-0.2, -1] }), D = g.P('D', pol(0, d), { d: [0.6, -1] });
+    const cc = circum(A, B, C); g.circle(cc, cc.r);
+    g.seg(P, B); g.seg(P, D);
+    return { P, A, B, C, D };
+  }
+  // ⑨ 方べき：接線
+  function powTan(g, a, b, th){
+    const tl = Math.sqrt(a*b);
+    const P = g.P('P', O0, { d: [-1, -0.3] });
+    const A = g.P('A', pol(th, a), { d: [-0.5, 1] }), B = g.P('B', pol(th, b), { d: [0.6, 1] }), T = g.P('T', pol(0, tl), { d: [0, -1] });
+    const cc = circum(A, B, T); g.circle(cc, cc.r);
+    g.seg(P, B); g.seg(P, g.bound({ x: tl * 1.45, y: 0 }));
+    return { P, A, B, T };
+  }
+  // ⑩ 2つの円（中心 O 半径 r、中心 P 半径 s、中心間 d）
+  function twoCircles(g, r, s, d){
+    g.circle(O0, r); const Pc = { x: d, y: 0 }; g.circle(Pc, s, { color: CG });
+    const O = g.P('O', O0, { d: [0, -1] }), P = g.P('P', Pc, { d: [0, -1] });
+    g.dot(O); g.dot(P, { color: CG });
+    return { O, P };
+  }
+  // ⑩ 長さくらべ（位置関係を答える前の図）
+  function bars(g, r, s, d){
+    const u = Math.max(r + s, d), gap = u * 0.2;
+    const row = (y, title, parts) => {
+      g.text({ x: 0, y: y + gap*0.42 }, title, { anchor: 'start', size: 13 });
+      let x = 0; parts.forEach(p => { g.seg({ x, y }, { x: x + p[0], y }, { color: p[1], w: 9 }); x += p[0]; });
+      g.bound({ x: u, y });
+    };
+    row(gap*2, `半径の和　${r} ＋ ${s}`, [[r, INK], [s, CG]]);
+    row(gap, `中心間の距離　d ＝ ${d}`, [[d, CX]]);
+    row(0, `半径の差　${r} − ${s}`, [[r - s, '#64748b']]);
+    g.bound({ x: 0, y: -gap*0.3 });
+  }
+
+  /* ================= ステージと問題 ================= */
+  const POS = ['一方が他方の内部にある', '内接する', '2点で交わる', '外接する', '離れている'];
+  const Q_BIS = '△ABC で、AD は ∠A の二等分線です。<i>x</i> の値を求めなさい。';
+  const posProb = (r, s, d, ans, hints) => ({
+    q: `半径 ${r} の円 O と半径 ${s} の円 P があり、中心間の距離は d ＝ ${d} です。2つの円の位置関係を選びなさい。`,
+    choices: POS, ans, unit: '',
+    fig: (g, st) => { if(st.done){ twoCircles(g, r, s, d); } else bars(g, r, s, d); },
+    hints
+  });
+
+  const STAGES = [
+  { id: 'bis', title: '角の二等分線と線分の比', page: 'p.65', short: 'BD : DC ＝ AB : AC',
+    rule: '△ABC で AD が ∠A の二等分線のとき　<b>BD : DC ＝ AB : AC</b>',
+    pfig: g => figBis(g, 8, 6, 7, {}),
+    probs: [
+      { q: Q_BIS, ans: 4, unit: '', fig: g => figBis(g, 8, 6, 7, { AB: '8', AC: '6', BD: 'x', DC: '3' }),
+        hints: ['角の二等分線の性質　BD : DC ＝ AB : AC　を使う', '<i>x</i> : 3 ＝ 8 : 6', '6<i>x</i> ＝ 24　よって　<i>x</i> ＝ 4'] },
+      { q: Q_BIS, ans: 2, unit: '', fig: g => figBis(g, 9, 3, 8, { AB: '9', AC: '3', BD: '6', DC: 'x' }),
+        hints: ['BD : DC ＝ AB : AC　を使う', '6 : <i>x</i> ＝ 9 : 3', '9<i>x</i> ＝ 18　よって　<i>x</i> ＝ 2'] },
+      { q: Q_BIS, ans: 12, unit: '', fig: g => figBis(g, 12, 16, 21, { AB: 'x', AC: '16', BD: '9', DC: '12' }),
+        hints: ['BD : DC ＝ AB : AC　を使う', '9 : 12 ＝ <i>x</i> : 16', '12<i>x</i> ＝ 144　よって　<i>x</i> ＝ 12'] },
+      { q: Q_BIS, ans: 8, unit: '', fig: g => figBis(g, 12, 8, 15, { AB: '12', AC: 'x', BD: '9', DC: '6' }),
+        hints: ['BD : DC ＝ AB : AC　を使う', '9 : 6 ＝ 12 : <i>x</i>', '9<i>x</i> ＝ 72　よって　<i>x</i> ＝ 8'] },
+      { q: '△ABC で、AD は ∠A の二等分線、BC ＝ 5 です。BD の長さ <i>x</i> を求めなさい。', ans: 3, unit: '', fig: g => figBis(g, 6, 4, 5, { AB: '6', AC: '4', BD: 'x', BC: '5' }),
+        hints: ['BD : DC ＝ AB : AC ＝ 6 : 4 ＝ 3 : 2', 'BC（＝5）を 3 : 2 に分けるので、BD は全体の {3|5}', '<i>x</i> ＝ 5 × {3|5} ＝ 3'] },
+      { q: '△ABC で、AD は ∠A の二等分線、BC ＝ 20 です。DC の長さ <i>x</i> を求めなさい。', ans: 12, unit: '', fig: g => figBis(g, 10, 15, 20, { AB: '10', AC: '15', DC: 'x', BC: '20' }),
+        hints: ['BD : DC ＝ AB : AC ＝ 10 : 15 ＝ 2 : 3', 'BC（＝20）を 2 : 3 に分けるので、DC は全体の {3|5}', '<i>x</i> ＝ 20 × {3|5} ＝ 12'] }
+    ] },
+
+  { id: 'gaishin', title: '外心', page: 'p.67', short: 'OA ＝ OB ＝ OC',
+    rule: '外心 O は3辺の垂直二等分線の交点で、<b>OA ＝ OB ＝ OC</b>。だから △OAB・△OBC・△OCA は<b>二等辺三角形</b>（底角が等しい）',
+    pfig: g => { g.circle(O0, 1, { dash: 1, color: '#94a3b8' }); const p = ptsO(g, 30, 25, 35); [p.A, p.B, p.C].forEach(v => g.seg(p.O, v, { color: CO, w: 2.4 })); },
+    probs: [
+      { q: '点 O は △ABC の外心で、OA ＝ 6 です。OC の長さ <i>x</i> を求めなさい。', ans: 6, unit: '',
+        fig: g => { const p = ptsO(g, 30, 25, 35); g.seg(p.O, p.A); g.seg(p.O, p.B); g.seg(p.O, p.C); g.len(p.O, p.A, '6', { b: 12 }); g.len(p.O, p.C, 'x', { b: 12 }); },
+        hints: ['外心は3つの頂点から等しい距離にある　OA ＝ OB ＝ OC', '<i>x</i> ＝ OC ＝ OA ＝ 6'] },
+      { q: '点 O は △ABC の外心です。∠<i>x</i> の大きさを求めなさい。', ans: 25, unit: '°',
+        fig: g => { const p = ptsO(g, 35, 25, 30, [0, 1]); g.seg(p.O, p.B); g.seg(p.O, p.C); g.ang(p.B, p.O, p.C, '25°'); g.ang(p.C, p.B, p.O, 'x'); },
+        hints: ['OB ＝ OC だから △OBC は二等辺三角形', '二等辺三角形の底角は等しい　∠OCB ＝ ∠OBC', '<i>x</i> ＝ 25°'] },
+      { q: '点 O は △ABC の外心です。∠<i>x</i>（∠BOC）の大きさを求めなさい。', ans: 110, unit: '°',
+        fig: g => { const p = ptsO(g, 25, 35, 30, [0, 1]); g.seg(p.O, p.B); g.seg(p.O, p.C); g.ang(p.B, p.O, p.C, '35°'); g.ang(p.O, p.B, p.C, 'x', { r: 16 }); },
+        hints: ['OB ＝ OC だから △OBC は二等辺三角形。∠OCB ＝ ∠OBC ＝ 35°', '△OBC の内角の和は 180°', '<i>x</i> ＝ 180° − 35° × 2 ＝ 110°'] },
+      { q: '点 O は △ABC の外心です。∠<i>x</i>（∠BAC）の大きさを求めなさい。', ans: 75, unit: '°',
+        fig: (g, st) => { const p = ptsO(g, 30, 15, 45); g.seg(p.O, p.B); g.seg(p.O, p.C); if(st.h >= 1 || st.done) g.seg(p.O, p.A, { dash: 1, color: CO, w: 2 }); g.ang(p.B, p.A, p.O, '30°'); g.ang(p.C, p.O, p.A, '45°'); g.ang(p.A, p.B, p.C, 'x', { r: 17 }); },
+        hints: ['OA を引く（図に点線で出ました）。OA ＝ OB ＝ OC だから △OAB と △OCA は二等辺三角形', '∠OAB ＝ ∠OBA ＝ 30°、∠OAC ＝ ∠OCA ＝ 45°', '<i>x</i> ＝ 30° ＋ 45° ＝ 75°'] },
+      { q: '点 O は △ABC の外心です。∠<i>x</i>（∠OCA）の大きさを求めなさい。', ans: 30, unit: '°',
+        fig: g => { const p = ptsO(g, 20, 40, 30, [0.9, 0.5]); g.seg(p.O, p.A); g.seg(p.O, p.B); g.seg(p.O, p.C); g.ang(p.A, p.O, p.B, '20°'); g.ang(p.B, p.O, p.C, '40°'); g.ang(p.C, p.O, p.A, 'x'); },
+        hints: ['△OAB・△OBC・△OCA はどれも二等辺三角形。底角は等しい', '∠OBA ＝ 20°、∠OCB ＝ 40°、∠OAC ＝ <i>x</i>', '△ABC の内角の和　2 × (20° ＋ 40° ＋ <i>x</i>) ＝ 180°', '20° ＋ 40° ＋ <i>x</i> ＝ 90°　よって　<i>x</i> ＝ 30°'] }
+    ] },
+
+  { id: 'naishin', title: '内心', page: 'p.69', short: '角の二等分線の交点',
+    rule: '内心 I は<b>3つの角の二等分線の交点</b>。BI は ∠B を、CI は ∠C を、AI は ∠A を2等分する',
+    pfig: g => { const p = ptsI(g, 60, 50); g.circle(p.I, p.I.y, { dash: 1, color: '#94a3b8' }); [p.A, p.B, p.C].forEach(v => g.seg(p.I, v, { color: CO, w: 2.2 }));
+      g.ang(p.B, p.A, p.I, '', { mark: 1, r: 30 }); g.ang(p.B, p.I, p.C, '', { mark: 1, r: 30 }); g.ang(p.C, p.I, p.A, '', { mark: 1, open: 1, r: 30 }); g.ang(p.C, p.B, p.I, '', { mark: 1, open: 1, r: 30 }); },
+    probs: [
+      { q: '点 I は △ABC の内心です。∠<i>x</i> の大きさを求めなさい。', ans: 25, unit: '°',
+        fig: g => { const p = ptsI(g, 50, 60); g.seg(p.I, p.B); g.seg(p.I, p.C); g.ang(p.B, p.I, p.C, '25°', { r: 44 }); g.ang(p.B, p.A, p.I, 'x', { r: 34 }); },
+        hints: ['内心 I は角の二等分線の交点。BI は ∠B を2等分する', '∠IBA ＝ ∠IBC', '<i>x</i> ＝ 25°'] },
+      { q: '点 I は △ABC の内心です。∠<i>x</i>（∠BIC）の大きさを求めなさい。', ans: 130, unit: '°',
+        fig: g => { const p = ptsI(g, 60, 40); g.seg(p.I, p.B); g.seg(p.I, p.C); g.ang(p.B, p.I, p.C, '30°', { r: 40 }); g.ang(p.C, p.B, p.I, '20°', { r: 48 }); g.ang(p.I, p.B, p.C, 'x', { r: 14, tr: 26 }); },
+        hints: ['△IBC の内角の和は 180°', '<i>x</i> ＝ 180° − (30° ＋ 20°)', '<i>x</i> ＝ 130°'] },
+      { q: '点 I は △ABC の内心です。∠<i>x</i>（∠BAC）の大きさを求めなさい。', ans: 60, unit: '°',
+        fig: g => { const p = ptsI(g, 70, 50); g.seg(p.I, p.B); g.seg(p.I, p.C); g.ang(p.B, p.I, p.C, '35°', { r: 36 }); g.ang(p.C, p.B, p.I, '25°', { r: 44 }); g.ang(p.A, p.B, p.C, 'x'); },
+        hints: ['BI・CI は角の二等分線。∠B ＝ 35° × 2 ＝ 70°、∠C ＝ 25° × 2 ＝ 50°', '△ABC の内角の和は 180°', '<i>x</i> ＝ 180° − (70° ＋ 50°) ＝ 60°'] },
+      { q: '点 I は △ABC の内心です。∠<i>x</i>（∠IBC）の大きさを求めなさい。', ans: 25, unit: '°',
+        fig: g => { const p = ptsI(g, 50, 60); g.seg(p.I, p.B); g.seg(p.I, p.C); g.ang(p.A, p.B, p.C, '70°'); g.ang(p.C, p.B, p.I, '30°', { r: 38 }); g.ang(p.B, p.I, p.C, 'x', { r: 44 }); },
+        hints: ['CI は ∠C の二等分線。∠C ＝ 30° × 2 ＝ 60°', '∠B ＝ 180° − (70° ＋ 60°) ＝ 50°', 'BI は ∠B の二等分線。<i>x</i> ＝ 50° ÷ 2 ＝ 25°'] },
+      { q: '点 I は △ABC の内心で、∠A ＝ 80° です。∠<i>x</i>（∠BIC）の大きさを求めなさい。', ans: 130, unit: '°',
+        fig: g => { const p = ptsI(g, 60, 40); g.seg(p.I, p.B); g.seg(p.I, p.C); g.ang(p.A, p.B, p.C, '80°');
+          g.ang(p.B, p.A, p.I, '', { mark: 1, r: 34 }); g.ang(p.B, p.I, p.C, '', { mark: 1, r: 34 }); g.ang(p.C, p.I, p.A, '', { mark: 1, open: 1, r: 40 }); g.ang(p.C, p.B, p.I, '', { mark: 1, open: 1, r: 40 });
+          g.ang(p.I, p.B, p.C, 'x', { r: 14, tr: 26 }); },
+        hints: ['∠B ＋ ∠C ＝ 180° − 80° ＝ 100°', 'BI・CI は角の二等分線だから　∠IBC ＋ ∠ICB ＝ 100° ÷ 2 ＝ 50°', '<i>x</i> ＝ 180° − 50° ＝ 130°'] }
+    ] },
+
+  { id: 'jushin', title: '重心', page: 'p.71', short: '中線を 2 : 1 に分ける',
+    rule: '重心 G は3本の<b>中線</b>（頂点と向かいの辺の中点を結ぶ線）の交点。重心は中線を<b>頂点の側から 2 : 1</b> に分ける　AG : GD ＝ 2 : 1',
+    pfig: g => { const p = ptsG(g); g.len(p.A, p.G, '2', { b: 13, v: 2 }); g.len(p.G, p.D, '1', { b: 13, v: 1 }); },
+    probs: [
+      { q: '点 G は △ABC の重心で、BC ＝ 14 です。BD の長さ <i>x</i> を求めなさい。', ans: 7, unit: '',
+        fig: g => { const p = ptsG(g); g.len(p.B, p.C, '14', { b: 34 }); g.len(p.B, p.D, 'x', { b: 13 }); },
+        hints: ['重心は中線の交点。AD は中線だから、D は辺 BC の中点', '<i>x</i> ＝ 14 ÷ 2 ＝ 7'] },
+      { q: '点 G は △ABC の重心で、AG ＝ 6 です。GD の長さ <i>x</i> を求めなさい。', ans: 3, unit: '',
+        fig: g => { const p = ptsG(g); g.len(p.A, p.G, '6', { b: 13 }); g.len(p.G, p.D, 'x', { b: 13 }); },
+        hints: ['重心は中線を 2 : 1 に分ける　AG : GD ＝ 2 : 1', '6 : <i>x</i> ＝ 2 : 1', '2<i>x</i> ＝ 6　よって　<i>x</i> ＝ 3'] },
+      { q: '点 G は △ABC の重心で、GD ＝ 4 です。AG の長さ <i>x</i> を求めなさい。', ans: 8, unit: '',
+        fig: g => { const p = ptsG(g); g.len(p.A, p.G, 'x', { b: 13 }); g.len(p.G, p.D, '4', { b: 13 }); },
+        hints: ['AG : GD ＝ 2 : 1', '<i>x</i> : 4 ＝ 2 : 1', '<i>x</i> ＝ 8'] },
+      { q: '点 G は △ABC の重心で、AD ＝ 12 です。AG の長さ <i>x</i> を求めなさい。', ans: 8, unit: '',
+        fig: g => { const p = ptsG(g); g.len(p.A, p.D, '12', { b: 30, flip: 1 }); g.len(p.A, p.G, 'x', { b: 13 }); },
+        hints: ['AG : GD ＝ 2 : 1 だから、AG は AD 全体の {2|3}', '<i>x</i> ＝ 12 × {2|3} ＝ 8'] },
+      { q: '点 G は △ABC の重心で、BE ＝ 15 です。GE の長さ <i>x</i> を求めなさい。', ans: 5, unit: '',
+        fig: g => { const p = ptsG(g); g.len(p.B, p.E, '15', { b: 30 }); g.len(p.G, p.E, 'x', { b: 12, flip: 1 }); },
+        hints: ['BE も中線。BG : GE ＝ 2 : 1 だから、GE は BE 全体の {1|3}', '<i>x</i> ＝ 15 × {1|3} ＝ 5'] },
+      { q: '点 G は △ABC の重心で、AG ＝ 10 です。AD の長さ <i>x</i> を求めなさい。', ans: 15, unit: '',
+        fig: g => { const p = ptsG(g); g.len(p.A, p.D, 'x', { b: 30, flip: 1 }); g.len(p.A, p.G, '10', { b: 13 }); },
+        hints: ['AG : GD ＝ 2 : 1 だから　GD ＝ 10 ÷ 2 ＝ 5', '<i>x</i> ＝ AG ＋ GD ＝ 10 ＋ 5 ＝ 15'] }
+    ] },
+
+  { id: 'enshu', title: '円周角の定理', page: 'p.72', short: '円周角は中心角の半分',
+    rule: '① 同じ弧に対する<b>円周角は等しい</b>　② 円周角は<b>中心角の半分</b>　③ 半円の弧（直径）に対する円周角は <b>90°</b>',
+    pfig: g => { const O = circ(g, true, [0, 1]); const A = g.P('A', pol(225)), B = g.P('B', pol(315)), P = g.P('P', pol(70)), Q = g.P('Q', pol(125));
+      g.seg(P, A); g.seg(P, B); g.seg(Q, A); g.seg(Q, B); g.seg(O, A); g.seg(O, B);
+      g.ang(P, A, B, 'a', { color: CO, soft: '#FFEEE2', r: 26 }); g.ang(Q, A, B, 'a', { color: CO, soft: '#FFEEE2', r: 26 }); g.ang(O, A, B, '2a', { color: CO, soft: '#FFEEE2', r: 15 }); },
+    probs: [
+      { q: '円 O で、∠<i>x</i>（中心角 ∠AOB）の大きさを求めなさい。', ans: 80, unit: '°',
+        fig: g => { const O = circ(g, true, [0, 1]); const A = g.P('A', pol(230)), B = g.P('B', pol(310)), P = g.P('P', pol(100));
+          g.seg(P, A); g.seg(P, B); g.seg(O, A); g.seg(O, B); g.ang(P, A, B, '40°', { r: 34 }); g.ang(O, A, B, 'x', { r: 16 }); },
+        hints: ['弧 AB に対する円周角が ∠APB、中心角が ∠AOB', '中心角は円周角の2倍', '<i>x</i> ＝ 40° × 2 ＝ 80°'] },
+      { q: '円 O で、∠<i>x</i>（円周角 ∠APB）の大きさを求めなさい。', ans: 65, unit: '°',
+        fig: g => { const O = circ(g, true, [0, 1]); const A = g.P('A', pol(205)), B = g.P('B', pol(335)), P = g.P('P', pol(80));
+          g.seg(P, A); g.seg(P, B); g.seg(O, A); g.seg(O, B); g.ang(O, A, B, '130°', { r: 15 }); g.ang(P, A, B, 'x', { r: 26 }); },
+        hints: ['弧 AB に対する円周角が ∠APB、中心角が ∠AOB', '円周角は中心角の半分', '<i>x</i> ＝ 130° ÷ 2 ＝ 65°'] },
+      { q: '4点 A, B, P, Q は同じ円周上にあります。∠<i>x</i> の大きさを求めなさい。', ans: 35, unit: '°',
+        fig: g => { circ(g, false); const A = g.P('A', pol(220)), B = g.P('B', pol(290)), P = g.P('P', pol(60)), Q = g.P('Q', pol(140));
+          g.seg(P, A); g.seg(P, B); g.seg(Q, A); g.seg(Q, B); g.ang(P, A, B, '35°', { r: 40 }); g.ang(Q, A, B, 'x', { r: 34 }); },
+        hints: ['∠APB と ∠AQB は、どちらも弧 AB に対する円周角', '同じ弧に対する円周角は等しい', '<i>x</i> ＝ 35°'] },
+      { q: '線分 AB は円 O の直径です。∠<i>x</i> の大きさを求めなさい。', ans: 50, unit: '°',
+        fig: g => { const O = circ(g, true); const A = g.P('A', pol(180)), B = g.P('B', pol(0)), C = g.P('C', pol(80));
+          g.poly([A, B, C]); g.ang(A, C, B, '40°', { r: 30 }); g.ang(B, A, C, 'x', { r: 24 }); },
+        hints: ['AB は直径。半円の弧に対する円周角は 90° だから　∠ACB ＝ 90°', '△ABC の内角の和は 180°', '<i>x</i> ＝ 180° − (90° ＋ 40°) ＝ 50°'] },
+      { q: '線分 AB は円 O の直径です。∠<i>x</i>（∠COB）の大きさを求めなさい。', ans: 50, unit: '°',
+        fig: g => { const O = circ(g, true); const A = g.P('A', pol(180)), B = g.P('B', pol(0)), C = g.P('C', pol(50));
+          g.seg(A, B); g.seg(A, C); g.seg(O, C); g.ang(A, C, B, '25°', { r: 44 }); g.ang(O, B, C, 'x', { r: 24 }); },
+        hints: ['弧 BC に対する円周角が ∠CAB、中心角が ∠COB', '中心角は円周角の2倍', '<i>x</i> ＝ 25° × 2 ＝ 50°'] }
+    ] },
+
+  { id: 'naisetsu', title: '円に内接する四角形', page: 'p.74', short: '向かいあう角の和は 180°',
+    rule: '円に内接する四角形では　① <b>向かいあう内角の和は 180°</b>　② 内角は、<b>向かいあう角の外角に等しい</b>',
+    pfig: g => { circ(g, false); const A = g.P('A', pol(125)), B = g.P('B', pol(205)), C = g.P('C', pol(325)), D = g.P('D', pol(35));
+      const E = g.bound(mix(B, C, 1.35)); g.poly([A, B, C, D]); g.seg(C, E);
+      g.ang(A, B, D, '', { mark: 1, r: 22 }); g.ang(C, D, E, '', { mark: 1, r: 22 }); g.ang(C, B, D, '', { mark: 1, open: 1, r: 20 }); },
+    probs: [
+      { q: '四角形 ABCD は円に内接しています。∠<i>x</i> の大きさを求めなさい。', ans: 80, unit: '°',
+        fig: g => { circ(g, false); const A = g.P('A', pol(120)), B = g.P('B', pol(200)), C = g.P('C', pol(320)), D = g.P('D', pol(40));
+          g.poly([A, B, C, D]); g.ang(A, B, D, '100°', { r: 17 }); g.ang(C, D, B, 'x', { r: 18 }); },
+        hints: ['円に内接する四角形の、向かいあう内角の和は 180°', '∠A ＋ ∠C ＝ 180°', '<i>x</i> ＝ 180° − 100° ＝ 80°'] },
+      { q: '四角形 ABCD は円に内接しています。∠<i>x</i> の大きさを求めなさい。', ans: 105, unit: '°',
+        fig: g => { circ(g, false); const A = g.P('A', pol(110)), B = g.P('B', pol(210)), C = g.P('C', pol(320)), D = g.P('D', pol(30));
+          g.poly([A, B, C, D]); g.ang(B, C, A, '75°', { r: 20 }); g.ang(D, A, C, 'x', { r: 17 }); },
+        hints: ['向かいあう内角の和は 180°', '∠B ＋ ∠D ＝ 180°', '<i>x</i> ＝ 180° − 75° ＝ 105°'] },
+      { q: '四角形 ABCD は円に内接しています。∠<i>x</i>（∠C の外角）の大きさを求めなさい。', ans: 95, unit: '°',
+        fig: g => { circ(g, false); const A = g.P('A', pol(125)), B = g.P('B', pol(205)), C = g.P('C', pol(325)), D = g.P('D', pol(35));
+          const E = g.bound(mix(B, C, 1.35)); g.poly([A, B, C, D]); g.seg(C, E); g.ang(A, B, D, '95°', { r: 18 }); g.ang(C, D, E, 'x', { r: 18 }); },
+        hints: ['内角は、向かいあう角の外角に等しい', '∠C の外角 ＝ ∠A', '<i>x</i> ＝ 95°'] },
+      { q: '四角形 ABCD は円に内接しています。∠<i>x</i>（∠A）の大きさを求めなさい。', ans: 70, unit: '°',
+        fig: g => { circ(g, false); const A = g.P('A', pol(110)), B = g.P('B', pol(220)), C = g.P('C', pol(320)), D = g.P('D', pol(0));
+          const E = g.bound(mix(B, C, 1.35)); g.poly([A, B, C, D]); g.seg(C, E); g.ang(C, D, E, '70°', { r: 20 }); g.ang(A, B, D, 'x', { r: 22 }); },
+        hints: ['内角は、向かいあう角の外角に等しい', '∠A ＝ ∠C の外角', '<i>x</i> ＝ 70°'] },
+      { q: '四角形 ABCD は円に内接しています。∠<i>x</i>（∠C）の大きさを求めなさい。', ans: 100, unit: '°',
+        fig: g => { circ(g, false); const A = g.P('A', pol(100)), B = g.P('B', pol(220)), C = g.P('C', pol(310)), D = g.P('D', pol(20));
+          g.poly([A, B, C, D]); g.seg(B, D); g.ang(B, A, D, '40°', { r: 36 }); g.ang(D, A, B, '60°', { r: 26 }); g.ang(C, D, B, 'x', { r: 17 }); },
+        hints: ['まず △ABD で ∠A を求める　∠A ＝ 180° − (40° ＋ 60°) ＝ 80°', '向かいあう内角の和は 180°　∠A ＋ ∠C ＝ 180°', '<i>x</i> ＝ 180° − 80° ＝ 100°'] }
+    ] },
+
+  { id: 'sessen', title: '接線と弦のつくる角', page: 'p.77', short: '∠BAT ＝ ∠ACB',
+    rule: '直線 AT が点 A で円に接するとき　<b>∠BAT ＝ ∠ACB</b>（接線と弦 AB がつくる角は、その角の内部にある弧 AB に対する円周角に等しい）',
+    pfig: g => { const p = tangentBase(g, 30, 150, false); g.ang(p.A, p.B, p.T, '', { mark: 1, r: 24 }); g.ang(p.C, p.A, p.B, '', { mark: 1, r: 24 }); },
+    probs: [
+      { q: '直線 AT は点 A で円に接しています。∠<i>x</i> の大きさを求めなさい。', ans: 60, unit: '°',
+        fig: g => { const p = tangentBase(g, 30, 150, false); g.ang(p.A, p.B, p.T, '60°'); g.ang(p.C, p.A, p.B, 'x'); },
+        hints: ['接線 AT と弦 AB がつくる角は ∠BAT', '∠BAT ＝ ∠ACB（弧 AB に対する円周角）', '<i>x</i> ＝ 60°'] },
+      { q: '直線 AT は点 A で円に接しています。∠<i>x</i> の大きさを求めなさい。', ans: 50, unit: '°',
+        fig: g => { const p = tangentBase(g, 10, 130, false); g.ang(p.C, p.A, p.B, '50°', { r: 28 }); g.ang(p.A, p.B, p.T, 'x', { r: 26 }); },
+        hints: ['接線と弦のつくる角　∠BAT ＝ ∠ACB', '<i>x</i> ＝ 50°'] },
+      { q: '直線 ST は点 A で円に接しています。∠<i>x</i>（∠CAS）の大きさを求めなさい。', ans: 70, unit: '°',
+        fig: g => { const p = tangentBase(g, 30, 130, true); g.ang(p.B, p.C, p.A, '70°'); g.ang(p.A, p.C, p.S, 'x'); },
+        hints: ['今度は接線と弦 AC がつくる角 ∠CAS を考える', '∠CAS は、弧 AC に対する円周角 ∠ABC に等しい', '<i>x</i> ＝ 70°'] },
+      { q: '直線 AT は点 A で円に接しています。∠<i>x</i>（∠ABC）の大きさを求めなさい。', ans: 75, unit: '°',
+        fig: g => { const p = tangentBase(g, 350, 120, false); g.ang(p.A, p.B, p.T, '40°', { r: 34 }); g.ang(p.A, p.C, p.B, '65°', { r: 22 }); g.ang(p.B, p.A, p.C, 'x', { r: 20 }); },
+        hints: ['接線と弦のつくる角　∠ACB ＝ ∠BAT ＝ 40°', '△ABC の内角の和は 180°', '<i>x</i> ＝ 180° − (40° ＋ 65°) ＝ 75°'] },
+      { q: '直線 ST は点 A で円に接しています。∠<i>x</i>（∠CAS）の大きさを求めなさい。', ans: 35, unit: '°',
+        fig: g => { const p = tangentBase(g, 350, 200, true); g.ang(p.C, p.A, p.B, '40°', { r: 30 }); g.ang(p.B, p.C, p.A, '35°', { r: 42 }); g.ang(p.A, p.C, p.S, 'x', { r: 44 }); },
+        hints: ['∠CAS は接線と弦 AC がつくる角', 'その角の内部にある弧 AC に対する円周角は ∠ABC（∠ACB ではない）', '<i>x</i> ＝ ∠ABC ＝ 35°'] }
+    ] },
+
+  { id: 'nagasa', title: '接線の長さ', page: 'p.78', short: 'PA ＝ PB',
+    rule: '円の外の点 P から引いた2本の接線の長さは等しい　<b>PA ＝ PB</b>',
+    pfig: g => { g.circle(O0, 1); const P = g.P('P', { x: 2.4, y: 0 }, { d: [1, 0] }), A = g.P('A', pol(Math.acos(1/2.4)/R)), B = g.P('B', pol(-Math.acos(1/2.4)/R));
+      g.seg(P, A, { color: CO, w: 2.6 }); g.seg(P, B, { color: CO, w: 2.6 }); g.dot(O0); },
+    probs: [
+      { q: '点 P から円に2本の接線を引き、接点を A, B とします。PB の長さ <i>x</i> を求めなさい。', ans: 7, unit: '',
+        fig: g => { g.circle(O0, 1); const O = g.P('O', O0, { d: [-1, 0] }); g.dot(O); const P = g.P('P', { x: 2.4, y: 0 }, { d: [1, 0] }), A = g.P('A', pol(Math.acos(1/2.4)/R)), B = g.P('B', pol(-Math.acos(1/2.4)/R));
+          g.seg(P, A); g.seg(P, B); g.len(P, A, '7', { b: 13 }); g.len(P, B, 'x', { b: 13 }); },
+        hints: ['円の外の点から引いた2本の接線の長さは等しい', '<i>x</i> ＝ PB ＝ PA ＝ 7'] },
+      { q: '△ABC の内接円が、辺と点 D, E, F で接しています。AE の長さ <i>x</i> を求めなさい。', ans: 3, unit: '',
+        fig: g => { const p = ptsIn(g, 7, 6, 7); g.len(p.A, p.F, '3', { b: 13 }); g.len(p.A, p.E, 'x', { b: 13 }); },
+        hints: ['AF と AE は、点 A から円に引いた2本の接線', '接線の長さは等しい　AE ＝ AF', '<i>x</i> ＝ 3'] },
+      { q: '△ABC の内接円が、辺と点 D, E, F で接しています。BD の長さ <i>x</i> を求めなさい。', ans: 6, unit: '',
+        fig: g => { const p = ptsIn(g, 9, 7, 10); g.len(p.A, p.B, '9', { b: 24 }); g.len(p.A, p.C, '7', { b: 24 }); g.len(p.D, p.C, '4', { b: 13 }); g.len(p.B, p.D, 'x', { b: 13 }); },
+        hints: ['C から：CE ＝ CD ＝ 4　だから　AE ＝ 7 − 4 ＝ 3', 'A から：AF ＝ AE ＝ 3　だから　BF ＝ 9 − 3 ＝ 6', 'B から：<i>x</i> ＝ BD ＝ BF ＝ 6'] },
+      { q: '△ABC の内接円が、辺と点 D, E, F で接しています。BC の長さ <i>x</i> を求めなさい。', ans: 9, unit: '',
+        fig: g => { const p = ptsIn(g, 7, 6, 9); g.len(p.A, p.F, '2', { b: 13 }); g.len(p.B, p.D, '5', { b: 12 }); g.len(p.C, p.E, '4', { b: 13 }); g.len(p.B, p.C, 'x', { b: 34 }); },
+        hints: ['C から引いた接線の長さは等しい　CD ＝ CE ＝ 4', 'BC ＝ BD ＋ DC', '<i>x</i> ＝ 5 ＋ 4 ＝ 9'] },
+      { q: '△ABC の内接円が、辺と点 D, E, F で接しています。△ABC の周の長さ <i>x</i> を求めなさい。', ans: 18, unit: '',
+        fig: g => { const p = ptsIn(g, 7, 5, 6); g.len(p.A, p.F, '3', { b: 13 }); g.len(p.B, p.D, '4', { b: 13 }); g.len(p.C, p.E, '2', { b: 13 }); },
+        hints: ['接線の長さは等しい　AE ＝ AF ＝ 3、BF ＝ BD ＝ 4、CD ＝ CE ＝ 2', '周の長さは、3・4・2 がそれぞれ2回ずつ出てくる', '<i>x</i> ＝ 2 × (3 ＋ 4 ＋ 2) ＝ 18'] }
+    ] },
+
+  { id: 'houbeki', title: '方べきの定理', page: 'p.80', short: 'PA × PB ＝ PC × PD',
+    rule: '点 P を通る2本の直線が円と A, B および C, D で交わるとき　<b>PA × PB ＝ PC × PD</b>。片方が接線（接点 T）のときは　<b>PA × PB ＝ PT²</b>',
+    pfig: g => { const p = powOut(g, 3, 8, 4, 6, 35); g.seg(p.P, p.A, { color: CO, w: 3 }); g.seg(p.P, p.C, { color: CG, w: 3 }); },
+    probs: [
+      { q: '円の2つの弦 AB, CD が点 P で交わっています。<i>x</i> の値を求めなさい。', ans: 6, unit: '',
+        fig: g => powIn(g, 2, 6, 3, 4, -20, 250, ['2', 'x', '3', '4'], [0.2, 1]),
+        hints: ['方べきの定理　PA × PB ＝ PC × PD', '2 × <i>x</i> ＝ 3 × 4', '2<i>x</i> ＝ 12　よって　<i>x</i> ＝ 6'] },
+      { q: '円の2つの弦 AB, CD が点 P で交わっています。<i>x</i> の値を求めなさい。', ans: 8, unit: '',
+        fig: g => powIn(g, 4, 6, 3, 8, 15, 110, ['4', '6', '3', 'x'], [-1, 0.9]),
+        hints: ['方べきの定理　PA × PB ＝ PC × PD', '4 × 6 ＝ 3 × <i>x</i>', '3<i>x</i> ＝ 24　よって　<i>x</i> ＝ 8'] },
+      { q: '点 P を通る2直線が、円と A, B および C, D で交わっています。PD の長さ <i>x</i> を求めなさい。', ans: 6, unit: '',
+        fig: g => { const p = powOut(g, 3, 8, 4, 6, 35); g.len(p.P, p.A, '3', { b: 11, flip: 1 }); g.len(p.P, p.B, '8', { b: 26 }); g.len(p.P, p.C, '4', { b: 11, flip: 1 }); g.len(p.P, p.D, 'x', { b: 26 }); },
+        hints: ['方べきの定理　PA × PB ＝ PC × PD（どれも P からはかった長さ）', '3 × 8 ＝ 4 × <i>x</i>', '4<i>x</i> ＝ 24　よって　<i>x</i> ＝ 6'] },
+      { q: '直線 PT は点 T で円に接しています。PT の長さ <i>x</i> を求めなさい。', ans: 4, unit: '',
+        fig: g => { const p = powTan(g, 2, 8, 42); g.len(p.P, p.A, '2', { b: 11, flip: 1 }); g.len(p.P, p.B, '8', { b: 26 }); g.len(p.P, p.T, 'x', { b: 15 }); },
+        hints: ['接線のときの方べきの定理　PA × PB ＝ PT²', '2 × 8 ＝ <i>x</i>²　つまり　<i>x</i>² ＝ 16', '<i>x</i> は正の数だから　<i>x</i> ＝ 4'] },
+      { q: '直線 PT は点 T で円に接しています。PT の長さ <i>x</i> を求めなさい。', ans: 6, unit: '',
+        fig: g => { const p = powTan(g, 4, 9, 38); g.len(p.P, p.A, '4', { b: 11, flip: 1 }); g.len(p.P, p.B, '9', { b: 36 }); g.len(p.P, p.T, 'x', { b: 15 }); },
+        hints: ['PA × PB ＝ PT²', '4 × 9 ＝ <i>x</i>²　つまり　<i>x</i>² ＝ 36', '<i>x</i> は正の数だから　<i>x</i> ＝ 6'] },
+      { q: '【チャレンジ】点 P を通る2直線が、円と A, B および C, D で交わっています。AB の長さ <i>x</i> を求めなさい。', ans: 4, unit: '',
+        fig: g => { const p = powOut(g, 2, 6, 3, 4, 40); g.len(p.P, p.A, '2', { b: 11 }); g.len(p.A, p.B, 'x', { b: 13 }); g.len(p.P, p.C, '3', { b: 12 }); g.len(p.C, p.D, '1', { b: 12 }); },
+        hints: ['方べきの定理は「P からの長さ」で使う。PB ＝ 2 ＋ <i>x</i>、PD ＝ 3 ＋ 1 ＝ 4', 'PA × PB ＝ PC × PD　より　2 × (2 ＋ <i>x</i>) ＝ 3 × 4', '2 ＋ <i>x</i> ＝ 6　よって　<i>x</i> ＝ 4'] }
+    ] },
+
+  { id: 'futatsu', title: '2つの円', page: 'p.81', short: '外接 d ＝ r ＋ s、内接 d ＝ r − s',
+    rule: '半径 r, s（r ＞ s）の2つの円の中心間の距離を d とすると　<b>外接する ⇔ d ＝ r ＋ s</b>、<b>内接する ⇔ d ＝ r − s</b>。r − s ＜ d ＜ r ＋ s なら2点で交わり、d ＞ r ＋ s なら離れている',
+    pfig: g => { const p = twoCircles(g, 5, 3, 8); g.seg(p.O, p.P); g.len(p.O, { x: 5, y: 0 }, 'r', { b: 13, flip: 1, color: INK }); g.len({ x: 5, y: 0 }, p.P, 's', { b: 13, flip: 1 }); },
+    probs: [
+      { q: '半径 7 の円 O と半径 4 の円 P が外接しています。中心間の距離 <i>x</i> を求めなさい。', ans: 11, unit: '',
+        fig: g => { const p = twoCircles(g, 7, 4, 11), T = { x: 7, y: 0 }; g.seg(p.O, p.P); g.dot(T, { color: CO }); g.len(p.O, T, '7', { b: 13, flip: 1, color: INK }); g.len(T, p.P, '4', { b: 13, flip: 1 }); g.len(p.O, p.P, 'x', { b: 34 }); },
+        hints: ['外接するとき、2つの中心と接点は一直線に並ぶ', '外接　d ＝ r ＋ s', '<i>x</i> ＝ 7 ＋ 4 ＝ 11'] },
+      { q: '半径 7 の円 O に、半径 4 の円 P が内接しています。中心間の距離 <i>x</i> を求めなさい。', ans: 3, unit: '',
+        fig: g => { const p = twoCircles(g, 7, 4, 3), T = { x: 7, y: 0 }; g.seg(p.O, T); g.dot(T, { color: CO }); g.len(p.O, T, '7', { b: 40, color: INK }); g.len(p.P, T, '4', { b: 14, flip: 1 }); g.len(p.O, p.P, 'x', { b: 14, flip: 1 }); },
+        hints: ['内接するとき、2つの中心と接点は一直線に並ぶ', '内接　d ＝ r − s', '<i>x</i> ＝ 7 − 4 ＝ 3'] },
+      { q: '半径 6 の円 O と円 P が外接していて、中心間の距離は 10 です。円 P の半径 <i>x</i> を求めなさい。', ans: 4, unit: '',
+        fig: g => { const p = twoCircles(g, 6, 4, 10), T = { x: 6, y: 0 }; g.seg(p.O, p.P); g.dot(T, { color: CO }); g.len(p.O, T, '6', { b: 13, flip: 1, color: INK }); g.len(T, p.P, 'x', { b: 13, flip: 1 }); g.len(p.O, p.P, '10', { b: 34 }); },
+        hints: ['外接　d ＝ r ＋ s', '10 ＝ 6 ＋ <i>x</i>', '<i>x</i> ＝ 4'] },
+      posProb(5, 3, 10, 4, ['半径の和　5 ＋ 3 ＝ 8、半径の差　5 − 3 ＝ 2　をまず計算する', 'd ＝ 10 は、半径の和 8 より大きい（r ＋ s ＜ d）', '円どうしが届かないので「離れている」']),
+      posProb(5, 3, 6, 2, ['半径の和　5 ＋ 3 ＝ 8、半径の差　5 − 3 ＝ 2', 'd ＝ 6 は 2 と 8 の間（r − s ＜ d ＜ r ＋ s）', '「2点で交わる」']),
+      posProb(5, 3, 2, 1, ['半径の和　5 ＋ 3 ＝ 8、半径の差　5 − 3 ＝ 2', 'd ＝ 2 は、半径の差とちょうど同じ（d ＝ r − s）', '小さい円が内側から接するので「内接する」'])
+    ] }
+  ];
+  const TOTAL = STAGES.reduce((n, s) => n + s.probs.length, 0);
+
+  /* ================= 記録（この端末のブラウザの中だけ） ================= */
+  const KEY = 'zukei-master-v1';
+  let save = {};
+  try { save = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch(e) { save = {}; }
+  const rec = id => { const st = STAGES.find(s => s.id === id); if(!Array.isArray(save[id])) save[id] = []; for(let i = 0; i < st.probs.length; i++) if(!save[id][i]) save[id][i] = 0; return save[id]; };
+  const store = () => { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch(e) {} };
+  const stageState = st => { const r = rec(st.id); return r.every(v => v === 3) ? 'master' : r.every(v => v >= 2) ? 'clear' : ''; };
+  const MARK = ['', '△', '○', '★'];
+  const pipsHTML = (st, now, tag) => rec(st.id).map((v, i) => `<${tag} class="pip s${v}${i === now ? ' now' : ''}" data-i="${i}"${tag === 'button' ? ` aria-label="${i + 1}問目へ"` : ''}>${MARK[v] || i + 1}</${tag}>`).join('');
+
+  /* ================= 画面 ================= */
+  const app = $('app');
+  let cur = null;   // { st, i, tries, h, done, wrong:[] }
+
+  function home(){
+    cur = null;
+    const stars = STAGES.reduce((n, s) => n + rec(s.id).filter(v => v === 3).length, 0);
+    const nClear = STAGES.filter(s => stageState(s)).length, nMaster = STAGES.filter(s => stageState(s) === 'master').length;
+    const cards = STAGES.map((s, k) => { const stt = stageState(s);
+      return `<button class="stage-card ${stt}" data-id="${s.id}">
+        <span class="no">性質 ${k + 1}　<span style="color:var(--sub);font-weight:400">教科書 ${s.page}</span> ${stt === 'master' ? '<span class="badge master">★ マスター</span>' : stt === 'clear' ? '<span class="badge clear">クリア</span>' : ''}</span>
+        <span class="ttl">${s.title}</span><span class="rule">${s.short}</span>
+        <span class="pips">${pipsHTML(s, -1, 'span')}</span></button>`; }).join('');
+    const text = `【図形の性質マスター】クリア ${nClear}/${STAGES.length}・マスター ${nMaster}/${STAGES.length}・★ ${stars}/${TOTAL}\n` +
+      STAGES.map((s, k) => `${k + 1} ${s.title}：${rec(s.id).map(v => MARK[v] || '・').join('')}`).join('\n');
+    app.innerHTML = `
+      <h1>図形の性質マスター</h1>
+      <p class="lead">性質を1つ選んで、図を見ながら問題を解きます。10個の性質をすべて ★ にすると「図形の性質マスター」です。</p>
+      <div class="card">
+        <p class="section-title">マスター度</p>
+        <div class="meter"><div class="bar"><i style="width:${(stars / TOTAL * 100).toFixed(1)}%"></i></div><span class="num">★ ${stars} / ${TOTAL}</span></div>
+        <p class="legend">★ ヒントなし・1回で正解　／　○ 正解　／　△ 答えを見た　　（記録はこの端末のブラウザの中だけに残ります）</p>
+      </div>
+      ${nMaster === STAGES.length ? `<div class="card certificate"><div class="big">★ 図形の性質マスター 認定 ★</div><div>10個の性質をすべてマスターしました。</div></div>` : ''}
+      <div class="stage-grid">${cards}</div>
+      <div class="card submit-box" style="margin-top:var(--sp-3)">
+        <p class="section-title">提出用テキスト（先生に出すときは、コピーして貼り付けます）</p>
+        <textarea id="subText" rows="5" readonly>${text}</textarea>
+        <div class="actions"><button class="btn small" id="copyBtn">コピーする</button><button class="btn small" id="resetBtn">記録をすべて消す</button><span id="copyMsg" style="font-size:14px;color:var(--ok);align-self:center"></span></div>
+      </div>`;
+    app.querySelectorAll('.stage-card').forEach(b => b.addEventListener('click', () => openStage(b.dataset.id, 0)));
+    $('copyBtn').addEventListener('click', () => { const ta = $('subText'); ta.select();
+      const done = () => { $('copyMsg').textContent = 'コピーしました'; };
+      if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(done, () => { document.execCommand('copy'); done(); });
+      else { document.execCommand('copy'); done(); } });
+    $('resetBtn').addEventListener('click', () => { if(confirm('これまでの記録（★や○）をすべて消します。よろしいですか？')){ save = {}; store(); home(); } });
+    window.scrollTo(0, 0);
+  }
+
+  function openStage(id, i){
+    const st = STAGES.find(s => s.id === id);
+    cur = { st, i, tries: 0, h: 0, done: false, wrong: [] };
+    renderProblem(true);
+  }
+
+  function renderProblem(scroll){
+    const { st, i } = cur, p = st.probs[i], k = STAGES.indexOf(st);
+    const fig = makeFig(p.fig, { h: cur.h, done: cur.done }, p);
+    const hintItems = p.hints.map((h, n) => ({ h, n })).filter(o => cur.done || o.n < cur.h)
+      .map(o => `<div class="hint${cur.done && o.n === p.hints.length - 1 ? ' final' : ''}"><span class="n">${o.n + 1}</span><span>${mathHTML(o.h)}</span></div>`).join('');
+    let input;
+    if(p.choices){
+      input = `<div class="choices">${p.choices.map((c, n) => `<button data-c="${n}" class="${cur.done && n === p.ans ? 'right' : cur.wrong.includes(n) ? 'wrong' : ''}" ${cur.done || cur.wrong.includes(n) ? 'disabled' : ''}>${'①②③④⑤'[n]} ${c}</button>`).join('')}</div>`;
+    } else {
+      input = `<div class="ans-row"><span class="xeq">x ＝</span><input id="ansIn" type="text" inputmode="decimal" autocomplete="off" aria-label="答え" ${cur.done ? `value="${p.ans}" disabled` : ''}><span class="unit">${p.unit}</span>
+        <button class="btn primary" id="checkBtn" ${cur.done ? 'disabled' : ''}>答え合わせ</button></div>`;
+    }
+    const last = i === st.probs.length - 1;
+    // ヒントは最後の1行（答え）以外を1つずつ。答えは正解するか「答えを見る」まで出さない
+    const canHint = !cur.done && cur.h < p.hints.length - 1;
+    app.innerHTML = `
+      <div class="stage-head">
+        <div><div class="no">性質 ${k + 1}</div><h2>${st.title}</h2></div>
+        <button class="btn small" id="homeBtn">← 性質の一覧へ</button>
+      </div>
+      <div class="card prop">
+        <div><div class="name">この性質を使う</div><p class="rule">${st.rule}</p><p class="page">教科書 ${st.page}</p></div>
+        <div class="pfig">${makeFig(st.pfig, { h: 0, done: false }, null).svg}</div>
+      </div>
+      <div class="main-grid">
+        <div class="card figure"><p class="section-title">図</p>${fig.svg}</div>
+        <div class="card">
+          <div class="pips" style="margin-bottom:8px">${pipsHTML(st, i, 'button')}</div>
+          <div class="qno">問題 ${i + 1} / ${st.probs.length}</div>
+          <p class="qtext">${p.q}</p>
+          ${input}
+          <div id="fb">${cur.fb || ''}</div>
+          ${hintItems ? `<div class="hints"><p class="section-title">${cur.done ? '考え方' : 'ヒント'}</p>${hintItems}</div>` : ''}
+          <div class="actions">
+            ${canHint ? `<button class="btn" id="hintBtn">${cur.h ? '次のヒントを見る' : 'ヒントを見る'}</button>` : ''}
+            ${!cur.done && cur.tries >= 2 ? `<button class="btn" id="giveBtn">答えと考え方を見る</button>` : ''}
+            ${cur.done ? `<button class="btn primary" id="nextBtn">${last ? '結果を見る ▶' : '次の問題へ ▶'}</button>` : ''}
+          </div>
+        </div>
+      </div>`;
+    $('homeBtn').addEventListener('click', home);
+    app.querySelectorAll('button.pip').forEach(b => b.addEventListener('click', () => openStage(st.id, +b.dataset.i)));
+    if($('hintBtn')) $('hintBtn').addEventListener('click', () => { cur.h++; cur.fb = ''; renderProblem(); });
+    if($('giveBtn')) $('giveBtn').addEventListener('click', () => finish(1));
+    if($('nextBtn')){ $('nextBtn').addEventListener('click', () => { if(last) result(); else openStage(st.id, i + 1); }); }
+    if(p.choices) app.querySelectorAll('.choices button').forEach(b => b.addEventListener('click', () => judge(+b.dataset.c === p.ans, +b.dataset.c)));
+    else if(!cur.done){
+      const go = () => {
+        const raw = $('ansIn').value.replace(/[０-９．]/g, c => c === '．' ? '.' : String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).replace(/[°度\s　]/g, '');
+        if(raw === '' || isNaN(Number(raw))){ cur.fb = '<div class="fb info">数字で答えを入れてください。</div>'; $('fb').innerHTML = cur.fb; return; }
+        judge(Math.abs(Number(raw) - p.ans) < 1e-9);
+      };
+      $('checkBtn').addEventListener('click', go);
+      $('ansIn').addEventListener('keydown', e => { if(e.key === 'Enter') go(); });
+    }
+    if(scroll) window.scrollTo(0, 0);
+    if(cur.done && $('nextBtn')) $('nextBtn').focus({ preventScroll: true });
+  }
+
+  function judge(ok, choice){
+    if(ok){ finish(cur.tries === 0 && cur.h === 0 ? 3 : 2); return; }
+    cur.tries++;
+    if(choice != null) cur.wrong.push(choice);
+    cur.fb = `<div class="fb ng">おしい。もう一度、図と「この性質を使う」を見てみよう。${cur.tries >= 2 ? '' : 'ヒントも使えます。'}</div>`;
+    renderProblem();
+    const el = $('ansIn'); if(el){ el.focus({ preventScroll: true }); }
+  }
+
+  function finish(v){
+    const r = rec(cur.st.id); r[cur.i] = Math.max(r[cur.i], v); store();
+    cur.done = true;
+    cur.fb = v === 3 ? '<div class="fb ok">★ 正解！ ヒントなしで1回で解けました。</div>' : v === 2 ? '<div class="fb ok">○ 正解！</div>' : '<div class="fb info">答えと考え方を表示しました。あとでもう一度、自分で解いてみよう。</div>';
+    renderProblem();
+  }
+
+  function result(){
+    const st = cur.st, r = rec(st.id), stt = stageState(st), k = STAGES.indexOf(st), next = STAGES[k + 1];
+    const first = r.findIndex(v => v < 3);
+    app.innerHTML = `
+      <div class="stage-head"><div><div class="no">性質 ${k + 1}</div><h2>${st.title}</h2></div><button class="btn small" id="homeBtn">← 性質の一覧へ</button></div>
+      <div class="card result">
+        <div class="big">${stt === 'master' ? '★ マスター！ ★' : stt === 'clear' ? 'クリア！' : 'おつかれさま'}</div>
+        <div class="pips">${pipsHTML(st, -1, 'span')}</div>
+        <p>${stt === 'master' ? 'この性質は完ぺきです。' : stt === 'clear' ? '全問正解できました。○ の問題をヒントなし・1回で解くと ★ になります。' : '△ や番号のままの問題に、もう一度ちょうせんしよう。'}</p>
+        <div class="actions">
+          ${first >= 0 ? `<button class="btn primary" id="retryBtn">★ でない問題にもう一度</button>` : ''}
+          ${next ? `<button class="btn${first < 0 ? ' primary' : ''}" id="nextStageBtn">次の性質「${next.title}」へ ▶</button>` : ''}
+        </div>
+      </div>`;
+    $('homeBtn').addEventListener('click', home);
+    if($('retryBtn')) $('retryBtn').addEventListener('click', () => openStage(st.id, first));
+    if($('nextStageBtn')) $('nextStageBtn').addEventListener('click', () => openStage(next.id, 0));
+    window.scrollTo(0, 0);
+  }
+
+  /* 確認用：?debug=1 で全問題の図を一覧し、図の角度・長さが数値と合っているかを調べる */
+  function debug(){
+    let bad = 0;
+    const cells = [];
+    STAGES.forEach((s, k) => {
+      cells.push(`<div class="card"><b>${k + 1} ${s.title}（性質カード）</b>${makeFig(s.pfig, { h: 0, done: false }, null).svg}</div>`);
+      s.probs.forEach((p, i) => [false, true].forEach(done => {
+        if(done && p.fig.length < 2) return;
+        const f = makeFig(p.fig, { h: done ? 9 : 0, done }, p); bad += f.issues.length;
+        cells.push(`<div class="card"><b>${k + 1}-${i + 1}${done ? '（解いた後）' : ''}</b> 答 ${p.choices ? p.choices[p.ans] : p.ans + p.unit}${f.svg}<div class="err">${f.issues.join('<br>')}</div></div>`);
+      }));
+    });
+    app.innerHTML = `<p id="dbgSummary"><b>図のチェック：問題 ${TOTAL} 題／不一致 ${bad} 件</b></p><div class="dbg">${cells.join('')}</div>`;
+  }
+
+  if(/[?&]debug=1/.test(location.search)) debug(); else home();
+})();
+</script>
+</body>
+</html>
