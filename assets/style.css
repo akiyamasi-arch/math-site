@@ -607,3 +607,34 @@ footer{
   .reveal.is-in{animation:none;}
   a.card:hover, a.card:focus-visible, .pr-row:hover{transform:none;}
 }
+
+/* ---- 入試問題ページ（nyushi.html）2026-11-12 ----
+   PDFは置かず、公式ページと校内限定フォルダへのリンクだけを並べる */
+.ex-btn{
+  flex:none;display:inline-block;font-size:14px;font-weight:700;line-height:1.3;text-decoration:none;
+  color:var(--orange-800);background:var(--card);border:1px solid var(--orange-800);
+  padding:9px 14px;border-radius:var(--radius-pill);
+}
+a.ex-btn::after{content:" →";}
+a.ex-btn:hover, a.ex-btn:focus-visible{background:var(--orange-50);text-decoration:underline;}
+.ex-btn.ex-soon{color:var(--sub);border:1px dashed var(--line-strong);background:#F4F4F2;font-weight:400;}
+.ex-box{
+  margin-top:var(--sp-2);background:var(--card);border:1px solid var(--line);
+  border-radius:var(--radius-md);padding:var(--sp-2) var(--sp-3);
+}
+.ex-box-head{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-1);}
+.ex-box-head h3{margin:0;font-size:18px;font-weight:700;line-height:1.6;}
+.ex-years{list-style:none;margin:0;padding:0;}
+.ex-years li{display:flex;flex-wrap:wrap;gap:4px 16px;padding:10px 0;border-top:1px solid var(--line);font-size:15px;line-height:1.6;}
+.ex-year{flex:none;width:7.5em;font-weight:700;}
+.ex-exam{flex:none;width:6.5em;color:var(--sub);}
+.ex-items{flex:1;min-width:14em;}
+.ex-list{list-style:none;margin:0;padding:0;display:grid;gap:8px;}
+.ex-row{
+  display:flex;align-items:center;justify-content:space-between;gap:8px var(--sp-2);flex-wrap:wrap;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);padding:10px 14px;
+}
+.ex-text{display:flex;flex-direction:column;min-width:0;}
+.ex-name{font-size:17px;font-weight:700;line-height:1.5;color:var(--ink);}
+.ex-note{font-size:13px;line-height:1.5;color:var(--sub);}
+.ex-btns{display:flex;gap:8px;flex-wrap:wrap;}

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>入試問題｜数学学習サイト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap">
+<link rel="stylesheet" href="assets/style.css?v=20261112a">
+</head>
+<body>
+
+<div class="brand-bar"></div>
+<header class="site-header">
+  <div class="inner">
+    <p class="site-title"><a href="index.html">数学学習サイト</a></p>
+    <nav class="site-nav" aria-label="サイト内">
+      <a href="index.html#subjects">科目から探す</a>
+      <a href="furikaeri.html">AI学習サポート</a>
+      <a href="nyushi.html" aria-current="page">入試問題</a>
+      <a href="apps/math-dungeon.html">数学ダンジョン</a>
+      <a href="iroiro.html">数学いろいろ</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <nav class="breadcrumb" aria-label="パンくずナビゲーション"><a href="index.html">トップ</a><span class="sep" aria-hidden="true">›</span><span aria-current="page">入試問題</span></nav>
+
+  <p class="eyebrow">進学を考えている人へ</p>
+  <h1 class="page-title">入試問題</h1>
+  <p class="page-lead">共通テストと、国公立大学の個別試験（数学）の過去問への入り口です。「公式」のボタンはだれでも開けます。「校内限定フォルダ」は、学校のGoogleアカウントでログインしている人だけが開けます。</p>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>共通テスト・センター試験</h2>
+      <span>数学ⅠA／数学ⅡB（ⅡBC）</span>
+    </div>
+    <div id="kyotsuOfficial"></div>
+    <div id="kyotsuHave"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>大学別の入試問題</h2>
+      <span>国公立大学の個別試験（数学）</span>
+    </div>
+    <div id="univList"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>予備校の解答速報・過去問</h2>
+      <span>解答例や分析を見たいとき</span>
+    </div>
+    <div id="yobikoList"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>使い方と注意</h2>
+    </div>
+    <div class="topic">
+      <ol class="howto">
+        <li>大学の公式ページに載っているのは、多くの場合、直近1〜3年分です。古い年度は校内限定フォルダを見てください。</li>
+        <li>校内限定フォルダが開けないときは、学校のGoogleアカウントでログインしているか確かめましょう。</li>
+        <li>校内限定フォルダの資料は、学習のために校内だけで共有しているものです。SNSに載せたり、学校の外の人に送ったりしないでください。</li>
+        <li>まず時間を決めて自分で解き、そのあとで解答や分析を読むと力がつきます。</li>
+        <li>ほしい大学・年度がここに無いときは、先生に相談してください。</li>
+      </ol>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  このサイトは授業用の学習教材をまとめたものです。
+</footer>
+
+<script src="data/curriculum.js?v=20261112a"></script>
+<script src="data/exams.js?v=20261112a"></script>
+<script src="assets/site.js?v=20261112a"></script>
+<script>
+  Site.renderNyushiPage();
+</script>
+
+</body>
+</html>

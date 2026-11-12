@@ -330,6 +330,13 @@
       </span>
       <span class="chev" aria-hidden="true">›</span>
     </a>`);
+    subjects.push(`<a class="hero-btn iroiro" href="nyushi.html">
+      <span class="label">
+        <span class="name">入試問題</span>
+        <span class="meta">共通テスト・大学別の過去問への入り口</span>
+      </span>
+      <span class="chev" aria-hidden="true">›</span>
+    </a>`);
     subjects.push(`<a class="hero-btn iroiro" href="apps/math-dungeon.html">
       <span class="label">
         <span class="name">数学ダンジョン</span>
@@ -428,7 +435,7 @@
   function initReveal(){
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if(reduce || !('IntersectionObserver' in window)) return;
-    const els = document.querySelectorAll('.wrap .card, .wrap .tip-card, .wrap .video-card, .wrap .pr-row, .wrap .news-list li');
+    const els = document.querySelectorAll('.wrap .card, .wrap .tip-card, .wrap .video-card, .wrap .pr-row, .wrap .ex-row, .wrap .news-list li');
     const io = new IntersectionObserver(entries => {
       entries.forEach(e => {
         if(!e.isIntersecting) return;
@@ -545,6 +552,47 @@
     document.getElementById('unitGems').innerHTML = cards.length ? `<div class="grid">${cards.join('')}</div>` : '';
   }
 
+  // ---- 入試問題ページ（nyushi.html）。データは data/exams.js ----
+  // PDFそのものは置かず、公式ページへのリンクと、校内限定フォルダ（Googleドライブ）へのリンクだけを出す
+  function renderNyushiPage(){
+    const E = typeof EXAM_DATA !== 'undefined' ? EXAM_DATA : null;
+    if(!E) return;
+    const ext = (url, text, cls, label) =>
+      `<a class="${cls}" href="${esc(url)}" target="_blank" rel="noopener" aria-label="${esc(label + '（新しいタブで開きます）')}">${esc(text)}</a>`;
+    const driveBtn = (url, name) => url
+      ? ext(url, '校内限定フォルダ', 'ex-btn ex-drive', name + 'の校内限定フォルダ')
+      : `<span class="ex-btn ex-soon">校内限定フォルダ（準備中）</span>`;
+    const linkCard = (c, tag) => `<a class="card" href="${esc(c.url)}" target="_blank" rel="noopener" aria-label="${esc(c.title + '（新しいタブで開きます）')}">
+        <span class="tag">${esc(tag)}</span>
+        <h3>${esc(c.title)}</h3>
+        ${c.description ? `<p>${esc(c.description)}</p>` : ''}
+      </a>`;
+
+    // 共通テスト・センター試験
+    const k = E.kyotsu;
+    document.getElementById('kyotsuOfficial').innerHTML = `<div class="grid wide">${linkCard(k.official, '公式')}</div>`;
+    document.getElementById('kyotsuHave').innerHTML = `
+      <div class="ex-box">
+        <div class="ex-box-head">
+          <h3>校内限定フォルダにある資料</h3>
+          ${driveBtn(E.drive.kyotsu, '共通テスト・センター試験')}
+        </div>
+        <ul class="ex-years">${k.have.map(h => `<li><span class="ex-year">${esc(h.year)}</span><span class="ex-exam">${esc(h.exam)}</span><span class="ex-items">${esc(h.items)}</span></li>`).join('')}</ul>
+      </div>`;
+
+    // 大学別
+    document.getElementById('univList').innerHTML = `<ul class="ex-list">${E.universities.map(u => `<li class="ex-row">
+        <span class="ex-text"><span class="ex-name">${esc(u.name)}</span><span class="ex-note">校内限定フォルダ：${esc(u.have)}</span></span>
+        <span class="ex-btns">
+          ${u.official ? ext(u.official, '大学の公式ページ', 'ex-btn', u.name + 'の公式ページ') : `<span class="ex-btn ex-soon">公式の公開なし</span>`}
+          ${driveBtn(u.drive || E.drive.daigaku, u.name)}
+        </span>
+      </li>`).join('')}</ul>`;
+
+    // 予備校
+    document.getElementById('yobikoList').innerHTML = `<div class="grid">${E.yobiko.map(y => linkCard(y, '予備校')).join('')}</div>`;
+  }
+
   // データの科目名・単元名がカリキュラムに無い場合は console に警告（表示はされない）
   [['slides', D.slides], ['apps', D.apps], ['prints', D.prints], ['videos', D.videos], ['gems', D.gems]].forEach(([name, arr]) => {
     arr.forEach(x => {
@@ -558,6 +606,6 @@
 
   window.Site = {
     renderHeroButtons, renderSubjectGrid, renderNews, renderTips,
-    renderTopicsTeaser, renderTopicsPage, renderSubjectPage, renderUnitPage, renderFurikaeriPage, updates
+    renderTopicsTeaser, renderTopicsPage, renderSubjectPage, renderUnitPage, renderFurikaeriPage, renderNyushiPage, updates
   };
 })();

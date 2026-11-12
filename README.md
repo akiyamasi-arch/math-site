@@ -25,6 +25,7 @@
 ├── unit.html           … 単元ページ（URLの s= と u= で科目・単元を指定）
 ├── iroiro.html         … 数学いろいろ
 ├── furikaeri.html      … AI学習サポート（ヒント・ふり返り。どの単元でも使える）
+├── nyushi.html         … 入試問題（公式ページと校内限定フォルダへのリンク集。PDFは置かない。data/exams.js）
 ├── assets/
 │   ├── style.css       … 共通スタイル（デジタル庁デザインシステム準拠）
 │   ├── site.js         … 共通スクリプト（データからページを組み立てる）
@@ -104,7 +105,7 @@ git push
 
 ```bash
 VER=20260910a
-for f in index.html subject.html unit.html iroiro.html furikaeri.html; do
+for f in index.html subject.html unit.html iroiro.html furikaeri.html nyushi.html; do
   sed -i -E "s#(src|href)=\"(assets|data)/([A-Za-z0-9_.-]+\.(js|css))(\?v=[0-9a-z]+)?\"#\1=\"\2/\3?v=$VER\"#g" "$f"
 done
 ```
