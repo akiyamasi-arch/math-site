@@ -9,8 +9,8 @@ const EXAM_DATA = {
 
   // 校内限定フォルダ（Googleドライブ）のリンク。フォルダを共有したら、ここにURLを貼る
   drive: {
-    kyotsu: "",     // 「センター・共通テスト」フォルダ
-    daigaku: ""     // 「入試問題」（大学別）フォルダ。大学ごとに分けたいときは各大学の drive に書く
+    kyotsu: "https://drive.google.com/drive/folders/1J13WpUHgffFz4C_B9SJQWFahhz9MX773",    // 「センター・共通テスト」フォルダ
+    daigaku: "https://drive.google.com/drive/folders/19IE3ajH3DX7MhHYZYJsBQt33Ts76HoAQ"   // 「入試問題」（大学別）フォルダ。大学ごとに分けたいときは各大学の drive に書く
   },
 
   // ---- 共通テスト・センター試験 ----
